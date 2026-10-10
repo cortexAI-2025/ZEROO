@@ -265,7 +265,7 @@
       "autre": "Autre"
     },
     "noMerchantTitle": "Bienvenue sur Zéroo Pro",
-    "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 9,99 € HT par mois (11,99 € TTC).",
+    "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 19,99 € HT par mois (23,99 € TTC).",
     "createMerchant": "Créer mon commerce",
     "form": {
       "name": "Nom du commerce",
@@ -451,8 +451,8 @@
       "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement Zéroo",
-      "subscriptionNone": "Start : 9,99 € HT par mois (11,99 € TTC). Pro : 19,99 € HT par mois (23,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "Start : 9,99 € HT par mois (11,99 € TTC). Pro : 19,99 € HT par mois (23,99 € TTC). Sans engagement et sans commission sur vos ventes.",
+      "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
@@ -580,7 +580,7 @@
         },
         "subscription": {
           "title": "Le restaurant paie un abonnement fixe",
-          "body": "À partir de 9,99 € HT par mois (11,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
+          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
         }
       }
     },
@@ -676,11 +676,11 @@
         },
         "restaurantCost": {
           "label": "Coût pour le restaurant",
-          "zeroo": "Dès 9,99 € HT par mois",
+          "zeroo": "Dès 19,99 € HT par mois",
           "others": "variable, selon les ventes"
         }
       },
-      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 9,99 € HT (11,99 € TTC).",
+      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 19,99 € HT (23,99 € TTC).",
       "note": "Montants indicatifs : les taux varient selon les plateformes et les contrats."
     },
     "pricing": {
@@ -718,7 +718,7 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement fixe, sans commission : Start à 9,99 € HT par mois (11,99 € TTC) ou Pro à 19,99 € HT par mois (23,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start à 19,99 € HT par mois (23,99 € TTC) ou Pro multisite à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
@@ -816,7 +816,7 @@
     },
     "onboarding": {
       "title": "Devenir livreur Zéroo",
-      "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 9,99 € HT par mois (11,99 € TTC), 30 jours d'essai.",
+      "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 14,99 € HT par mois (17,99 € TTC), 30 jours d'essai.",
       "name": "Nom affiché",
       "nameHint": "Le client ne voit que votre prénom.",
       "phone": "Téléphone",
@@ -918,8 +918,8 @@
       "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement Zéroo Livreur",
-      "subscriptionNone": "9,99 € HT par mois (11,99 € TTC), ou 99,99 € HT par an (119,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "9,99 € HT par mois (11,99 € TTC), ou 99,99 € HT par an (119,99 € TTC). Sans engagement et sans commission sur vos courses.",
+      "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",

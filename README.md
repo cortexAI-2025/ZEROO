@@ -2,7 +2,7 @@
 
 > Le bon goût. Sans commission.
 
-Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 9,99 € HT/mois ou Pro 19,99 € HT/mois, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
+Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 19,99 € HT/mois ou Pro multisite 29,99 € HT/mois, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Maquette cliquable (client, restaurant, livreur) : [docs/maquette/zeroo-maquette.html](docs/maquette/zeroo-maquette.html), voir [docs/maquette/README.md](docs/maquette/README.md)
@@ -172,9 +172,9 @@ Prix HT, TVA 20 % en plus. Seuls les abonnements passent par Stripe : les restau
 
 | Profil | Mensuel HT (TTC) | Annuel HT (TTC) |
 |---|---|---|
-| Restaurant Start | 9,99 € (11,99 €) | 99,99 € (119,99 €) |
-| Restaurant Pro | 19,99 € (23,99 €) | 199,99 € (239,99 €) |
-| Livreur, formule unique | 9,99 € (11,99 €) | 99,99 € (119,99 €) |
+| Restaurant Start | 19,99 € (23,99 €) | 199,99 € (239,99 €) |
+| Restaurant Pro multisite | 29,99 € (35,99 €) | 299,99 € (359,99 €) |
+| Livreur, formule unique | 14,99 € (17,99 €) | 149,99 € (179,99 €) |
 | Client | Gratuit | Gratuit |
 
 Le catalogue d'affichage est dans `src/features/billing/plans.ts` ; les prix facturés sont ceux des prix Stripe. **Les deux formules restaurant ne se distinguent pour l'instant que par le prix** : le contenu de Pro par rapport à Start reste à définir. Comparatif avec Uber Eats, Deliveroo et les solutions sans commission : [docs/COMPARATIF.md](docs/COMPARATIF.md).
@@ -187,7 +187,7 @@ Dans le dashboard du **compte Stripe dédié à Zéroo** :
    - Les comptes créés laissent Stripe gérer la tarification : la plateforme ne paie aucun frais Connect, et chaque commerçant a son propre tableau de bord Stripe.
 2. **Catalogue de produits** → trois produits (« Zéroo Restaurant Start », « Zéroo Restaurant Pro », « Zéroo Livreur »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). Copier les six identifiants `price_…` dans les variables `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_MONTH`, `_COURIER_YEAR` (voir la grille ci-dessous).
    - **Catalogue de produits → Taux de taxe** : créer « TVA 20 % », France, **exclusif** (ajouté au prix HT). Copier `txr_…` dans `STRIPE_TAX_RATE_ID`.
-   - Les factures affichent alors, par exemple pour Start mensuel, 9,99 € HT + 2,00 € de TVA = 11,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
+   - Les factures affichent alors, par exemple pour Start mensuel, 19,99 € HT + 4,00 € de TVA = 23,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
    - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de Zéroo : raison sociale, adresse, SIREN et numéro de TVA.
 3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation.
 4. **Développeurs → Webhooks**, deux points de terminaison vers `https://<projet>.supabase.co/functions/v1/stripe-webhook` :
@@ -297,7 +297,7 @@ Les notifications ne fonctionnent que sur un vrai téléphone, avec un build de 
 - Le client choisit **à emporter** ou **livraison** si le restaurant livre.
 - Le restaurant fixe **le prix de la course** (de 0,50 € à 20 €) et sa **zone** (de 1 à 8 km).
 - Le livreur est indépendant (auto-entrepreneur ou société, SIRET) et se rattache aux restaurants qui l'acceptent.
-- Il paie un **abonnement livreur unique : 9,99 € HT par mois (11,99 € TTC) ou 99,99 € HT par an, 30 jours d'essai**, sans commission.
+- Il paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission.
 - Le client fait **deux paiements** : le repas, versé au restaurant, et la course, versée au livreur. Chacun va directement sur le compte Stripe du vendeur. Zéroo n'encaisse rien et le restaurant ne paie pas le livreur.
 
 **Parcours.**

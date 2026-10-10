@@ -225,7 +225,7 @@ class Component extends DCLogic {
       return "display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 700; color: " + (on ? "#1F7A35" : "#6B7280");
     };
 
-    var HT = { start: { month: 9.99, year: 99.99 }, pro: { month: 19.99, year: 199.99 } };
+    var HT = { start: { month: 19.99, year: 199.99 }, pro: { month: 29.99, year: 299.99 } };
     var ht = HT[s.plan][s.interval];
     var ttc = Math.round(ht * 1.2 * 100) / 100;
     var monthlyCost = s.interval === "year" ? ht / 12 : ht;
