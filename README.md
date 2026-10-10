@@ -5,6 +5,7 @@
 Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis 30 €/mois) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Maquette cliquable (client, restaurant, livreur) : [docs/maquette/zeroo-maquette.html](docs/maquette/zeroo-maquette.html), voir [docs/maquette/README.md](docs/maquette/README.md)
 - Stack : Expo SDK 57 (React Native, TypeScript, Expo Router) · Supabase (Postgres, Auth, RLS, Realtime) · Stripe Connect / Billing (à venir)
 
 ## Avancement

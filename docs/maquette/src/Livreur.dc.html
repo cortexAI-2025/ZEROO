@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Zéroo — espace livreur</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F7A35}a:hover{color:#17602A}
+button{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F7F5; color: #111827; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; overflow: hidden; box-sizing: border-box">
+
+<div style="display: flex; flex-direction: column; gap: 14px; background: #0D3B2A; color: #FFFFFF; padding: 20px 20px 18px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <img src="/_blob/46c9615f9bd2fbe998767b807701b941" alt="Zéroo" style="height: 26px; width: auto">
+    <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #7ED957; text-transform: uppercase">Espace livreur</span>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 22px; font-weight: 800">Bonjour Moussa</span>
+      <span style="font-size: 13px; color: #D1E7D6">{{statusLine}}</span>
+    </div>
+    <button type="button" onClick="{{toggleOnline}}" style="{{onlineStyle}}">{{onlineLabel}}</button>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <div style="display: flex; flex-direction: column; gap: 2px; background: #164A36; border-radius: 14px; padding: 10px 12px">
+      <span style="font-size: 20px; font-weight: 800">{{doneCountTxt}}</span>
+      <span style="font-size: 12px; color: #D1E7D6">courses</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px; background: #164A36; border-radius: 14px; padding: 10px 12px">
+      <span style="font-size: 20px; font-weight: 800">{{todayTxt}}</span>
+      <span style="font-size: 12px; color: #D1E7D6">aujourd’hui</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px; background: #164A36; border-radius: 14px; padding: 10px 12px">
+      <span style="font-size: 20px; font-weight: 800; color: #7ED957">0 €</span>
+      <span style="font-size: 12px; color: #D1E7D6">de commission</span>
+    </div>
+  </div>
+</div>
+
+<div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column">
+
+<sc-if value="{{isRuns}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px">
+
+  <sc-if value="{{hasActive}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 2px solid #1F7A35; border-radius: 18px; padding: 16px">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span style="font-size: 13px; font-weight: 800; color: #17602A; text-transform: uppercase; letter-spacing: 1px">Course en cours</span>
+        <span style="font-size: 16px; font-weight: 800">{{active.priceTxt}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0">
+        <sc-for list="{{active.steps}}" as="st" hint-placeholder-count="3">
+          <div style="display: flex; gap: 12px; align-items: stretch">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 20px">
+              <span style="{{st.dotStyle}}"></span>
+              <span style="{{st.lineStyle}}"></span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 16px">
+              <span style="{{st.labelStyle}}">{{st.label}}</span>
+              <span style="font-size: 13px; color: #6B7280">{{st.detail}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{active.atRestaurant}}" hint-placeholder-val="{{false}}">
+        <button type="button" onClick="{{pickedUp}}" style="height: 52px; border: none; border-radius: 14px; background: #1F7A35; color: #FFFFFF; font-size: 15px; font-weight: 800; cursor: pointer">J’ai récupéré la commande</button>
+      </sc-if>
+      <sc-if value="{{active.delivering}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 700">
+            Code donné par le client
+            <input type="text" inputmode="numeric" maxlength="4" value="{{code}}" onChange="{{typeCode}}" placeholder="• • • •" style="height: 52px; border: 2px solid #E5E7EB; border-radius: 14px; padding: 0 16px; font: inherit; font-size: 24px; font-weight: 800; letter-spacing: 10px; text-align: center; color: #0D3B2A">
+          </label>
+          <sc-if value="{{codeError}}" hint-placeholder-val="{{false}}">
+            <span style="font-size: 13px; font-weight: 700; color: #B91C1C">Code incorrect. Demandez-le au client.</span>
+          </sc-if>
+          <span style="font-size: 12px; color: #6B7280">Démo : le code affiché côté client est 4821.</span>
+          <button type="button" onClick="{{deliver}}" style="height: 52px; border: none; border-radius: 14px; background: #1F7A35; color: #FFFFFF; font-size: 15px; font-weight: 800; cursor: pointer">Valider la livraison</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{justDone}}" hint-placeholder-val="{{false}}">
+    <div style="font-size: 15px; line-height: 1.5; background: #E8F5E3; color: #0D3B2A; border-radius: 14px; padding: 14px 16px">Course livrée ! <strong>{{lastGainTxt}}</strong> versés directement sur votre compte Stripe.</div>
+  </sc-if>
+
+  <sc-if value="{{offline}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 40px 16px; color: #6B7280">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"></circle><circle cx="18" cy="17" r="3"></circle><path d="M9 17h6l2-6h-5"></path><path d="M14 6h3l1 5"></path></svg>
+      <span style="font-size: 15px">Vous êtes indisponible. Passez « Disponible » pour recevoir des courses.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showOffers}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">Courses disponibles</h2>
+      <sc-for list="{{offers}}" as="c" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 18px; padding: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 16px; font-weight: 800">{{c.resto}}</span>
+            <span style="font-size: 18px; font-weight: 800; color: #17602A">{{c.priceTxt}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #374151">
+            <span style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F7A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>{{c.from}}</span>
+            <span style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F7A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>{{c.to}}</span>
+          </div>
+          <span style="font-size: 13px; color: #6B7280">{{c.meta}}</span>
+          <button type="button" onClick="{{c.accept}}" style="{{c.btnStyle}}">{{c.btnLabel}}</button>
+        </div>
+      </sc-for>
+      <sc-if value="{{noOffers}}" hint-placeholder-val="{{false}}">
+        <div style="text-align: center; color: #6B7280; font-size: 15px; padding: 24px 16px">Aucune course pour le moment.</div>
+      </sc-if>
+      <button type="button" onClick="{{simulate}}" style="height: 48px; border: 2px dashed #5DBE3A; border-radius: 14px; background: transparent; color: #17602A; font-size: 14px; font-weight: 700; cursor: pointer">Simuler une nouvelle course (démo)</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isEarnings}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px">
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <div style="display: flex; flex-direction: column; gap: 4px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 14px">
+      <span style="font-size: 13px; color: #6B7280">Aujourd’hui</span>
+      <span style="font-size: 24px; font-weight: 800">{{todayTxt}}</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 14px">
+      <span style="font-size: 13px; color: #6B7280">Cette semaine</span>
+      <span style="font-size: 24px; font-weight: 800">{{weekTxt}}</span>
+    </div>
+  </div>
+  <div style="font-size: 13px; line-height: 1.5; color: #374151; background: #E8F5E3; border-radius: 14px; padding: 12px 14px">Le client paie la course directement sur votre compte Stripe. Zéroo ne prélève rien : vous gardez 100 % du prix fixé par le restaurant.</div>
+  <h2 style="margin: 4px 0 0; font-size: 18px; font-weight: 800">Historique</h2>
+  <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; overflow: hidden">
+    <sc-for list="{{history}}" as="h" hint-placeholder-count="4">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #F0F1F0">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 700">{{h.resto}}</span>
+          <span style="font-size: 13px; color: #6B7280">{{h.when}}</span>
+        </div>
+        <span style="font-size: 15px; font-weight: 800; color: #17602A">+{{h.priceTxt}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isRestos}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px">
+  <h2 style="margin: 0; font-size: 18px; font-weight: 800">Mes restaurants</h2>
+  <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #4B5563">Vous livrez pour les restaurants qui ont accepté votre demande. Chacun fixe le prix de la course et sa zone de livraison.</p>
+  <sc-for list="{{restos}}" as="r" hint-placeholder-count="3">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 14px 16px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+        <span style="font-size: 13px; color: #6B7280">{{r.meta}}</span>
+      </div>
+      <span style="{{r.badgeStyle}}">{{r.statusTxt}}</span>
+    </div>
+  </sc-for>
+  <sc-if value="{{canRequest}}" hint-placeholder-val="{{true}}">
+    <button type="button" onClick="{{requestJoin}}" style="height: 52px; border: none; border-radius: 14px; background: #1F7A35; color: #FFFFFF; font-size: 15px; font-weight: 800; cursor: pointer">Demander à livrer pour Le Bistronome</button>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isAccount}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px">
+  <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; overflow: hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #F0F1F0; font-size: 15px"><span>Statut</span><span style="color: #6B7280">Auto-entrepreneur</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #F0F1F0; font-size: 15px"><span>SIRET</span><span style="color: #6B7280">[VOTRE SIRET]</span></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; min-height: 56px; padding: 0 16px; font-size: 15px"><span>Compte de paiement Stripe</span><span style="color: #17602A; font-weight: 700">Activé</span></div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 8px; background: #0D3B2A; color: #FFFFFF; border-radius: 18px; padding: 18px">
+    <span style="font-size: 13px; font-weight: 800; color: #7ED957; text-transform: uppercase; letter-spacing: 1px">Abonnement livreur</span>
+    <span style="font-size: 20px; font-weight: 800">Essai gratuit · 27 jours restants</span>
+    <span style="font-size: 14px; color: #D1E7D6; line-height: 1.5">Puis 30 € TTC par mois, sans engagement. Aucune commission sur vos courses.</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 14px; border: 2px solid #1F7A35; color: #1F7A35; font-size: 14px; font-weight: 800; text-decoration: none">Côté client</a>
+    <a href="Pro.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 14px; border: 2px solid #1F7A35; color: #1F7A35; font-size: 14px; font-weight: 800; text-decoration: none">Côté restaurant</a>
+  </div>
+</div>
+</sc-if>
+
+</div>
+
+<nav aria-label="Navigation de l’espace livreur" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #E5E7EB; background: #FFFFFF; padding: 6px 8px 22px">
+  <button type="button" onClick="{{tabRuns}}" style="{{tabRunsStyle}}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"></circle><circle cx="18" cy="17" r="3"></circle><path d="M9 17h6l2-6h-5"></path><path d="M14 6h3l1 5"></path></svg>
+    Courses
+  </button>
+  <button type="button" onClick="{{tabEarnings}}" style="{{tabEarningsStyle}}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>
+    Revenus
+  </button>
+  <button type="button" onClick="{{tabRestos}}" style="{{tabRestosStyle}}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l2-6h12l2 6"></path><path d="M4 10h16v10H4z"></path><path d="M10 20v-5h4v5"></path></svg>
+    Restaurants
+  </button>
+  <button type="button" onClick="{{tabAccount}}" style="{{tabAccountStyle}}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
+    Compte
+  </button>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: "runs", online: true, code: "", codeError: false, justDone: false, lastGain: 0, nextId: 3,
+      offers: [
+        { id: 1, resto: "Chez Samir", from: "Chez Samir, 8 rue de Satory", to: "12 rue de la Paroisse", price: 2.5, meta: "1,4 km · prête dans 5 min" },
+        { id: 2, resto: "Mama Mia", from: "Mama Mia, 21 rue Carnot", to: "3 avenue de Paris", price: 3.5, meta: "2,1 km · prête dans 12 min" }
+      ],
+      active: null,
+      history: [
+        { resto: "Chez Samir", when: "Aujourd’hui, 12 h 05", price: 2.5 },
+        { resto: "Mama Mia", when: "Aujourd’hui, 11 h 40", price: 3.5 },
+        { resto: "Chez Samir", when: "Hier, 20 h 15", price: 2.5 },
+        { resto: "Chez Samir", when: "Hier, 19 h 30", price: 2.5 }
+      ],
+      bistronome: "none"
+    };
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var eur = function (n) { return n.toFixed(2).replace(".", ",") + " €"; };
+
+    var today = 0;
+    var week = 0;
+    var todayCount = 0;
+    s.history.forEach(function (h) {
+      week += h.price;
+      if (h.when.indexOf("Aujourd") === 0) { today += h.price; todayCount += 1; }
+    });
+
+    var busy = !!s.active;
+    var offers = s.offers.map(function (c) {
+      return {
+        resto: c.resto, from: c.from, to: c.to, meta: c.meta, priceTxt: eur(c.price),
+        btnLabel: busy ? "Terminez d’abord la course en cours" : "Accepter la course",
+        btnStyle: "height: 48px; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; background: " + (busy ? "#E5E7EB" : "#1F7A35") + "; color: " + (busy ? "#6B7280" : "#FFFFFF"),
+        accept: function () {
+          if (s.active) return;
+          self.setState({
+            active: Object.assign({}, c, { step: 0 }),
+            offers: s.offers.filter(function (x) { return x.id !== c.id; }),
+            code: "", codeError: false, justDone: false
+          });
+        }
+      };
+    });
+
+    var active = null;
+    if (s.active) {
+      var a = s.active;
+      var labels = ["Aller au restaurant", "Livrer le client", "Valider avec le code"];
+      var details = [a.from, a.to, "Le client vous donne son code à 4 chiffres"];
+      active = {
+        priceTxt: eur(a.price),
+        atRestaurant: a.step === 0,
+        delivering: a.step === 1,
+        steps: labels.map(function (label, i) {
+          var reached = i <= a.step;
+          return {
+            label: label, detail: details[i],
+            dotStyle: "width: 16px; height: 16px; border-radius: 8px; flex: none; box-sizing: border-box; background: " + (reached ? "#1F7A35" : "#FFFFFF") + "; border: 3px solid " + (reached ? "#1F7A35" : "#D1D5DB"),
+            lineStyle: "width: 3px; flex: 1; min-height: 20px; background: " + (i === 2 ? "transparent" : (i < a.step ? "#1F7A35" : "#E5E7EB")),
+            labelStyle: "font-size: 15px; line-height: 16px; font-weight: " + (i === a.step ? "800" : "600") + "; color: " + (reached ? "#111827" : "#9CA3AF")
+          };
+        })
+      };
+    }
+
+    var restos = [
+      { name: "Chez Samir", meta: "Course : 2,50 € · zone 3 km", status: "ok" },
+      { name: "Mama Mia", meta: "Course : 3,50 € · zone 4 km", status: "ok" },
+      { name: "Le Bistronome", meta: "Course : 3,50 € · zone 3 km", status: s.bistronome }
+    ].filter(function (r) { return r.status !== "none"; }).map(function (r) {
+      var ok = r.status === "ok";
+      return {
+        name: r.name, meta: r.meta,
+        statusTxt: ok ? "Accepté" : "En attente",
+        badgeStyle: "font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px; white-space: nowrap; background: " + (ok ? "#E8F5E3" : "#FEF3C7") + "; color: " + (ok ? "#17602A" : "#92400E")
+      };
+    });
+
+    var tab = function (on) {
+      return "display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 700; color: " + (on ? "#1F7A35" : "#6B7280");
+    };
+
+    var SIM = [
+      { resto: "Chez Samir", from: "Chez Samir, 8 rue de Satory", to: "5 rue Hoche", price: 2.5, meta: "0,9 km · prête dans 8 min" },
+      { resto: "Mama Mia", from: "Mama Mia, 21 rue Carnot", to: "17 boulevard de la Reine", price: 3.5, meta: "1,8 km · prête dans 10 min" }
+    ];
+
+    return {
+      isRuns: s.tab === "runs", isEarnings: s.tab === "earnings", isRestos: s.tab === "restos", isAccount: s.tab === "account",
+      statusLine: s.online ? "Disponible · vous recevez les courses" : "Indisponible",
+      onlineLabel: s.online ? "Disponible" : "Indisponible",
+      onlineStyle: "min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 14px; font-weight: 800; cursor: pointer; border: 2px solid " + (s.online ? "#7ED957" : "#FFFFFF") + "; background: " + (s.online ? "#7ED957" : "transparent") + "; color: " + (s.online ? "#0D3B2A" : "#FFFFFF"),
+      toggleOnline: function () { self.setState({ online: !s.online }); },
+      doneCountTxt: String(todayCount),
+      todayTxt: eur(today), weekTxt: eur(week),
+      hasActive: busy, active: active || { steps: [] },
+      offline: !s.online && !busy,
+      showOffers: s.online,
+      offers: offers, noOffers: offers.length === 0,
+      justDone: s.justDone, lastGainTxt: eur(s.lastGain),
+      code: s.code, codeError: s.codeError,
+      typeCode: function (e) { self.setState({ code: String(e.target.value).replace(/[^0-9]/g, "").slice(0, 4), codeError: false }); },
+      pickedUp: function () { self.setState({ active: Object.assign({}, s.active, { step: 1 }) }); },
+      deliver: function () {
+        if (s.code !== "4821") { self.setState({ codeError: true }); return; }
+        var a = s.active;
+        self.setState({
+          active: null, code: "", codeError: false, justDone: true, lastGain: a.price,
+          history: [{ resto: a.resto, when: "Aujourd’hui, à l’instant", price: a.price }].concat(s.history)
+        });
+      },
+      simulate: function () {
+        var c = Object.assign({ id: s.nextId }, SIM[s.nextId % 2]);
+        self.setState({ offers: s.offers.concat([c]), nextId: s.nextId + 1 });
+      },
+      history: s.history.map(function (h) { return { resto: h.resto, when: h.when, priceTxt: eur(h.price) }; }),
+      restos: restos,
+      canRequest: s.bistronome === "none",
+      requestJoin: function () { self.setState({ bistronome: "pending" }); },
+      tabRunsStyle: tab(s.tab === "runs"), tabEarningsStyle: tab(s.tab === "earnings"),
+      tabRestosStyle: tab(s.tab === "restos"), tabAccountStyle: tab(s.tab === "account"),
+      tabRuns: function () { self.setState({ tab: "runs" }); },
+      tabEarnings: function () { self.setState({ tab: "earnings" }); },
+      tabRestos: function () { self.setState({ tab: "restos" }); },
+      tabAccount: function () { self.setState({ tab: "account" }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
