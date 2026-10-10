@@ -99,15 +99,29 @@ button{font:inherit;color:inherit}
   <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 18px; padding: 18px">
     <span style="font-size: 13px; font-weight: 800; color: #17602A; text-transform: uppercase; letter-spacing: 1px">Essai gratuit en cours</span>
     <span style="font-size: 22px; font-weight: 800">Encore 24 jours offerts</span>
-    <span style="font-size: 14px; color: #4B5563; line-height: 1.5">Puis 30 € TTC par mois, sans engagement. Aucune commission sur vos ventes.</span>
+    <span style="font-size: 14px; color: #4B5563; line-height: 1.5">Puis l’abonnement de votre choix, sans engagement. Aucune commission sur vos ventes.</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #E9ECE8; border-radius: 14px; padding: 4px">
+    <button type="button" onClick="{{setStart}}" style="{{startStyle}}">Start</button>
+    <button type="button" onClick="{{setPro}}" style="{{proStyle}}">Pro</button>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #E9ECE8; border-radius: 14px; padding: 4px">
+    <button type="button" onClick="{{setMonth}}" style="{{monthStyle}}">Mensuel</button>
+    <button type="button" onClick="{{setYear}}" style="{{yearStyle}}">Annuel</button>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 4px; background: #FFFFFF; border: 2px solid #1F7A35; border-radius: 18px; padding: 18px">
+    <span style="font-size: 13px; font-weight: 800; color: #17602A; text-transform: uppercase; letter-spacing: 1px">Zéroo {{planName}} · {{intervalName}}</span>
+    <span style="font-size: 32px; font-weight: 800">{{priceHt}} <span style="font-size: 16px; font-weight: 700; color: #4B5563">HT {{perTxt}}</span></span>
+    <span style="font-size: 14px; color: #4B5563">soit {{priceTtc}} TTC {{perTxt}}</span>
+    <sc-if value="{{isYear}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; font-weight: 700; color: #17602A">Soit {{monthlyEq}} HT par mois avec l’abonnement annuel</span></sc-if>
   </div>
   <div style="display: flex; flex-direction: column; gap: 10px; background: #0D3B2A; color: #FFFFFF; border-radius: 18px; padding: 18px">
     <span style="font-size: 15px; font-weight: 700">Pour 3 000 € de ventes en ligne par mois</span>
     <div style="display: flex; justify-content: space-between; font-size: 14px; color: #D1E7D6"><span>Plateforme à 25 % de commission</span><span>750 €</span></div>
-    <div style="display: flex; justify-content: space-between; font-size: 14px; color: #D1E7D6"><span>Zéroo</span><span>30 €</span></div>
-    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: #7ED957; border-top: 1px solid #2B5C47; padding-top: 10px"><span>Vous gardez</span><span>720 € de plus</span></div>
+    <div style="display: flex; justify-content: space-between; font-size: 14px; color: #D1E7D6"><span>Zéroo {{planName}}</span><span>{{monthlyCost}} HT</span></div>
+    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: #7ED957; border-top: 1px solid #2B5C47; padding-top: 10px"><span>Vous gardez</span><span>{{saving}} de plus</span></div>
   </div>
-  <div style="font-size: 13px; color: #6B7280; line-height: 1.5">Les paiements de vos clients arrivent directement sur votre compte Stripe. Les frais bancaires des cartes restent à votre charge, comme avec un terminal de paiement.</div>
+  <div style="font-size: 13px; color: #6B7280; line-height: 1.5">Prix HT, TVA 20 % en plus. Les paiements de vos clients arrivent directement sur votre compte Stripe. Les frais bancaires des cartes restent à votre charge, comme avec un terminal de paiement.</div>
 </div>
 </sc-if>
 
@@ -139,7 +153,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      tab: "orders", filter: "new", paused: false, nextNum: 1046,
+      tab: "orders", filter: "new", paused: false, nextNum: 1046, plan: "start", interval: "month",
       orders: [
         { num: 1043, client: "Yanis", items: "2 × Menu Tacos, 1 × Tenders (x6)", total: 29.8, mode: "pickup", status: "new", time: "Retrait à 12 h 40" },
         { num: 1044, client: "Inès", items: "1 × Menu Kebab", total: 13, mode: "delivery", status: "new", time: "Livraison · 12 rue Hoche" },
@@ -211,6 +225,14 @@ class Component extends DCLogic {
       return "display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; justify-content: center; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 700; color: " + (on ? "#1F7A35" : "#6B7280");
     };
 
+    var HT = { start: { month: 9.99, year: 99.99 }, pro: { month: 19.99, year: 199.99 } };
+    var ht = HT[s.plan][s.interval];
+    var ttc = Math.round(ht * 1.2 * 100) / 100;
+    var monthlyCost = s.interval === "year" ? ht / 12 : ht;
+    var seg = function (on) {
+      return "height: 44px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; background: " + (on ? "#FFFFFF" : "transparent") + "; color: " + (on ? "#17602A" : "#4B5563") + "; box-shadow: " + (on ? "0 1px 4px rgba(0,0,0,0.12)" : "none");
+    };
+
     var CLIENTS = ["Léa", "Karim", "Emma", "Hugo", "Nora"];
     var ITEMS = ["1 × Menu Tacos", "2 × Tacos M", "1 × Menu Kebab, 1 × Tenders (x6)", "3 × Menu Tacos"];
     var TOTALS = [11.9, 17, 16.5, 35.7];
@@ -224,6 +246,18 @@ class Component extends DCLogic {
       pauseLabel: s.paused ? "Reprendre" : "Pause",
       pauseStyle: "min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 14px; font-weight: 800; cursor: pointer; border: 2px solid " + (s.paused ? "#7ED957" : "#FFFFFF") + "; background: " + (s.paused ? "#7ED957" : "transparent") + "; color: " + (s.paused ? "#0D3B2A" : "#FFFFFF"),
       togglePause: function () { self.setState({ paused: !s.paused }); },
+      planName: s.plan === "pro" ? "Pro" : "Start",
+      intervalName: s.interval === "year" ? "annuel" : "mensuel",
+      perTxt: s.interval === "year" ? "par an" : "par mois",
+      isYear: s.interval === "year",
+      priceHt: eur(ht), priceTtc: eur(ttc),
+      monthlyEq: eur(ht / 12), monthlyCost: eur(monthlyCost), saving: eur(750 - monthlyCost),
+      startStyle: seg(s.plan === "start"), proStyle: seg(s.plan === "pro"),
+      monthStyle: seg(s.interval === "month"), yearStyle: seg(s.interval === "year"),
+      setStart: function () { self.setState({ plan: "start" }); },
+      setPro: function () { self.setState({ plan: "pro" }); },
+      setMonth: function () { self.setState({ interval: "month" }); },
+      setYear: function () { self.setState({ interval: "year" }); },
       tabOrdersStyle: tab(s.tab === "orders"), tabMenuStyle: tab(s.tab === "menu"), tabSubStyle: tab(s.tab === "sub"),
       tabOrders: function () { self.setState({ tab: "orders" }); },
       tabMenu: function () { self.setState({ tab: "menu" }); },
