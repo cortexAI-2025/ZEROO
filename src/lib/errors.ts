@@ -18,6 +18,7 @@ const businessErrors = {
   payment_failed: 'errors.paymentFailed',
   payments_not_configured: 'errors.paymentsNotConfigured',
   already_subscribed: 'errors.alreadySubscribed',
+  invalid_plan: 'errors.invalidPlan',
   invalid_reward: 'errors.invalidReward',
   no_reward_available: 'errors.noRewardAvailable',
   payment_action_required: 'errors.invalidTransition',

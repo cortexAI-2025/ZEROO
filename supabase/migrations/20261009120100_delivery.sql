@@ -81,7 +81,7 @@ create trigger courier_stripe_accounts_set_updated_at
   before update on public.courier_stripe_accounts
   for each row execute function public.set_updated_at();
 
--- Même abonnement que les restaurants : 30 € TTC par mois, 30 jours d'essai.
+-- Abonnement livreur unique : 9,99 € HT par mois, 30 jours d'essai.
 create table public.courier_subscriptions (
   courier_id             uuid primary key references public.couriers (id) on delete cascade,
   stripe_customer_id     text not null unique,

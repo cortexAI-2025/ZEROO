@@ -482,7 +482,7 @@ run('Livraison', async () => {
       'Léa disponible',
     );
     step(
-      'nouveau livreur : profil (SIRET), compte Stripe Connect activé par webhook, abonnement 30 € avec essai, rattachement accepté par le restaurant, disponible',
+      'nouveau livreur : profil (SIRET), compte Stripe Connect activé par webhook, abonnement 9,99 € HT avec essai, rattachement accepté par le restaurant, disponible',
     );
   } finally {
     // Seul Karim reste disponible : les autres tests attendent que la course lui revienne.

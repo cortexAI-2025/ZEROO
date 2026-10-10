@@ -7,6 +7,7 @@ import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 're
 
 import { Logo } from '@/components/Logo';
 import { AppText, Button } from '@/components/ui';
+import { formatPrice } from '@/features/billing/plans';
 import { type Space, useSpace } from '@/features/space/SpaceProvider';
 import { radius, spacing, useThemeColors } from '@/theme';
 
@@ -293,28 +294,52 @@ export function LandingPage() {
 
       {/* Tarif */}
       <Section title={t('landing.pricing.title')} testID="landing-pricing">
-        <View
-          style={[
-            styles.pricing,
-            { borderColor: colors.brand, backgroundColor: colors.background },
-          ]}>
-          <View style={styles.priceRow}>
-            <AppText style={[styles.price, { color: colors.link }]}>
-              {t('landing.pricing.price')}
-            </AppText>
-            <AppText variant="muted">{t('landing.pricing.period')}</AppText>
-          </View>
+        <View style={styles.planRow}>
+          {(['start', 'pro', 'courier'] as const).map((plan) => {
+            const month = formatPrice(plan, 'month');
+            const year = formatPrice(plan, 'year');
+            return (
+              <View
+                key={plan}
+                testID={`landing-plan-${plan}`}
+                style={[
+                  styles.pricing,
+                  { borderColor: colors.brand, backgroundColor: colors.background },
+                ]}>
+                <AppText variant="muted" style={styles.center}>
+                  {plan === 'courier'
+                    ? t('landing.pricing.couriers')
+                    : t('landing.pricing.restaurants')}
+                </AppText>
+                <AppText variant="subtitle" style={styles.center}>
+                  {t(`landing.pricing.plans.${plan}`)}
+                </AppText>
+                <View style={styles.priceRow}>
+                  <AppText style={[styles.price, { color: colors.link }]}>{month.ht}</AppText>
+                  <AppText variant="muted">{t('landing.pricing.perMonth')}</AppText>
+                </View>
+                <AppText variant="muted" style={styles.center}>
+                  {t('landing.pricing.ttcMonth', { ttc: month.ttc })}
+                </AppText>
+                <AppText style={styles.center}>
+                  {t('landing.pricing.yearly', { ht: year.ht, ttc: year.ttc })}
+                </AppText>
+              </View>
+            );
+          })}
+        </View>
+        <View style={styles.pricingFeatures}>
           {PRICING.map((feature) => (
             <View key={feature} style={styles.pricingFeature}>
               <Ionicons name="checkmark" size={20} color={colors.success} />
               <AppText>{t(`landing.pricing.features.${feature}`)}</AppText>
             </View>
           ))}
-          <Button title={t('landing.pricing.cta')} onPress={() => start('merchant')} />
-          <AppText variant="muted" style={styles.center}>
-            {t('landing.pricing.customers')}
-          </AppText>
         </View>
+        <Button title={t('landing.pricing.cta')} onPress={() => start('merchant')} />
+        <AppText variant="muted" style={styles.center}>
+          {t('landing.pricing.customers')}
+        </AppText>
       </Section>
 
       <Section title={t('landing.faq.title')} testID="landing-faq" tinted>
@@ -418,15 +443,17 @@ const styles = StyleSheet.create({
   tableLabel: { flex: 1.4 },
   tableCell: { flex: 1 },
   example: { marginTop: spacing.lg, fontWeight: '600' },
+  planRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, justifyContent: 'center' },
   pricing: {
     borderWidth: 2,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.sm,
+    flexGrow: 1,
+    flexBasis: 240,
     maxWidth: 440,
-    width: '100%',
-    alignSelf: 'center',
   },
+  pricingFeatures: { gap: spacing.sm, alignSelf: 'center' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',

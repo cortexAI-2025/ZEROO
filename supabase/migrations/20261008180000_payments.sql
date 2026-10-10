@@ -2,7 +2,7 @@
 --   • Stripe Connect : le client paie directement le commerçant (charge directe,
 --     aucune commission plateforme). Le paiement est autorisé à la commande et
 --     capturé seulement quand le commerçant accepte.
---   • Stripe Billing : abonnement commerçant 30 €/mois, 30 jours d'essai.
+--   • Stripe Billing : abonnement commerçant (Start ou Pro, HT), 30 jours d'essai.
 -- Toutes les écritures de cette migration passent par les Edge Functions (service role).
 
 -- =============================================================================

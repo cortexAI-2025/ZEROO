@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 
-import { AppText, Badge, Button, Card } from '@/components/ui';
+import { AppText, Badge, Button, Card, Chip } from '@/components/ui';
 import { formatDay } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
+import { formatCents } from '@/lib/money';
+import { spacing } from '@/theme';
 
 import { type BillingTarget, useBilling, useBillingActions } from './billing';
+import {
+  formatPrice,
+  type Interval,
+  MERCHANT_PLANS,
+  type PlanId,
+  yearlyMonthlyHtCents,
+} from './plans';
 
 /**
  * Cartes « Paiements » (Stripe Connect) et « Abonnement » : onglet Boutique du restaurant,
@@ -19,6 +28,11 @@ export function BillingCards({ target }: { target: BillingTarget }) {
   const ns = target.role === 'merchant' ? 'merchant' : 'courier';
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [planChoice, setPlanChoice] = useState<PlanId>('start');
+  const [interval, setInterval] = useState<Interval>('month');
+  // Un livreur n'a qu'une formule ; un restaurant choisit Start ou Pro.
+  const plan: PlanId = target.role === 'courier' ? 'courier' : planChoice;
+  const price = formatPrice(plan, interval);
 
   const run = (key: string, action: () => Promise<void>) => async () => {
     setError(null);
@@ -105,6 +119,43 @@ export function BillingCards({ target }: { target: BillingTarget }) {
           </AppText>
         ) : null}
 
+        {isWeb && !subscriptionActive && subscription?.status !== 'past_due' ? (
+          <>
+            {target.role === 'merchant' ? (
+              <View style={styles.chips} testID="plan-choice">
+                {MERCHANT_PLANS.map((id) => (
+                  <Chip
+                    key={id}
+                    testID={`plan-${id}`}
+                    label={t(`billing.plans.${id}`)}
+                    selected={planChoice === id}
+                    onPress={() => setPlanChoice(id)}
+                  />
+                ))}
+              </View>
+            ) : null}
+            <View style={styles.chips} testID="interval-choice">
+              {(['month', 'year'] as const).map((id) => (
+                <Chip
+                  key={id}
+                  testID={`interval-${id}`}
+                  label={t(`billing.intervals.${id}`)}
+                  selected={interval === id}
+                  onPress={() => setInterval(id)}
+                />
+              ))}
+            </View>
+            <AppText testID="plan-price">
+              {t(`billing.price.${interval}`, { ht: price.ht, ttc: price.ttc })}
+            </AppText>
+            {interval === 'year' ? (
+              <AppText variant="muted">
+                {t('billing.yearlyHint', { monthly: formatCents(yearlyMonthlyHtCents(plan)) })}
+              </AppText>
+            ) : null}
+          </>
+        ) : null}
+
         {/* Règles des stores : pas d'achat d'abonnement dans l'app mobile, seulement sur le web. */}
         {!isWeb ? <AppText variant="muted">{t(`${ns}.billing.webOnly`)}</AppText> : null}
         {isWeb &&
@@ -119,7 +170,7 @@ export function BillingCards({ target }: { target: BillingTarget }) {
                 : t(`${ns}.billing.startTrial`)
             }
             loading={busy === 'subscribe'}
-            onPress={() => void run('subscribe', actions.subscribe)()}
+            onPress={() => void run('subscribe', () => actions.subscribe(plan, interval))()}
           />
         ) : null}
         {isWeb && subscription && subscription.status !== 'incomplete' ? (
@@ -135,3 +186,7 @@ export function BillingCards({ target }: { target: BillingTarget }) {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+});

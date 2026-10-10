@@ -21,6 +21,21 @@
     "copyLink": "Copier le lien",
     "linkCopied": "Lien copié"
   },
+  "billing": {
+    "plans": {
+      "start": "Start",
+      "pro": "Pro"
+    },
+    "intervals": {
+      "month": "Mensuel",
+      "year": "Annuel"
+    },
+    "price": {
+      "month": "{{ht}} HT par mois ({{ttc}} TTC)",
+      "year": "{{ht}} HT par an ({{ttc}} TTC)"
+    },
+    "yearlyHint": "Soit {{monthly}} HT par mois avec l'abonnement annuel."
+  },
   "auth": {
     "tagline": "Commandez, payez, récupérez. Sans attendre.",
     "email": "Adresse e-mail",
@@ -250,7 +265,7 @@
       "autre": "Autre"
     },
     "noMerchantTitle": "Bienvenue sur Zéroo Pro",
-    "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis 30 € TTC par mois.",
+    "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 9,99 € HT par mois (11,99 € TTC).",
     "createMerchant": "Créer mon commerce",
     "form": {
       "name": "Nom du commerce",
@@ -435,15 +450,15 @@
       "paymentsContinue": "Compléter mon dossier Stripe",
       "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
-      "subscriptionTitle": "Abonnement Zéroo Pro",
-      "subscriptionNone": "30 € TTC par mois, sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "30 € TTC par mois, sans engagement et sans commission sur vos ventes.",
+      "subscriptionTitle": "Abonnement Zéroo",
+      "subscriptionNone": "Start : 9,99 € HT par mois (11,99 € TTC). Pro : 19,99 € HT par mois (23,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start : 9,99 € HT par mois (11,99 € TTC). Pro : 19,99 € HT par mois (23,99 € TTC). Sans engagement et sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
       "trialing": "Essai gratuit jusqu'au {{date}}.",
-      "active": "Abonnement actif · 30 € TTC/mois · prochain prélèvement le {{date}}.",
-      "activeNoDate": "Abonnement actif · 30 € TTC/mois.",
+      "active": "Abonnement actif · prochain prélèvement le {{date}}.",
+      "activeNoDate": "Abonnement actif.",
       "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
       "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des commandes.",
       "inactive": "Abonnement inactif : vous ne recevez plus de commandes.",
@@ -523,7 +538,8 @@
     "merchantNotFound": "Restaurant introuvable.",
     "courierNotFound": "Livreur introuvable.",
     "courierHasActiveDelivery": "Terminez votre course en cours avant de supprimer votre compte.",
-    "courierSubscriptionActive": "Résiliez d'abord votre abonnement livreur (onglet Compte, « Gérer mon abonnement »)."
+    "courierSubscriptionActive": "Résiliez d'abord votre abonnement livreur (onglet Compte, « Gérer mon abonnement »).",
+    "invalidPlan": "Cette formule d'abonnement n'est pas disponible."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",
@@ -564,7 +580,7 @@
         },
         "subscription": {
           "title": "Le restaurant paie un abonnement fixe",
-          "body": "30 € TTC par mois pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
+          "body": "À partir de 9,99 € HT par mois (11,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
         }
       }
     },
@@ -660,17 +676,25 @@
         },
         "restaurantCost": {
           "label": "Coût pour le restaurant",
-          "zeroo": "30 € TTC par mois",
+          "zeroo": "Dès 9,99 € HT par mois",
           "others": "variable, selon les ventes"
         }
       },
-      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo : 30 € TTC.",
+      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 9,99 € HT (11,99 € TTC).",
       "note": "Montants indicatifs : les taux varient selon les plateformes et les contrats."
     },
     "pricing": {
-      "title": "Un seul tarif pour les restaurants",
-      "price": "30 €",
-      "period": "TTC par mois",
+      "title": "Des abonnements fixes, sans commission",
+      "restaurants": "Restaurants",
+      "couriers": "Livreurs",
+      "perMonth": "HT par mois",
+      "ttcMonth": "soit {{ttc}} TTC par mois",
+      "yearly": "ou {{ht}} HT par an ({{ttc}} TTC)",
+      "plans": {
+        "start": "Start",
+        "pro": "Pro",
+        "courier": "Livreur"
+      },
       "features": {
         "unlimited": "Commandes illimitées",
         "commission": "0 % de commission",
@@ -694,15 +718,15 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement de 30 € TTC par mois, sans commission. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start à 9,99 € HT par mois (11,99 € TTC) ou Pro à 19,99 € HT par mois (23,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
-          "a": "Non. Zéroo est fait pour la vente à emporter : le client vient chercher sa commande, prête à son arrivée."
+          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. Zéroo n'encaisse jamais l'argent des commandes."
         },
         "trial": {
           "q": "Comment fonctionne l'essai gratuit ?",
-          "a": "30 jours pour tout tester. L'abonnement démarre ensuite, sans engagement : vous pouvez résilier à tout moment depuis votre espace."
+          "a": "30 jours pour tout tester. L'abonnement démarre ensuite, sans engagement : vous pouvez résilier à tout moment depuis votre espace."
         },
         "charge": {
           "q": "Quand le client est-il débité ?",
@@ -792,7 +816,7 @@
     },
     "onboarding": {
       "title": "Devenir livreur Zéroo",
-      "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 30 € TTC par mois, 30 jours d'essai.",
+      "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 9,99 € HT par mois (11,99 € TTC), 30 jours d'essai.",
       "name": "Nom affiché",
       "nameHint": "Le client ne voit que votre prénom.",
       "phone": "Téléphone",
@@ -894,14 +918,14 @@
       "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement Zéroo Livreur",
-      "subscriptionNone": "30 € TTC par mois, sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "30 € TTC par mois, sans engagement et sans commission sur vos courses.",
+      "subscriptionNone": "9,99 € HT par mois (11,99 € TTC), ou 99,99 € HT par an (119,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "9,99 € HT par mois (11,99 € TTC), ou 99,99 € HT par an (119,99 € TTC). Sans engagement et sans commission sur vos courses.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
       "trialing": "Essai gratuit jusqu'au {{date}}.",
-      "active": "Abonnement actif · 30 € TTC/mois · prochain prélèvement le {{date}}.",
-      "activeNoDate": "Abonnement actif · 30 € TTC/mois.",
+      "active": "Abonnement actif · prochain prélèvement le {{date}}.",
+      "activeNoDate": "Abonnement actif.",
       "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
       "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des courses.",
       "inactive": "Abonnement inactif : vous ne recevez plus de courses.",

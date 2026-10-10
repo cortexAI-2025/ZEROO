@@ -22,9 +22,9 @@ run("Page d'accueil", async () => {
   await v(page.getByTestId('landing-model'))
     .getByText('Le client paie le prix de la carte')
     .waitFor();
-  await v(page.getByTestId('landing-pricing')).getByText('TTC par mois').waitFor();
+  await v(page.getByTestId('landing-pricing')).getByText('HT par mois').first().waitFor();
   await v(page.getByTestId('landing-comparison')).getByText('0 %', { exact: true }).waitFor();
-  step('accroche, modèle (service, prix de la carte, abonnement fixe), comparaison et tarif TTC');
+  step('accroche, modèle (service, prix de la carte, abonnement fixe), comparaison et tarifs HT (Start, Pro, Livreur)');
 
   await v(page.getByText('Zéroo vend-il des repas', { exact: false })).click();
   await v(page.getByText('Non. Zéroo est un service', { exact: false })).waitFor();

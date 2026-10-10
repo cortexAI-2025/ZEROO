@@ -164,7 +164,7 @@ run('Livraison dans l’app', async () => {
     await v(lea.getByTestId('subscription-card')).getByText('Abonnement Zéroo Livreur').waitFor();
     await shot(lea, '2-livreur-compte');
     step(
-      'compte livreur : Stripe Connect activé par webhook, abonnement Livreur 30 € avec 30 jours d’essai',
+      'compte livreur : Stripe Connect activé par webhook, abonnement Livreur 9,99 € HT avec 30 jours d’essai',
     );
 
     await v(lea.getByRole('tab', { name: /Restaurants/ })).click();

@@ -5,28 +5,56 @@ import { adminClient, requireProfessional, requireUser, unwrap } from '../_share
 const TRIAL_DAYS = 30;
 
 /**
- * Prix TTC (30 € dont TVA 20 %). STRIPE_TAX_RATE_ID : taux « TVA 20 % » inclus dans le
- * prix, appliqué à l'abonnement pour que les factures détaillent HT / TVA / TTC.
+ * Prix HT : la TVA 20 % s'ajoute (taux STRIPE_TAX_RATE_ID, « TVA 20 % » exclusive,
+ * appliqué à l'abonnement pour que les factures détaillent HT / TVA / TTC).
  */
 const taxRateId = () => Deno.env.get('STRIPE_TAX_RATE_ID');
 
+type Plan = 'start' | 'pro';
+type Interval = 'month' | 'year';
+const PLANS: Plan[] = ['start', 'pro'];
+const INTERVALS: Interval[] = ['month', 'year'];
+
 /**
- * Abonnement d'un restaurant ou d'un livreur (même offre : 30 € TTC par mois, prix
- * STRIPE_SUBSCRIPTION_PRICE_ID). role « courier » pour un livreur, restaurant par défaut.
+ * Prix Stripe de la formule choisie (variables d'environnement, voir .env.example) :
+ *   restaurant : STRIPE_PRICE_START_MONTH / _YEAR, STRIPE_PRICE_PRO_MONTH / _YEAR
+ *   livreur    : STRIPE_PRICE_COURIER_MONTH / _YEAR
+ * STRIPE_SUBSCRIPTION_PRICE_ID reste accepté pour la formule mensuelle de base (Start, Livreur).
+ */
+function priceIdFor(role: 'merchant' | 'courier', plan: Plan, interval: Interval) {
+  const name = `STRIPE_PRICE_${role === 'courier' ? 'COURIER' : plan.toUpperCase()}_${interval.toUpperCase()}`;
+  const legacy = plan === 'start' && interval === 'month' ? 'STRIPE_SUBSCRIPTION_PRICE_ID' : null;
+  return Deno.env.get(name) || (legacy ? requireEnv(legacy) : requireEnv(name));
+}
+
+/**
+ * Abonnement d'un restaurant (formule Start ou Pro) ou d'un livreur (formule unique), au mois
+ * ou à l'année. role « courier » pour un livreur, restaurant par défaut.
  *   action « checkout » : page Stripe Checkout, 30 jours d'essai la première fois ;
+ *                         plan « start » (défaut) ou « pro », interval « month » (défaut) ou « year » ;
  *   action « portal »   : portail client Stripe (carte, factures, résiliation).
  * Ouverte depuis la version web de l'espace professionnel (règles des stores, voir docs).
  */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
-  const { action, role } = await readJson<{
+  const body = await readJson<{
     action: 'checkout' | 'portal';
     role?: 'merchant' | 'courier';
+    plan?: Plan;
+    interval?: Interval;
   }>(req);
+  const { action, role } = body;
+  const plan = body.plan ?? 'start';
+  const interval = body.interval ?? 'month';
+  if (!PLANS.includes(plan) || !INTERVALS.includes(interval)) {
+    throw new HttpError(400, 'invalid_plan');
+  }
   const db = adminClient();
   const pro = await requireProfessional(db, user.id, role);
   const stripe = stripeClient();
   const metadata = { [pro.key]: pro.id };
+  // Un livreur n'a qu'une formule : « pro » ne s'applique qu'aux restaurants.
+  if (pro.role === 'courier' && plan !== 'start') throw new HttpError(400, 'invalid_plan');
   const backUrl = `${appWebUrl()}${pro.role === 'merchant' ? '/pro/shop' : pro.appPath}`;
 
   let subscription = unwrap(
@@ -66,11 +94,11 @@ export const handler = handle(async (req) => {
     mode: 'subscription',
     locale: 'fr',
     customer: subscription.stripe_customer_id,
-    line_items: [{ price: requireEnv('STRIPE_SUBSCRIPTION_PRICE_ID'), quantity: 1 }],
+    line_items: [{ price: priceIdFor(pro.role, plan, interval), quantity: 1 }],
     subscription_data: {
       ...(subscription.trial_used ? {} : { trial_period_days: TRIAL_DAYS }),
       ...(taxRateId() ? { default_tax_rates: [taxRateId()!] } : {}),
-      metadata,
+      metadata: { ...metadata, plan: pro.role === 'courier' ? 'courier' : plan, interval },
     },
     // Facture au nom et à l'adresse du professionnel, avec son numéro de TVA intracommunautaire
     // s'il en a un (pour qu'il puisse déduire la TVA).

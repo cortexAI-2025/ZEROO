@@ -6,9 +6,11 @@ import { callFunction } from '@/lib/functions';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
+import type { Interval, PlanId } from './plans';
+
 /**
  * Professionnel abonné à Zéroo et payé via Stripe Connect : un restaurant ou un livreur.
- * Même offre (30 € TTC par mois, 30 jours d'essai), tables distinctes.
+ * Abonnements HT (restaurant Start ou Pro, livreur : voir plans.ts), 30 jours d'essai, tables distinctes.
  */
 export type BillingTarget = { role: 'merchant' | 'courier'; id: string };
 
@@ -83,8 +85,14 @@ export function useBillingActions(target: BillingTarget) {
       if (Platform.OS !== 'web') await refresh(); // le navigateur intégré vient d'être fermé
     },
     /** Abonnement : page Stripe Checkout (web uniquement, voir docs/ARCHITECTURE.md). */
-    subscribe: async () => {
-      const { url } = await callFunction<{ url: string }>('billing', { action: 'checkout', role });
+    subscribe: async (plan: PlanId = 'start', interval: Interval = 'month') => {
+      const { url } = await callFunction<{ url: string }>('billing', {
+        action: 'checkout',
+        role,
+        // Le livreur n'a qu'une formule : le serveur attend « start » pour lui.
+        plan: plan === 'courier' ? 'start' : plan,
+        interval,
+      });
       await openStripePage(url);
     },
     manageSubscription: async () => {
