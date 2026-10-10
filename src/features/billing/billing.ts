@@ -8,7 +8,7 @@ import type { Tables } from '@/types/database';
 
 /**
  * Professionnel abonné à Zéroo et payé via Stripe Connect : un restaurant ou un livreur.
- * Même offre (9,99 € TTC par mois, 30 jours d'essai), tables distinctes.
+ * Même offre (30 € TTC par mois, 30 jours d'essai), tables distinctes.
  */
 export type BillingTarget = { role: 'merchant' | 'courier'; id: string };
 

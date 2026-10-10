@@ -5,13 +5,13 @@ import { adminClient, requireProfessional, requireUser, unwrap } from '../_share
 const TRIAL_DAYS = 30;
 
 /**
- * Prix TTC (9,99 € dont TVA 20 %). STRIPE_TAX_RATE_ID : taux « TVA 20 % » inclus dans le
+ * Prix TTC (30 € dont TVA 20 %). STRIPE_TAX_RATE_ID : taux « TVA 20 % » inclus dans le
  * prix, appliqué à l'abonnement pour que les factures détaillent HT / TVA / TTC.
  */
 const taxRateId = () => Deno.env.get('STRIPE_TAX_RATE_ID');
 
 /**
- * Abonnement d'un restaurant ou d'un livreur (même offre : 9,99 € TTC par mois, prix
+ * Abonnement d'un restaurant ou d'un livreur (même offre : 30 € TTC par mois, prix
  * STRIPE_SUBSCRIPTION_PRICE_ID). role « courier » pour un livreur, restaurant par défaut.
  *   action « checkout » : page Stripe Checkout, 30 jours d'essai la première fois ;
  *   action « portal »   : portail client Stripe (carte, factures, résiliation).

@@ -44,7 +44,7 @@ export async function requireCourier(db: SupabaseClient, userId: string) {
 
 /**
  * Professionnel abonné et payé via Stripe Connect : un restaurant ou un livreur. Mêmes
- * règles pour les deux (abonnement 9,99 € TTC, compte Stripe à son nom), tables distinctes.
+ * règles pour les deux (abonnement 30 € TTC, compte Stripe à son nom), tables distinctes.
  */
 export type Professional = {
   role: 'merchant' | 'courier';

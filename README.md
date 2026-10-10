@@ -2,7 +2,7 @@
 
 > Le bon goût. Sans commission.
 
-Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis 9,99 €/mois) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
+Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis 30 €/mois) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Stack : Expo SDK 57 (React Native, TypeScript, Expo Router) · Supabase (Postgres, Auth, RLS, Realtime) · Stripe Connect / Billing (à venir)
@@ -162,7 +162,7 @@ Ces règles sont couvertes par 23 tests pgTAP.
 - **Web** (client arrivé par le QR code) : page Stripe Checkout.
 - **Commerçant** :
   - « Configurer mes paiements » (Boutique) ouvre l'inscription Stripe ;
-  - l'abonnement, 30 jours d'essai puis 9,99 € TTC par mois, se souscrit et se gère depuis la version web (`/pro`), pour respecter les règles d'Apple et Google ;
+  - l'abonnement, 30 jours d'essai puis 30 € TTC par mois, se souscrit et se gère depuis la version web (`/pro`), pour respecter les règles d'Apple et Google ;
   - sans paiements activés et abonnement en règle, le commerce affiche « Configuration à terminer » et ne reçoit pas de commandes.
 
 ### Configurer Stripe (mode test d'abord)
@@ -171,9 +171,9 @@ Dans le dashboard du **compte Stripe dédié à Zéroo** :
 1. **Connect** → activer Connect.
    - Renseigner le profil de la plateforme : nom « Zéroo », icône, couleur. C'est ce qu'affiche l'inscription des commerçants.
    - Les comptes créés laissent Stripe gérer la tarification : la plateforme ne paie aucun frais Connect, et chaque commerçant a son propre tableau de bord Stripe.
-2. **Catalogue de produits** → produit « Zéroo Pro », prix récurrent **9,99 € par mois, taxes incluses** (« Inclure la taxe dans le prix »). Copier l'identifiant `price_…`.
+2. **Catalogue de produits** → produit « Zéroo Pro », prix récurrent **30 € par mois, taxes incluses** (« Inclure la taxe dans le prix »). Copier l'identifiant `price_…`.
    - **Catalogue de produits → Taux de taxe** : créer « TVA 20 % », France, **inclus** dans le prix. Copier `txr_…` dans `STRIPE_TAX_RATE_ID`.
-   - Les factures affichent alors 8,33 € HT + 1,66 € de TVA = 9,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
+   - Les factures affichent alors 25,00 € HT + 5,00 € de TVA = 30 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
    - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de Zéroo : raison sociale, adresse, SIREN et numéro de TVA.
 3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation.
 4. **Développeurs → Webhooks**, deux points de terminaison vers `https://<projet>.supabase.co/functions/v1/stripe-webhook` :
@@ -280,7 +280,7 @@ Les notifications ne fonctionnent que sur un vrai téléphone, avec un build de 
 - Le client choisit **à emporter** ou **livraison** si le restaurant livre.
 - Le restaurant fixe **le prix de la course** (de 0,50 € à 20 €) et sa **zone** (de 1 à 8 km).
 - Le livreur est indépendant (auto-entrepreneur ou société, SIRET) et se rattache aux restaurants qui l'acceptent.
-- Il paie le **même abonnement que les restaurants : 9,99 € TTC par mois, 30 jours d'essai**, sans commission.
+- Il paie le **même abonnement que les restaurants : 30 € TTC par mois, 30 jours d'essai**, sans commission.
 - Le client fait **deux paiements** : le repas, versé au restaurant, et la course, versée au livreur. Chacun va directement sur le compte Stripe du vendeur. Zéroo n'encaisse rien et le restaurant ne paie pas le livreur.
 
 **Parcours.**
@@ -325,7 +325,7 @@ La racine de l'app web (`src/app/index.tsx`) affiche la page d'accueil aux visit
 - le modèle de service : les repas sont vendus par les restaurants, au prix de la carte, et le restaurant paie un abonnement fixe ;
 - le fonctionnement en 3 étapes, puis les avantages pour les clients et pour les restaurants ;
 - une comparaison avec les plateformes à commission (indicative, sans nommer de concurrent) ;
-- le tarif de 9,99 € TTC par mois et une FAQ.
+- le tarif de 30 € TTC par mois et une FAQ.
 
 **Les deux boutons** mènent à l'inscription en mémorisant l'espace visé. Le pied de page renvoie aux pages `/mentions-legales` et `/confidentialite`.
 
