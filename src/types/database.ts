@@ -1,0 +1,2033 @@
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+  public: {
+    Tables: {
+      courier_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean;
+          courier_id: string;
+          details_submitted: boolean;
+          payouts_enabled: boolean;
+          stripe_account_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          charges_enabled?: boolean;
+          courier_id: string;
+          details_submitted?: boolean;
+          payouts_enabled?: boolean;
+          stripe_account_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          charges_enabled?: boolean;
+          courier_id?: string;
+          details_submitted?: boolean;
+          payouts_enabled?: boolean;
+          stripe_account_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'courier_stripe_accounts_courier_id_fkey';
+            columns: ['courier_id'];
+            isOneToOne: true;
+            referencedRelation: 'couriers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      courier_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean;
+          courier_id: string;
+          current_period_end: string | null;
+          status: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id: string;
+          stripe_subscription_id: string | null;
+          trial_end: string | null;
+          trial_used: boolean;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cancel_at_period_end?: boolean;
+          courier_id: string;
+          current_period_end?: string | null;
+          status?: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id: string;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_used?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          cancel_at_period_end?: boolean;
+          courier_id?: string;
+          current_period_end?: string | null;
+          status?: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id?: string;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_used?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'courier_subscriptions_courier_id_fkey';
+            columns: ['courier_id'];
+            isOneToOne: true;
+            referencedRelation: 'couriers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      couriers: {
+        Row: {
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_available: boolean;
+          last_assigned_at: string | null;
+          legal_status: Database['public']['Enums']['courier_legal_status'];
+          phone: string;
+          siret: string;
+          updated_at: string;
+          user_id: string;
+          vehicle: Database['public']['Enums']['courier_vehicle'];
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          display_name: string;
+          id?: string;
+          is_available?: boolean;
+          last_assigned_at?: string | null;
+          legal_status: Database['public']['Enums']['courier_legal_status'];
+          phone: string;
+          siret: string;
+          updated_at?: string;
+          user_id: string;
+          vehicle?: Database['public']['Enums']['courier_vehicle'];
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string;
+          id?: string;
+          is_available?: boolean;
+          last_assigned_at?: string | null;
+          legal_status?: Database['public']['Enums']['courier_legal_status'];
+          phone?: string;
+          siret?: string;
+          updated_at?: string;
+          user_id?: string;
+          vehicle?: Database['public']['Enums']['courier_vehicle'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'couriers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      loyalty_cards: {
+        Row: {
+          merchant_id: string;
+          paid_menus_count: number;
+          rewards_available: number;
+          rewards_redeemed: number;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          merchant_id: string;
+          paid_menus_count?: number;
+          rewards_available?: number;
+          rewards_redeemed?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          merchant_id?: string;
+          paid_menus_count?: number;
+          rewards_available?: number;
+          rewards_redeemed?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'loyalty_cards_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'loyalty_cards_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_categories: {
+        Row: {
+          id: string;
+          is_active: boolean;
+          merchant_id: string;
+          name: string;
+          position: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: string;
+          is_active?: boolean;
+          merchant_id: string;
+          name: string;
+          position?: number;
+        };
+        Update: {
+          id?: string;
+          is_active?: boolean;
+          merchant_id?: string;
+          name?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_categories_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_items: {
+        Row: {
+          category_id: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          image_url: string | null;
+          is_available: boolean;
+          is_loyalty_menu: boolean;
+          merchant_id: string;
+          name: string;
+          position: number;
+          price_cents: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          category_id: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          is_available?: boolean;
+          is_loyalty_menu?: boolean;
+          merchant_id: string;
+          name: string;
+          position?: number;
+          price_cents: number;
+          updated_at?: string;
+        };
+        Update: {
+          category_id?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          image_url?: string | null;
+          is_available?: boolean;
+          is_loyalty_menu?: boolean;
+          merchant_id?: string;
+          name?: string;
+          position?: number;
+          price_cents?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_items_category_id_merchant_id_fkey';
+            columns: ['category_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_categories';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+          {
+            foreignKeyName: 'menu_items_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_option_groups: {
+        Row: {
+          id: string;
+          item_id: string;
+          max_select: number;
+          merchant_id: string;
+          min_select: number;
+          name: string;
+          position: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: string;
+          item_id: string;
+          max_select?: number;
+          merchant_id: string;
+          min_select?: number;
+          name: string;
+          position?: number;
+        };
+        Update: {
+          id?: string;
+          item_id?: string;
+          max_select?: number;
+          merchant_id?: string;
+          min_select?: number;
+          name?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_option_groups_item_id_merchant_id_fkey';
+            columns: ['item_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_items';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+          {
+            foreignKeyName: 'menu_option_groups_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_options: {
+        Row: {
+          group_id: string;
+          id: string;
+          is_available: boolean;
+          merchant_id: string;
+          name: string;
+          position: number;
+          price_delta_cents: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          group_id: string;
+          id?: string;
+          is_available?: boolean;
+          merchant_id: string;
+          name: string;
+          position?: number;
+          price_delta_cents?: number;
+        };
+        Update: {
+          group_id?: string;
+          id?: string;
+          is_available?: boolean;
+          merchant_id?: string;
+          name?: string;
+          position?: number;
+          price_delta_cents?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_options_group_id_merchant_id_fkey';
+            columns: ['group_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_option_groups';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+          {
+            foreignKeyName: 'menu_options_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      merchant_couriers: {
+        Row: {
+          courier_id: string;
+          decided_at: string | null;
+          merchant_id: string;
+          requested_at: string;
+          status: Database['public']['Enums']['courier_link_status'];
+        };
+        ComputedFields: never;
+        Insert: {
+          courier_id: string;
+          decided_at?: string | null;
+          merchant_id: string;
+          requested_at?: string;
+          status?: Database['public']['Enums']['courier_link_status'];
+        };
+        Update: {
+          courier_id?: string;
+          decided_at?: string | null;
+          merchant_id?: string;
+          requested_at?: string;
+          status?: Database['public']['Enums']['courier_link_status'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'merchant_couriers_courier_id_fkey';
+            columns: ['courier_id'];
+            isOneToOne: false;
+            referencedRelation: 'couriers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'merchant_couriers_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      merchant_opening_hours: {
+        Row: {
+          closes_at: string;
+          id: string;
+          merchant_id: string;
+          opens_at: string;
+          weekday: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          closes_at: string;
+          id?: string;
+          merchant_id: string;
+          opens_at: string;
+          weekday: number;
+        };
+        Update: {
+          closes_at?: string;
+          id?: string;
+          merchant_id?: string;
+          opens_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'merchant_opening_hours_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      merchant_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean;
+          details_submitted: boolean;
+          merchant_id: string;
+          payouts_enabled: boolean;
+          stripe_account_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          charges_enabled?: boolean;
+          details_submitted?: boolean;
+          merchant_id: string;
+          payouts_enabled?: boolean;
+          stripe_account_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          charges_enabled?: boolean;
+          details_submitted?: boolean;
+          merchant_id?: string;
+          payouts_enabled?: boolean;
+          stripe_account_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'merchant_stripe_accounts_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: true;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      merchants: {
+        Row: {
+          address_line: string;
+          category: string;
+          city: string;
+          created_at: string;
+          default_prep_minutes: number;
+          delivery_enabled: boolean;
+          delivery_fee_cents: number;
+          delivery_radius_m: number;
+          description: string | null;
+          id: string;
+          is_paused: boolean;
+          is_published: boolean;
+          latitude: number;
+          location: unknown;
+          longitude: number;
+          name: string;
+          owner_id: string;
+          paused_until: string | null;
+          phone: string | null;
+          postal_code: string;
+          slug: string;
+          timezone: string;
+          updated_at: string;
+          is_accepting_orders: boolean | null;
+          is_open_now: boolean | null;
+          is_paused_now: boolean | null;
+          is_payments_ready: boolean | null;
+          is_subscription_active: boolean | null;
+        };
+        ComputedFields:
+          | 'is_accepting_orders'
+          | 'is_open_now'
+          | 'is_paused_now'
+          | 'is_payments_ready'
+          | 'is_subscription_active';
+        Insert: {
+          address_line: string;
+          category: string;
+          city: string;
+          created_at?: string;
+          default_prep_minutes?: number;
+          delivery_enabled?: boolean;
+          delivery_fee_cents?: number;
+          delivery_radius_m?: number;
+          description?: string | null;
+          id?: string;
+          is_paused?: boolean;
+          is_published?: boolean;
+          latitude: number;
+          location?: never;
+          longitude: number;
+          name: string;
+          owner_id: string;
+          paused_until?: string | null;
+          phone?: string | null;
+          postal_code: string;
+          slug: string;
+          timezone?: string;
+          updated_at?: string;
+        };
+        Update: {
+          address_line?: string;
+          category?: string;
+          city?: string;
+          created_at?: string;
+          default_prep_minutes?: number;
+          delivery_enabled?: boolean;
+          delivery_fee_cents?: number;
+          delivery_radius_m?: number;
+          description?: string | null;
+          id?: string;
+          is_paused?: boolean;
+          is_published?: boolean;
+          latitude?: number;
+          location?: never;
+          longitude?: number;
+          name?: string;
+          owner_id?: string;
+          paused_until?: string | null;
+          phone?: string | null;
+          postal_code?: string;
+          slug?: string;
+          timezone?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'merchants_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          is_loyalty_menu: boolean;
+          is_loyalty_reward: boolean;
+          line_total_cents: number;
+          menu_item_id: string | null;
+          name: string;
+          options: NonNullable<Json>;
+          order_id: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: string;
+          is_loyalty_menu?: boolean;
+          is_loyalty_reward?: boolean;
+          line_total_cents: number;
+          menu_item_id?: string | null;
+          name: string;
+          options?: NonNullable<Json>;
+          order_id: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Update: {
+          id?: string;
+          is_loyalty_menu?: boolean;
+          is_loyalty_reward?: boolean;
+          line_total_cents?: number;
+          menu_item_id?: string | null;
+          name?: string;
+          options?: NonNullable<Json>;
+          order_id?: string;
+          quantity?: number;
+          unit_price_cents?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'order_items_menu_item_id_fkey';
+            columns: ['menu_item_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_items';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'order_items_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      orders: {
+        Row: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_at?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
+          collected_at?: string | null;
+          courier_accepted_at?: string | null;
+          courier_id?: string | null;
+          courier_name?: string | null;
+          courier_stripe_account_id?: string | null;
+          created_at?: string;
+          currency?: string;
+          customer_departed_at?: string | null;
+          customer_eta_at?: string | null;
+          customer_id?: string | null;
+          customer_name?: string | null;
+          customer_note?: string | null;
+          customer_travel_mode?: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at?: string | null;
+          delivery_address_line?: string | null;
+          delivery_authorized_at?: string | null;
+          delivery_checkout_session_id?: string | null;
+          delivery_city?: string | null;
+          delivery_code?: string | null;
+          delivery_distance_m?: number | null;
+          delivery_fee_cents?: number;
+          delivery_instructions?: string | null;
+          delivery_latitude?: number | null;
+          delivery_longitude?: number | null;
+          delivery_paid_at?: string | null;
+          delivery_payment_intent_id?: string | null;
+          delivery_phone?: string | null;
+          delivery_postal_code?: string | null;
+          discount_cents?: number;
+          estimated_ready_at?: string | null;
+          fulfillment?: Database['public']['Enums']['fulfillment_type'];
+          id?: string;
+          is_loyalty_reward?: boolean;
+          loyalty_counted?: boolean;
+          meal_authorized_at?: string | null;
+          merchant_id: string;
+          out_for_delivery_at?: string | null;
+          paid_at?: string | null;
+          pickup_code?: string;
+          placed_at?: string | null;
+          prep_minutes?: number | null;
+          ready_at?: string | null;
+          refusal_reason?: string | null;
+          status?: Database['public']['Enums']['order_status'];
+          stripe_account_id?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at?: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
+          collected_at?: string | null;
+          courier_accepted_at?: string | null;
+          courier_id?: string | null;
+          courier_name?: string | null;
+          courier_stripe_account_id?: string | null;
+          created_at?: string;
+          currency?: string;
+          customer_departed_at?: string | null;
+          customer_eta_at?: string | null;
+          customer_id?: string | null;
+          customer_name?: string | null;
+          customer_note?: string | null;
+          customer_travel_mode?: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at?: string | null;
+          delivery_address_line?: string | null;
+          delivery_authorized_at?: string | null;
+          delivery_checkout_session_id?: string | null;
+          delivery_city?: string | null;
+          delivery_code?: string | null;
+          delivery_distance_m?: number | null;
+          delivery_fee_cents?: number;
+          delivery_instructions?: string | null;
+          delivery_latitude?: number | null;
+          delivery_longitude?: number | null;
+          delivery_paid_at?: string | null;
+          delivery_payment_intent_id?: string | null;
+          delivery_phone?: string | null;
+          delivery_postal_code?: string | null;
+          discount_cents?: number;
+          estimated_ready_at?: string | null;
+          fulfillment?: Database['public']['Enums']['fulfillment_type'];
+          id?: string;
+          is_loyalty_reward?: boolean;
+          loyalty_counted?: boolean;
+          meal_authorized_at?: string | null;
+          merchant_id?: string;
+          out_for_delivery_at?: string | null;
+          paid_at?: string | null;
+          pickup_code?: string;
+          placed_at?: string | null;
+          prep_minutes?: number | null;
+          ready_at?: string | null;
+          refusal_reason?: string | null;
+          status?: Database['public']['Enums']['order_status'];
+          stripe_account_id?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          subtotal_cents?: number;
+          total_cents?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'orders_courier_id_fkey';
+            columns: ['courier_id'];
+            isOneToOne: false;
+            referencedRelation: 'couriers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'orders_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'orders_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      profiles: {
+        Row: {
+          created_at: string;
+          display_name: string | null;
+          id: string;
+          locale: string;
+          phone: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          display_name?: string | null;
+          id: string;
+          locale?: string;
+          phone?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          locale?: string;
+          phone?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      push_tokens: {
+        Row: {
+          expo_token: string;
+          id: string;
+          last_seen_at: string;
+          platform: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          expo_token: string;
+          id?: string;
+          last_seen_at?: string;
+          platform: string;
+          user_id: string;
+        };
+        Update: {
+          expo_token?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'push_tokens_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      stripe_events: {
+        Row: {
+          id: string;
+          received_at: string;
+          type: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          id: string;
+          received_at?: string;
+          type: string;
+        };
+        Update: {
+          id?: string;
+          received_at?: string;
+          type?: string;
+        };
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean;
+          current_period_end: string | null;
+          merchant_id: string;
+          status: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id: string;
+          stripe_subscription_id: string | null;
+          trial_end: string | null;
+          trial_used: boolean;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cancel_at_period_end?: boolean;
+          current_period_end?: string | null;
+          merchant_id: string;
+          status?: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id: string;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_used?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          cancel_at_period_end?: boolean;
+          current_period_end?: string | null;
+          merchant_id?: string;
+          status?: Database['public']['Enums']['subscription_status'];
+          stripe_customer_id?: string;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_used?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'subscriptions_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: true;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      apply_order_transition: {
+        Args: {
+          p_actor: string;
+          p_order_id: string;
+          p_pickup_code?: string;
+          p_prep_minutes?: number;
+          p_refusal_reason?: string;
+          p_status: Database['public']['Enums']['order_status'];
+        };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      available_couriers: {
+        Args: { p_merchant_id: string };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_available: boolean;
+          last_assigned_at: string | null;
+          legal_status: Database['public']['Enums']['courier_legal_status'];
+          phone: string;
+          siret: string;
+          updated_at: string;
+          user_id: string;
+          vehicle: Database['public']['Enums']['courier_vehicle'];
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'couriers';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      call_expire_orders: { Args: Record<PropertyKey, never>; Returns: undefined };
+      call_internal_function: { Args: { p_body: Json; p_name: string }; Returns: undefined };
+      courier_confirm_order: {
+        Args: { p_order_id: string };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      courier_earnings_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          month_cents: number;
+          month_count: number;
+          today_cents: number;
+          today_count: number;
+          week_cents: number;
+        }[];
+      };
+      courier_mark_delivered: {
+        Args: { p_delivery_code: string; p_order_id: string };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_courier: {
+        Args: {
+          p_display_name: string;
+          p_legal_status: Database['public']['Enums']['courier_legal_status'];
+          p_phone: string;
+          p_siret: string;
+          p_vehicle: Database['public']['Enums']['courier_vehicle'];
+        };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_available: boolean;
+          last_assigned_at: string | null;
+          legal_status: Database['public']['Enums']['courier_legal_status'];
+          phone: string;
+          siret: string;
+          updated_at: string;
+          user_id: string;
+          vehicle: Database['public']['Enums']['courier_vehicle'];
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'couriers';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_merchant: {
+        Args: {
+          p_address_line: string;
+          p_category: string;
+          p_city: string;
+          p_default_prep_minutes?: number;
+          p_description?: string;
+          p_latitude: number;
+          p_longitude: number;
+          p_name: string;
+          p_phone?: string;
+          p_postal_code: string;
+        };
+        Returns: {
+          address_line: string;
+          category: string;
+          city: string;
+          created_at: string;
+          default_prep_minutes: number;
+          delivery_enabled: boolean;
+          delivery_fee_cents: number;
+          delivery_radius_m: number;
+          description: string | null;
+          id: string;
+          is_paused: boolean;
+          is_published: boolean;
+          latitude: number;
+          location: unknown;
+          longitude: number;
+          name: string;
+          owner_id: string;
+          paused_until: string | null;
+          phone: string | null;
+          postal_code: string;
+          slug: string;
+          timezone: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'merchants';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_order: {
+        Args: {
+          p_customer_id: string;
+          p_customer_note?: string;
+          p_delivery?: Json;
+          p_items: Json;
+          p_merchant_id: string;
+        };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      current_courier_id: { Args: Record<PropertyKey, never>; Returns: string };
+      decide_courier_link: {
+        Args: { p_approve: boolean; p_courier_id: string };
+        Returns: {
+          courier_id: string;
+          decided_at: string | null;
+          merchant_id: string;
+          requested_at: string;
+          status: Database['public']['Enums']['courier_link_status'];
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'merchant_couriers';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
+      dev_place_test_order: { Args: { p_slug?: string }; Returns: string };
+      expire_stale_orders: {
+        Args: { p_pending_minutes?: number; p_placed_minutes?: number };
+        Returns: {
+          courier_stripe_account_id: string;
+          delivery_checkout_session_id: string;
+          delivery_payment_intent_id: string;
+          order_id: string;
+          stripe_account_id: string;
+          stripe_checkout_session_id: string;
+          stripe_payment_intent_id: string;
+        }[];
+      };
+      generate_pickup_code: { Args: Record<PropertyKey, never>; Returns: string };
+      is_accepting_orders: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      is_courier_active: { Args: { p_courier_id: string }; Returns: boolean };
+      is_courier_busy: { Args: { p_courier_id: string }; Returns: boolean };
+      is_merchant_open: { Args: { p_at?: string; p_merchant_id: string }; Returns: boolean };
+      is_merchant_owner: { Args: { p_merchant_id: string }; Returns: boolean };
+      is_open_now: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      is_paused_now: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      is_payments_ready: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      is_subscription_active: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      is_valid_siret: { Args: { p_siret: string }; Returns: boolean };
+      leave_merchant: { Args: { p_merchant_id: string }; Returns: undefined };
+      mark_delivery_authorized: {
+        Args: { p_order_id: string; p_payment_intent_id: string };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      mark_order_authorized: {
+        Args: { p_order_id: string; p_payment_intent_id: string };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      mark_order_payment_failed: {
+        Args: { p_order_id: string };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      merchant_delivery_quote: {
+        Args: { p_latitude: number; p_longitude: number; p_merchant_id: string };
+        Returns: {
+          available: boolean;
+          distance_m: number;
+          fee_cents: number;
+          reason: string;
+        }[];
+      };
+      merchant_today_summary: {
+        Args: { p_merchant_id: string };
+        Returns: {
+          orders_count: number;
+          pending_count: number;
+          revenue_cents: number;
+        }[];
+      };
+      nearby_merchants: {
+        Args: { p_latitude: number; p_limit?: number; p_longitude: number; p_radius_m?: number };
+        Returns: {
+          address_line: string;
+          category: string;
+          city: string;
+          distance_m: number;
+          id: string;
+          is_accepting_orders: boolean;
+          is_open: boolean;
+          name: string;
+          slug: string;
+        }[];
+      };
+      purge_delivery_details: { Args: { p_days?: number }; Returns: number };
+      register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      remove_courier: { Args: { p_courier_id: string }; Returns: undefined };
+      request_merchant_link: {
+        Args: { p_merchant_id: string };
+        Returns: {
+          courier_id: string;
+          decided_at: string | null;
+          merchant_id: string;
+          requested_at: string;
+          status: Database['public']['Enums']['courier_link_status'];
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'merchant_couriers';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      search_merchants: {
+        Args: { p_limit?: number; p_query: string };
+        Returns: {
+          address_line: string;
+          category: string;
+          city: string;
+          distance_m: number;
+          id: string;
+          is_accepting_orders: boolean;
+          is_open: boolean;
+          name: string;
+          slug: string;
+        }[];
+      };
+      set_courier_availability: {
+        Args: { p_available: boolean };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_available: boolean;
+          last_assigned_at: string | null;
+          legal_status: Database['public']['Enums']['courier_legal_status'];
+          phone: string;
+          siret: string;
+          updated_at: string;
+          user_id: string;
+          vehicle: Database['public']['Enums']['courier_vehicle'];
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'couriers';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      set_customer_departure: {
+        Args: {
+          p_customer_id: string;
+          p_mode: Database['public']['Enums']['travel_mode'];
+          p_order_id: string;
+          p_travel_seconds: number;
+        };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      set_opening_hours: {
+        Args: { p_merchant_id: string; p_slots: Json };
+        Returns: {
+          closes_at: string;
+          id: string;
+          merchant_id: string;
+          opens_at: string;
+          weekday: number;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'merchant_opening_hours';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      set_order_status: {
+        Args: {
+          p_order_id: string;
+          p_pickup_code?: string;
+          p_prep_minutes?: number;
+          p_refusal_reason?: string;
+          p_status: Database['public']['Enums']['order_status'];
+        };
+        Returns: {
+          accepted_at: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          courier_accepted_at: string | null;
+          courier_id: string | null;
+          courier_name: string | null;
+          courier_stripe_account_id: string | null;
+          created_at: string;
+          currency: string;
+          customer_departed_at: string | null;
+          customer_eta_at: string | null;
+          customer_id: string | null;
+          customer_name: string | null;
+          customer_note: string | null;
+          customer_travel_mode: Database['public']['Enums']['travel_mode'] | null;
+          delivered_at: string | null;
+          delivery_address_line: string | null;
+          delivery_authorized_at: string | null;
+          delivery_checkout_session_id: string | null;
+          delivery_city: string | null;
+          delivery_code: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_instructions: string | null;
+          delivery_latitude: number | null;
+          delivery_longitude: number | null;
+          delivery_paid_at: string | null;
+          delivery_payment_intent_id: string | null;
+          delivery_phone: string | null;
+          delivery_postal_code: string | null;
+          discount_cents: number;
+          estimated_ready_at: string | null;
+          fulfillment: Database['public']['Enums']['fulfillment_type'];
+          id: string;
+          is_loyalty_reward: boolean;
+          loyalty_counted: boolean;
+          meal_authorized_at: string | null;
+          merchant_id: string;
+          out_for_delivery_at: string | null;
+          paid_at: string | null;
+          pickup_code: string;
+          placed_at: string | null;
+          prep_minutes: number | null;
+          ready_at: string | null;
+          refusal_reason: string | null;
+          status: Database['public']['Enums']['order_status'];
+          stripe_account_id: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+    };
+    Enums: {
+      courier_legal_status: 'auto_entrepreneur' | 'societe';
+      courier_link_status: 'pending' | 'approved' | 'rejected';
+      courier_vehicle: 'bike' | 'scooter' | 'car' | 'foot';
+      fulfillment_type: 'pickup' | 'delivery';
+      order_status:
+        | 'pending_payment'
+        | 'placed'
+        | 'accepted'
+        | 'preparing'
+        | 'ready'
+        | 'out_for_delivery'
+        | 'delivered'
+        | 'collected'
+        | 'refused'
+        | 'expired'
+        | 'cancelled';
+      subscription_status:
+        | 'incomplete'
+        | 'incomplete_expired'
+        | 'trialing'
+        | 'active'
+        | 'past_due'
+        | 'canceled'
+        | 'unpaid'
+        | 'paused';
+      travel_mode: 'walk' | 'bike' | 'drive';
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};
+
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>];
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+    : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+    : never;
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {
+      courier_legal_status: ['auto_entrepreneur', 'societe'],
+      courier_link_status: ['pending', 'approved', 'rejected'],
+      courier_vehicle: ['bike', 'scooter', 'car', 'foot'],
+      fulfillment_type: ['pickup', 'delivery'],
+      order_status: [
+        'pending_payment',
+        'placed',
+        'accepted',
+        'preparing',
+        'ready',
+        'out_for_delivery',
+        'delivered',
+        'collected',
+        'refused',
+        'expired',
+        'cancelled',
+      ],
+      subscription_status: [
+        'incomplete',
+        'incomplete_expired',
+        'trialing',
+        'active',
+        'past_due',
+        'canceled',
+        'unpaid',
+        'paused',
+      ],
+      travel_mode: ['walk', 'bike', 'drive'],
+    },
+  },
+} as const;

@@ -1,0 +1,497 @@
+# Zéroo : architecture (étape 0, proposition)
+
+> Statut : **validé** (étape 0). Mis à jour au fil des étapes.
+
+## 0. Décisions de cadrage
+
+| Sujet | Décision |
+|---|---|
+| Pays de lancement | **France** : prix TTC en euros, fuseau `Europe/Paris`, Stripe disponible. |
+| Fidélité | **9 menus payés et récupérés chez un commerçant = 1 menu offert**, en comptant chaque menu, même s'ils sont achetés dans une seule commande (validé). Le commerçant indique quels produits sont des « menus » éligibles. Voir §3.1. |
+| Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
+| Abonnement | **30 jours d'essai gratuit, puis 9,99 € TTC par mois** (8,33 € HT + TVA 20 %), souscrit sur le web via Stripe Checkout. Les factures détaillent la TVA via un taux Stripe inclus dans le prix ; le commerçant peut saisir son numéro de TVA. |
+| Positionnement | **Zéroo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
+| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie le **même abonnement que les restaurants : 9,99 € TTC par mois, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant, la course au livreur, chacun directement sur son compte Stripe. Zéroo n'encaisse jamais d'argent. Voir §3.4. |
+| Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
+| Site public | **zeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
+| Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme Zéroo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
+
+## 1. Stack retenue et ajustements
+
+| Domaine | Choix | Commentaire |
+|---|---|---|
+| App mobile | Expo (SDK courant) + TypeScript strict + Expo Router | Builds de dev EAS dès l'étape (a) : Apple/Google Sign-In et Stripe ont besoin de modules natifs, Expo Go ne suffit pas. |
+| Espace commerçant | **Même app Expo, exportée aussi en web** (react-native-web) | Le commerçant peut utiliser une tablette, un téléphone ou le PC de caisse. Le web sert aussi à la souscription de l'abonnement (voir §1.2). |
+| État serveur | TanStack Query + Supabase Realtime | Realtime invalide le cache des requêtes, il ne gère pas l'état lui-même. |
+| État local | Zustand (panier, persisté) | Un panier = un seul commerçant. |
+| Stockage local | `expo-sqlite/localStorage` | Session Supabase et préférences, avec la même API que `localStorage` sur le web. |
+| Formulaires | react-hook-form + zod | Les mêmes schémas zod sont réutilisés pour valider les payloads côté Edge Functions. |
+| Backend | Supabase : Postgres + PostGIS, Auth, Realtime, RLS, Edge Functions (Deno), pg_cron | |
+| Paiement client | Stripe Connect, **charges directes** sur le compte du commerçant, `application_fee_amount` absent (0 commission) | Le commerçant est le vendeur, et les frais Stripe sont prélevés sur son compte. |
+| Abonnement commerçant | Stripe Billing (Checkout + Customer Portal) | |
+| Push | Expo Notifications (Expo Push Service) | Son personnalisé « nouvelle commande ». |
+| Temps de trajet | Google Routes API (`computeRoutes`), appelée **uniquement côté serveur** | La clé ne sort jamais de l'Edge Function. |
+| Géocodage d'adresse | Géoplateforme IGN (`data.geopf.fr/geocodage`, ex-API Adresse) | Service public français, gratuit et sans clé. Utilisé pour l'adresse du commerce. |
+| i18n | i18next + expo-localization, fichiers `fr` d'abord | Styles en propriétés logiques (`start`/`end`) dès le départ pour préparer le RTL de l'arabe. |
+| Tests | Jest + Testing Library (app), Deno test (functions), **pgTAP** (`supabase test db`) pour la RLS et les règles métier SQL | |
+
+### 1.1 Points où je challenge la proposition
+
+1. **Type de compte Stripe Connect.** Avec des comptes Express ou Custom où la plateforme gère la tarification, Stripe facture la plateforme environ 2 € par compte actif et par mois, plus des frais par virement. Ça représente 20 % des 9,99 € d'abonnement. Je recommande des comptes dont **Stripe gère la tarification** (configuration `controller` : `fees.payer = account`, `losses.payments = stripe`, `stripe_dashboard.type = full`, l'équivalent des comptes « Standard »). Avec cette configuration, la plateforme ne paie aucun frais Connect, et le commerçant a son propre dashboard Stripe pour ses virements, ses remboursements et ses litiges.
+2. **Pré-autorisation puis capture.** Le paiement est autorisé à la commande (`capture_method = manual`) et **capturé seulement quand le commerçant accepte**. Si le commerçant refuse, ou ne répond pas sous N minutes, l'autorisation est annulée. Cette approche a deux avantages : aucun remboursement n'est nécessaire, et donc aucun frais Stripe n'est perdu pour le commerçant, qui ne les récupère pas sur un remboursement. Le client, lui, n'est jamais débité pour une commande refusée.
+3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`zeroo.fr/commercant`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
+4. **Code de retrait.** Pour que le compteur de fidélité ne s'incrémente qu'à la remise réelle, chaque commande porte un code court (ex. `K7P2`) que le client montre en caisse. Le commerçant passe la commande à « récupérée » en le saisissant ou en scannant le QR de la commande.
+5. **« Je pars maintenant » sans traçage continu (RGPD).** La position est envoyée **une seule fois**, au moment du clic. Le serveur calcule l'ETA et **ne stocke pas les coordonnées**, seulement `customer_eta_at`. Le client pourra cliquer à nouveau pour rafraîchir l'ETA.
+6. **Un compte = un commerce.** Le même compte peut aussi commander comme client : l'app propose deux espaces, avec une bascule dans « Compte ».
+
+### 1.2 Flux principaux
+
+```
+CLIENT                         EDGE FUNCTIONS                    STRIPE                COMMERÇANT
+panier ──► create-order ──────► vérifie ouvert / pause / abo
+                                 recalcule les prix en base
+                                 crée order (pending_payment)
+                                 PaymentIntent manuel ──────────► (compte connecté)
+PaymentSheet ◄── client_secret
+paie (autorisation) ──────────────────────────────────────────► webhook amount_capturable_updated
+                                 stripe-webhook : order → placed ─────────────────────► Realtime + push + son
+                                                                                       accepte (+ délai)
+                                 order-decision ◄──────────────────────────────────────┘
+                                 capture PI ─────────────────────► capture
+                                 order → accepted ──► push client
+« Je pars » ──► customer-departure : Google Routes → customer_eta_at ────────────────► « arrive dans 12 min »
+                                                                                       preparing → ready
+                                 RPC set_order_status ◄────────────────────────────────┘ (push client « prête »)
+montre le code ───────────────────────────────────────────────────────────────────────► collected
+                                 trigger SQL : fidélité +1 (même transaction)
+```
+
+- **Navigation** : tant que la session n'est pas relue au démarrage, les gardes de navigation laissent toutes les routes ouvertes. Un lien direct (QR code, notification, rechargement) arrive ainsi sur la bonne page.
+- **Temps réel côté app** : `useRealtimeChanges()` ouvre un canal par écran, avec un nom unique. supabase-js réutilise un canal de même nom, et fermer un écran couperait l'abonnement d'un autre.
+- **Webhook Stripe** : la signature est vérifiée, chaque événement n'est traité qu'une fois (`stripe_events`), et un événement de paiement n'est pris en compte que s'il vient du compte Stripe de la commande avec un montant au moins égal au total. Un commerçant, maître de son propre compte, ne peut donc pas valider la commande d'un autre.
+- **Notifications** : le trigger `orders_notify_status_change` appelle `notify-order-update` via pg_net (asynchrone, la transaction n'attend pas), avec le secret interne lu dans Vault. Une notification manquée ne fait jamais échouer une commande.
+- **Expiration** : pg_cron appelle `expire-orders` chaque minute. Une commande `placed` non acceptée après 10 min (réglable) passe à `expired`, et le PaymentIntent est annulé.
+
+## 2. Arborescence du dépôt
+
+```
+zeroo/
+├── src/
+│   ├── app/                          # Expo Router : routes uniquement, écrans fins
+│   │   ├── _layout.tsx               # providers + gardes (Stack.Protected) session / espace
+│   │   ├── index.tsx                 # zeroo.fr : page d'accueil (visiteur web) ou redirection
+│   │   ├── mentions-legales.tsx, confidentialite.tsx
+│   │   ├── auth-callback.tsx         # retour des liens e-mail (confirmation, mot de passe)
+│   │   ├── choose-space.tsx          # « Commander » ou « Gérer mon commerce »
+│   │   ├── update-password.tsx
+│   │   ├── (auth)/                   # sign-in, sign-up, forgot-password
+│   │   ├── (client)/                 # onglets : explore (à proximité), orders, loyalty, account
+│   │   ├── m/[slug].tsx              # fiche commerçant + menu, sans compte (cible du QR code)
+│   │   ├── cart.tsx                  # panier, sans compte ; connexion demandée pour commander
+│   │   ├── order/[id].tsx            # suivi temps réel (+ « Je pars maintenant » à l'étape f, livraison à l'étape g)
+│   │   ├── livreur/                  # espace livreur (étape g) : inscription, onglets courses, restaurants, revenus, compte
+│   │   └── pro/                      # espace commerçant (URL /pro sur le web)
+│   │       ├── _layout.tsx           # garde : pas de commerce → onboarding
+│   │       ├── (tabs)/               # index (commandes en direct), menu, shop (boutique), account
+│   │       ├── onboarding.tsx        # création du commerce (Stripe Connect + abonnement à l'étape d)
+│   │       ├── item/[id].tsx         # produit + options ; category/[id].tsx
+│   │       ├── info.tsx, hours.tsx   # informations, horaires
+│   │       ├── qr.tsx                # QR code affichable / imprimable
+│   │       └── history.tsx           # historique des commandes
+│   ├── features/                     # logique par domaine : api.ts, hooks.ts, components/, schemas.ts
+│   │   ├── auth/  merchants/  menu/  cart/  orders/
+│   │   ├── loyalty/  payments/  notifications/  location/
+│   │   └── merchant-dashboard/
+│   ├── components/                   # ui/ (Button, AppText, Screen, TextField…), form/
+│   ├── lib/                          # supabase.ts, query-client.ts, env.ts, confirm.ts…
+│   ├── i18n/                         # index.ts, locales/fr/*.json
+│   ├── theme/
+│   └── types/database.ts             # généré : `supabase gen types typescript`
+├── supabase/
+│   ├── config.toml
+│   ├── migrations/                   # SQL versionné (schéma, RLS, fonctions, triggers)
+│   ├── functions/
+│   │   ├── _shared/                  # cors, stripe client, admin client, auth, zod schemas
+│   │   ├── create-order/             # commande (prix en base) + PaymentIntent ou Checkout
+│   │   ├── order-payment-status/     # vérifie l'autorisation après la feuille de paiement
+│   │   ├── customer-cancel-order/    # annulation par le client avant acceptation
+│   │   ├── order-decision/           # accepter (capture) / refuser (annulation)
+│   │   ├── stripe-webhook/           # paiements, comptes Connect, abonnements
+│   │   ├── connect-onboarding/       # création compte + Account Link
+│   │   ├── billing/                  # Checkout abonnement + portail client
+│   │   ├── expire-orders/            # appelée par pg_cron (secret partagé)
+│   │   ├── customer-departure/       # « Je pars maintenant » : trajet Google Routes, position non stockée
+│   │   └── notify-order-update/      # push Expo, appelée par le trigger orders_notify_status_change
+│   ├── tests/                        # pgTAP : RLS, transitions de statut, fidélité
+│   └── seed.sql                      # 2 commerçants, menus, 1 client de test
+├── assets/                           # icônes, splash, sounds/new-order.wav
+├── docs/ARCHITECTURE.md
+├── app.config.ts                     # lit les variables EXPO_PUBLIC_*
+├── eas.json
+├── .env.example
+└── README.md
+```
+
+Le dépôt reste un **repo unique, sans monorepo** : une seule app et le dossier `supabase/`. Les types partagés sont générés depuis la base. Si une page web vitrine arrive plus tard, on passera à un workspace pnpm.
+
+## 3. Schéma de base de données (brouillon)
+
+Conventions : montants en **centimes entiers** (`*_cents`), devise `EUR`, horodatages `timestamptz`, clés `uuid`.
+
+```sql
+create extension if not exists postgis;
+
+-- Enums -------------------------------------------------------------------
+create type subscription_status as enum ('incomplete', 'incomplete_expired', 'trialing',
+                                         'active', 'past_due', 'canceled', 'unpaid', 'paused');
+create type order_status        as enum ('pending_payment', -- PaymentIntent créé, pas encore autorisé
+                                         'placed',          -- paiement autorisé, attend le commerçant
+                                         'accepted',        -- capturé, délai annoncé
+                                         'preparing',
+                                         'ready',
+                                         'collected',       -- remise au client → fidélité
+                                         'refused',
+                                         'expired',         -- pas de réponse du commerçant
+                                         'cancelled');      -- paiement abandonné / échoué
+
+-- Utilisateurs (« users » = auth.users + profil applicatif) ----------------
+create table profiles (
+  id            uuid primary key references auth.users(id) on delete cascade,
+  display_name  text,
+  phone         text,
+  locale        text not null default 'fr',
+  created_at    timestamptz not null default now()
+);
+
+-- Commerçants ---------------------------------------------------------------
+create table merchants (
+  id                   uuid primary key default gen_random_uuid(),
+  owner_id             uuid not null unique references profiles(id),  -- 1 compte = 1 commerce
+  slug                 text not null unique,            -- lien / QR code : zeroo.fr/m/<slug>
+  name                 text not null,
+  description          text,
+  category             text not null,                   -- 'snack' | 'sandwicherie' | 'restaurant'…
+  phone                text,
+  address_line         text not null,
+  postal_code          text not null,
+  city                 text not null,
+  location             geography(Point, 4326) not null,
+  timezone             text not null default 'Europe/Paris',
+  logo_url             text,
+  cover_url            text,
+  default_prep_minutes int  not null default 15 check (default_prep_minutes between 1 and 120),
+  is_paused            boolean not null default false,  -- « plus de commandes pour l'instant »
+  paused_until         timestamptz,                     -- reprise auto optionnelle
+  is_published         boolean not null default false,
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now()
+);
+create index on merchants using gist (location);
+
+-- Données Stripe du commerçant, séparées pour ne jamais être lisibles publiquement
+create table merchant_stripe_accounts (
+  merchant_id        uuid primary key references merchants(id) on delete cascade,
+  stripe_account_id  text not null unique,
+  charges_enabled    boolean not null default false,
+  payouts_enabled    boolean not null default false,
+  details_submitted  boolean not null default false,
+  updated_at         timestamptz not null default now()
+);
+
+create table merchant_opening_hours (
+  id          uuid primary key default gen_random_uuid(),
+  merchant_id uuid not null references merchants(id) on delete cascade,
+  weekday     smallint not null check (weekday between 1 and 7),  -- ISO : 1 = lundi
+  opens_at    time not null,
+  closes_at   time not null,                                      -- < opens_at = passe minuit
+  check (opens_at <> closes_at)
+);
+
+create table subscriptions (
+  merchant_id            uuid primary key references merchants(id) on delete cascade,
+  stripe_customer_id     text not null unique,
+  stripe_subscription_id text unique,
+  status                 subscription_status not null default 'incomplete',
+  current_period_end     timestamptz,
+  cancel_at_period_end   boolean not null default false,
+  updated_at             timestamptz not null default now()
+);
+
+-- Menu ----------------------------------------------------------------------
+create table menu_categories (
+  id          uuid primary key default gen_random_uuid(),
+  merchant_id uuid not null references merchants(id) on delete cascade,
+  name        text not null,
+  position    int  not null default 0,
+  is_active   boolean not null default true
+);
+
+create table menu_items (
+  id           uuid primary key default gen_random_uuid(),
+  merchant_id  uuid not null references merchants(id) on delete cascade,
+  category_id  uuid not null references menu_categories(id) on delete cascade,
+  name         text not null,
+  description  text,
+  price_cents  int  not null check (price_cents >= 0),
+  image_url    text,
+  is_available boolean not null default true,     -- rupture du jour
+  is_loyalty_menu boolean not null default false, -- compte pour la fidélité et peut être offert
+  position     int  not null default 0,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+-- Options : « Sauce (1 au choix) », « Suppléments (0 à 3) »
+create table menu_option_groups (
+  id          uuid primary key default gen_random_uuid(),
+  merchant_id uuid not null references merchants(id) on delete cascade,
+  item_id     uuid not null references menu_items(id) on delete cascade,
+  name        text not null,
+  min_select  int  not null default 0 check (min_select >= 0),
+  max_select  int  not null default 1 check (max_select >= min_select),
+  position    int  not null default 0
+);
+
+create table menu_options (
+  id                uuid primary key default gen_random_uuid(),
+  merchant_id       uuid not null references merchants(id) on delete cascade,
+  group_id          uuid not null references menu_option_groups(id) on delete cascade,
+  name              text not null,
+  price_delta_cents int  not null default 0 check (price_delta_cents >= 0),
+  is_available      boolean not null default true,
+  position          int  not null default 0
+);
+
+-- Commandes -----------------------------------------------------------------
+create table orders (
+  id                       uuid primary key default gen_random_uuid(),
+  pickup_code              text not null,                      -- ex. 'K7P2', unique par commerçant et par jour
+  customer_id              uuid references profiles(id) on delete set null,  -- anonymisé si compte supprimé
+  merchant_id              uuid not null references merchants(id),
+  status                   order_status not null default 'pending_payment',
+  subtotal_cents           int not null check (subtotal_cents >= 0),
+  discount_cents           int not null default 0 check (discount_cents >= 0),
+  total_cents              int not null check (total_cents = subtotal_cents - discount_cents),
+  currency                 char(3) not null default 'EUR',
+  is_loyalty_reward        boolean not null default false,    -- contient le menu offert
+  loyalty_counted          boolean not null default false,    -- idempotence du +1
+  customer_note            text,
+  prep_minutes             int,                                -- délai annoncé par le commerçant
+  estimated_ready_at       timestamptz,
+  customer_departed_at     timestamptz,                        -- « Je pars maintenant »
+  customer_eta_at          timestamptz,                        -- arrivée estimée (pas de coordonnées stockées)
+  stripe_payment_intent_id text unique,
+  refusal_reason           text,
+  placed_at   timestamptz, accepted_at  timestamptz, ready_at     timestamptz,
+  collected_at timestamptz, cancelled_at timestamptz,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index on orders (merchant_id, status, created_at desc);
+create index on orders (customer_id, created_at desc);
+
+create table order_items (
+  id               uuid primary key default gen_random_uuid(),
+  order_id         uuid not null references orders(id) on delete cascade,
+  menu_item_id     uuid references menu_items(id) on delete set null,
+  name             text not null,                 -- instantané : le menu peut changer après coup
+  unit_price_cents int  not null check (unit_price_cents >= 0),  -- prix + options
+  quantity         int  not null check (quantity between 1 and 50),
+  options          jsonb not null default '[]',   -- [{group, name, price_delta_cents}]
+  line_total_cents int  not null check (line_total_cents = unit_price_cents * quantity)
+);
+
+-- Fidélité ------------------------------------------------------------------
+create table loyalty_cards (
+  user_id               uuid not null references profiles(id)  on delete cascade,
+  merchant_id           uuid not null references merchants(id) on delete cascade,
+  paid_menus_count      int  not null default 0 check (paid_menus_count between 0 and 8),
+  rewards_available     int  not null default 0 check (rewards_available >= 0),  -- menus offerts à utiliser
+  -- order_items.is_loyalty_menu (instantané) et is_loyalty_reward (ligne offerte, quantité 1)
+  rewards_redeemed      int  not null default 0,
+  updated_at            timestamptz not null default now(),
+  primary key (user_id, merchant_id)
+);
+
+-- Notifications / technique -------------------------------------------------
+create table push_tokens (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references profiles(id) on delete cascade,
+  expo_token   text not null unique,
+  platform     text not null check (platform in ('ios', 'android')),
+  last_seen_at timestamptz not null default now()
+);
+
+create table stripe_events (            -- idempotence du webhook
+  id          text primary key,         -- evt_…
+  type        text not null,
+  received_at timestamptz not null default now()
+);
+```
+
+### 3.1 Fonctions SQL clés (règles métier côté serveur)
+
+| Fonction | Rôle |
+|---|---|
+| `is_merchant_owner(merchant_id)` | Helper RLS : `auth.uid()` est le propriétaire du commerce. |
+| `is_merchant_open(merchant_id, at)` | Horaires + fuseau horaire du commerçant, gère le passage de minuit. |
+| `merchant_can_take_orders(merchant_id)` | `is_published` **et** ouvert **et** pas en pause **et** abonnement `active`/`trialing` **et** `charges_enabled`. Appelée par `create-order` **et** revérifiée au webhook. |
+| `set_opening_hours(merchant_id, slots)` | Remplace tous les créneaux d'un commerce en une transaction (étape b). |
+| `is_open_now`, `is_paused_now`, `is_accepting_orders` | Colonnes calculées sur `merchants`, lisibles via PostgREST (`select('*, is_open_now')`). |
+| `merchant_today_summary(merchant_id)` | Nombre de commandes et chiffre d'affaires du jour, dans le fuseau du commerce. |
+| `nearby_merchants(lat, lng, radius_m)` | `ST_DWithin` + distance + drapeau « ouvert maintenant ». |
+| `search_merchants(query)` | Recherche par nom, ville ou code postal, insensible aux accents. |
+| `create_order(customer_id, merchant_id, items, note)` | Service role uniquement (Edge Function `create-order`). Recalcule tout côté serveur : prix du menu, options (existence, disponibilité, min / max par groupe), disponibilité des produits, commerce en état d'encaisser. Crée la commande en `pending_payment`. |
+| `mark_order_authorized` / `mark_order_payment_failed` | Idempotentes, appelées par le webhook ou après la feuille de paiement : `pending_payment → placed` ou `→ cancelled`. |
+| `apply_order_transition(order, actor, status, …)` | Service role. Moteur unique des transitions ; vérifie l'acteur (commerçant propriétaire, ou client pour l'annulation). `set_order_status` (commerçant) n'autorise plus que préparation / prête / remise : accepter et refuser passent par `order-decision`, qui capture ou annule le paiement. |
+| `is_payments_ready`, `is_subscription_active` | Compte Stripe avec `charges_enabled`, abonnement `trialing` ou `active`. Inclus dans `is_accepting_orders`. |
+| `expire_stale_orders()` | Sans réponse après 10 min → `expired`, paiement jamais finalisé après 35 min → `cancelled`. Appelée par pg_cron via `expire-orders`, qui libère les autorisations Stripe. |
+| `set_order_status(order_id, status)` | Machine à états pour les transitions sans Stripe (`accepted → preparing → ready → collected`), réservée au commerçant. |
+| trigger `orders_apply_loyalty` | Dans la même transaction que le changement de statut. À `collected` (une seule fois, `loyalty_counted`) : ajoute les menus formules **payés** (instantané `order_items.is_loyalty_menu`, ligne offerte exclue) ; tous les 9 → `rewards_available + 1`, avec retenue (ex. 8 + 3 menus → 1 offert, compteur à 2). À `refused` / `cancelled` / `expired` : rend le menu offert réservé. |
+
+**Menu offert (validé).** Seuls les **menus formules** (`menu_items.is_loyalty_menu`) comptent et peuvent être offerts, jamais les produits au détail. Quand `rewards_available > 0`, le client marque une ligne de menu formule (`use_reward`). `create_order` en isole une unité (ligne `is_loyalty_reward`), déduit son prix de base (`discount_cents`), garde les suppléments payants, et réserve le menu sous verrou de la carte. Une seule utilisation par commande. Si le reste est inférieur à 0,50 €, il est offert aussi : la commande est alors à 0 €, envoyée sans Stripe (`create-order` → `mark_order_authorized`). L'avantage reste d'environ 10 % des menus achetés, quel que soit leur nombre par commande.
+
+Transitions autorisées :
+`pending_payment → placed | cancelled` (webhook / annulation client / expiration) · `placed → accepted | refused` (Edge Function `order-decision`, avec Stripe) · `placed → cancelled` (client, `customer-cancel-order`) · `placed → expired` (pg_cron) · `accepted → preparing → ready → collected` (RPC commerçant).
+
+### 3.4 Livraison par livreur indépendant (étape g)
+
+**Principes validés.**
+- Le client choisit **retrait** ou **livraison** si le restaurant livre.
+- Le prix de la course est **fixé par le restaurant** (un tarif unique, dans un rayon qu'il choisit) et affiché avant validation.
+- Le client paie **deux paiements séparés**, chacun en charge directe Stripe Connect sans commission :
+  - le repas sur le compte du restaurant ;
+  - la course sur le compte du livreur.
+- Zéroo ne touche jamais l'argent. Le relevé du client porte deux lignes : le restaurant et le livreur.
+- Le livreur paie l'abonnement Zéroo (9,99 € TTC par mois, 30 jours d'essai). Le restaurant ne le rémunère pas.
+
+**Activation d'un livreur.** Un livreur peut se rendre disponible s'il remplit trois conditions :
+1. Son compte Stripe Connect est actif (`charges_enabled`). Stripe vérifie l'identité et l'immatriculation (SIRET, Kbis ou avis de situation INSEE selon le statut).
+2. Son abonnement est `trialing` ou `active`.
+3. Au moins un restaurant a accepté son rattachement.
+
+Le SIRET saisi est contrôlé (14 chiffres, clé de Luhn) et unique.
+
+**Attribution.**
+- À la commande, `create_order` choisit le livreur : rattaché et accepté par ce restaurant, disponible, actif, sans course en cours. Le livreur servi le moins récemment passe en premier.
+- Le livreur est **réservé** immédiatement (`for update skip locked` : deux commandes simultanées ne prennent pas le même).
+- On connaît ainsi le compte Stripe à débiter pour la course dès le paiement.
+- Pas de livreur libre : la livraison n'est pas proposée.
+- MVP : une course à la fois par livreur, et pas de suivi GPS (seule l'heure prévue est affichée).
+
+**Paiements.** Les deux paiements sont **autorisés** à la commande, avec capture manuelle :
+- **app** : deux feuilles de paiement à la suite ;
+- **web** : deux pages Stripe Checkout enchaînées (le retour de la première ouvre la seconde).
+
+La commande passe en `placed` seulement quand **les deux** sont autorisés (`meal_authorized_at` et `delivery_authorized_at`). Un repas à 0 € (menu offert) compte comme autorisé.
+
+À l'acceptation du restaurant, les deux paiements sont **capturés**. Si une capture échoue, l'autre est remboursée et la commande est refusée. Refus, annulation ou expiration **libèrent les deux** autorisations : aucun débit.
+
+**Statuts** (ajouts `out_for_delivery`, `delivered`).
+
+| Transition | Qui | Condition |
+|---|---|---|
+| `placed` (livreur confirme) | livreur, `courier-decision` | le livreur confirme la course (`courier_accepted_at`) ; le statut ne change pas |
+| `placed → cancelled` | livreur, `courier-decision` | le livreur décline : les deux paiements sont libérés, `cancelled_by = 'courier'` |
+| `placed → accepted` | restaurant, `order-decision` | pour une livraison, **seulement après la confirmation du livreur** ; capture des deux paiements |
+| `accepted → preparing → ready` | restaurant | inchangé |
+| `ready → out_for_delivery` | restaurant (`set_order_status`) | le livreur présente le **code de retrait** au comptoir |
+| `out_for_delivery → delivered` | livreur (`courier_mark_delivered`) | le client donne son **code de livraison** (4 chiffres) au livreur |
+| `ready → collected` | restaurant | retrait uniquement |
+
+Expiration : sans réponse du restaurant **ou** du livreur après 10 minutes, la commande passe en `expired`. La fidélité compte aussi à `delivered`.
+
+**Données (migration `20261009120100_delivery.sql`).**
+- `couriers` (un profil par compte) :
+  - `display_name`, `phone` ;
+  - `legal_status` (`auto_entrepreneur` | `societe`), `siret` ;
+  - `vehicle` (`bike` | `scooter` | `car` | `foot`) ;
+  - `is_available`.
+- `courier_stripe_accounts` et `courier_subscriptions` : même forme que les tables du commerçant.
+- `merchant_couriers (merchant_id, courier_id, status pending | approved | rejected)` : le livreur demande son rattachement, le restaurant accepte, refuse ou retire.
+- `merchants` : `delivery_enabled`, `delivery_fee_cents` (de 0,50 € à 20 €), `delivery_radius_m` (de 500 m à 15 km). Ces colonnes sont modifiables par le propriétaire.
+- `orders` :
+  - `fulfillment` (`pickup` | `delivery`), `delivery_fee_cents` ;
+  - l'adresse (ligne, code postal, ville, coordonnées), `delivery_instructions`, `delivery_phone`, `delivery_distance_m` ;
+  - `courier_id`, `courier_name` (instantané), `courier_stripe_account_id` ;
+  - `delivery_payment_intent_id`, `delivery_checkout_session_id` ;
+  - `meal_authorized_at`, `delivery_authorized_at`, `courier_accepted_at`, `out_for_delivery_at`, `delivered_at`, `delivery_paid_at` ;
+  - `delivery_code`, `cancelled_by`.
+- `total_cents` reste le montant du repas, versé au restaurant ; le client paie `total_cents + delivery_fee_cents`.
+
+**Fonctions SQL** :
+- `merchant_delivery_quote(merchant, lat, lng)` : livraison possible, raison sinon, prix, distance ;
+- `create_order(…, p_delivery)` ;
+- `mark_order_authorized` (repas) et `mark_delivery_authorized` (course) ;
+- `create_courier`, `set_courier_availability`, `request_merchant_link`, `leave_merchant` ;
+- `decide_courier_link`, `remove_courier` ;
+- `courier_mark_delivered`, `courier_earnings_summary` ;
+- `purge_delivery_details`.
+
+**RLS.**
+- Le livreur voit son profil, ses comptes, ses rattachements et **les commandes qui lui sont attribuées** (avec leurs lignes et le commerce).
+- Le restaurant voit les livreurs rattachés ou candidats chez lui (nom, téléphone, véhicule).
+- Le client ne voit jamais la table `couriers`, seulement le prénom recopié sur sa commande.
+- Toutes les écritures passent par des fonctions serveur.
+
+**RGPD.**
+- L'adresse, les coordonnées, le téléphone et les instructions de livraison sont nécessaires à la course. Ce sont les seules coordonnées client stockées.
+- Elles sont **effacées 7 jours après** la fin de la commande (`purge_delivery_details`, tâche d'expiration) ; la ville est conservée.
+- La position du livreur n'est pas suivie.
+
+### 3.2 Row Level Security (résumé)
+
+Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.
+
+| Table | SELECT | INSERT / UPDATE / DELETE |
+|---|---|---|
+| profiles | soi-même ; le commerçant pour ses clients (nom seulement, via vue) | soi-même (update des colonnes autorisées) |
+| merchants | tous (y compris anonyme) si `is_published` ; propriétaire toujours | propriétaire (update) ; création via RPC `create_merchant` |
+| merchant_stripe_accounts, subscriptions | propriétaire | service role uniquement |
+| merchant_opening_hours, menu_* | public si le commerçant est publié ; propriétaire | propriétaire |
+| orders, order_items | client propriétaire ; commerçant concerné | aucune directe (Edge Functions / RPC) |
+| loyalty_cards | le client ; commerçant concerné (pour la caisse) | aucune directe (trigger) |
+| push_tokens | soi-même | soi-même |
+| stripe_events | personne | service role |
+
+Realtime : on publie `orders` (et `loyalty_cards`). La RLS filtre les événements, donc chacun ne reçoit que ses lignes.
+
+### 3.3 RGPD
+
+- Localisation demandée **au moment de l'usage** (recherche à proximité, « Je pars »), avec un écran d'explication avant la demande système. Si le client refuse, il peut chercher par ville ou code postal.
+- Aucune coordonnée du client n'est stockée en base.
+- Suppression de compte (exigée par Apple et Google) : RPC `delete_my_account()` (étape a), qui supprime l'utilisateur ; profil, tokens et cartes de fidélité suivent par cascade. Les commandes sont **anonymisées** (`customer_id = null`) et non supprimées, à cause des obligations comptables du commerçant. Pour un propriétaire de commerce, `delete_my_account()` refuse explicitement (`merchant_owner_cannot_delete`). À l'étape (d), une Edge Function clôturera d'abord le commerce et résiliera l'abonnement Stripe.
+- Données minimales : nom d'affichage optionnel, téléphone optionnel.
+
+## 4. Variables d'environnement prévues
+
+```
+# App (publiques, embarquées dans le bundle)
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
+EXPO_PUBLIC_WEB_URL=                 # pour les liens QR / abonnement
+
+# Edge Functions (secrets Supabase, jamais dans l'app)
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_CONNECT_WEBHOOK_SECRET=
+STRIPE_SUBSCRIPTION_PRICE_ID=
+GOOGLE_ROUTES_API_KEY=
+EXPO_ACCESS_TOKEN=
+ORDER_ACCEPT_TIMEOUT_MINUTES=10
+```
+
+## 5. Plan de livraison
+
+| Étape | Contenu | Test |
+|---|---|---|
+| a ✅ | Expo SDK 57 + Router + TS + i18n + Supabase local + profils + auth (e-mail, Apple, Google) + choix d’espace + suppression de compte | Voir README : tests pgTAP, Jest, parcours manuel |
+| b ✅ | Création du commerce (adresse géocodée), menu (catégories, produits, options, rupture, ordre), horaires, pause, publication, commandes en temps réel avec sonnerie, transitions de statut, code de retrait, CA du jour, historique, QR code | `npm run dev:order`, tests pgTAP, parcours web de bout en bout |
+| c ✅ | Recherche (proximité + nom / ville / code postal), fiche et menu publics (lien du QR code), panier avec options, commande via `create_order()` (sans paiement), suivi temps réel, historique | pgTAP + `npm run e2e` (client et commerçant dans deux navigateurs) |
+| d ✅ | Stripe Connect (inscription + webhooks), PaymentSheet (mobile) et Checkout (web), pré-autorisation puis capture à l'acceptation, refus / annulation / expiration sans débit, abonnement Billing avec essai de 30 jours (web) | pgTAP, `e2e/payments.e2e.js` contre stripe-mock, parcours web avec pages Stripe simulées ; à valider avec les clés de test du compte Zéroo |
+| e ✅ | Fidélité (menus formules uniquement) : décompte au trigger, menu offert réservé à la commande et rendu en cas d'échec, commande à 0 € sans Stripe, carte client (onglet + fiche commerce), affichage commerçant | 24 tests pgTAP, `e2e/loyalty.e2e.js` |
+| f ✅ | Push Expo sur changement de statut (trigger + pg_net + `notify-order-update`), « Je pars maintenant » (`customer-departure`, Google Routes avec repli sur une estimation), conseil « lancer la préparation dans X min » | 15 tests pgTAP, `e2e/notifications.e2e.js` (faux Expo Push et Google), parcours web ; à valider sur appareil physique |
+| g ✅ | Livraison par livreur indépendant : espace livreur (profil, SIRET, Stripe Connect, abonnement 9,99 € TTC, rattachement aux restaurants, disponibilité, courses, revenus), réglages de livraison du restaurant (prix, rayon, livreurs), choix retrait / livraison et adresse côté client, double paiement repas + course, codes de retrait et de livraison | pgTAP (`delivery.test.sql`), `e2e/delivery.e2e.js` contre stripe-mock |
