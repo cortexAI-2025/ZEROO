@@ -36,7 +36,7 @@ function fresh(){return{
     {id:'o2',when:'Lun. 6 oct., 12:40',shop:'Bella Pizza',items:['1 × Pizza reine'],total:1200,fee:0,mode:'pickup',pay:'espèces',stars:4},
     {id:'o3',when:'Sam. 4 oct., 19:55',shop:'Chez Samir',items:['2 × Kebab galette'],total:1700,fee:350,mode:'delivery',pay:'carte',stars:0}],
   rated:false,rateC:0,rateR:0,rateTxt:'',
-  shop:{open:true,published:true,name:'Chez Samir',legal:'Samir Food SAS',siret:'73282932000074',tva:'FR32732829320',addr:'12 rue de la Paix',cp:'75002',city:'Paris',phone:'01 42 00 00 00',email:'contact@chezsamir.fr',cat:'Sandwicherie',desc:'Kebabs et burgers maison, pain frais chaque matin.',
+  shop:{open:true,published:true,name:'Chez Samir',payLink:'https://pay.sumup.com/b2c/chez-samir',legal:'Samir Food SAS',siret:'73282932000074',tva:'FR32732829320',addr:'12 rue de la Paix',cp:'75002',city:'Paris',phone:'01 42 00 00 00',email:'contact@chezsamir.fr',cat:'Sandwicherie',desc:'Kebabs et burgers maison, pain frais chaque matin.',
     deliveryOn:true,fee:350,radius:3000,cash:true,
     hours:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((d,i)=>({d,on:i<6,from:'11:30',to:i>=4?'23:00':'22:00'}))},
   menu:{cats:[{id:'s',name:'Sandwichs'},{id:'m',name:'Menus'},{id:'a',name:'Accompagnements'},{id:'b',name:'Boissons'},{id:'d',name:'Desserts'}],
@@ -118,17 +118,17 @@ function clientMain(){
       ${!canDeliver()?`<div class="note">Livraison indisponible : ${!S.shop.deliveryOn?'le restaurant ne livre pas pour le moment.':'aucun livreur disponible.'}</div>`:''}
       ${dl?`<div class="card"><div class="mute">Adresse de livraison</div><div>5 rue Saint-Augustin, 75002 Paris</div><div class="mute">650 m du restaurant · dans la zone (${S.shop.radius/1000} km)</div></div>
         <div class="card"><div class="sub">Paiement de la livraison (${euro(fee())})</div>
-          <div class="chips"><button class="chip" aria-pressed="${S.ridePay==='card'}" data-act="ridePay" data-v="card">Par carte</button>
+          <div class="chips"><button class="chip" aria-pressed="${S.ridePay==='card'}" data-act="ridePay" data-v="card">Carte, Apple Pay, Google Pay</button>
           <button class="chip" aria-pressed="${S.ridePay==='cash'}" data-act="ridePay" data-v="cash">Espèces au livreur</button></div>
-          <div class="mute">${S.ridePay==='card'?'Vous la réglez en un geste dès qu\'un livreur accepte.':'Prévoyez l\'appoint : vous remettez la somme au livreur en main propre.'}</div></div>`
+          <div class="mute">${S.ridePay==='card'?'Vous paierez le livreur via son lien de paiement dès qu\'il prend la livraison.':'Prévoyez l\'appoint : vous remettez la somme au livreur en main propre.'}</div></div>`
       :(S.shop.cash?`<div class="card"><div class="sub">Paiement de la commande</div>
-          <div class="chips"><button class="chip" aria-pressed="${S.mealPay==='card'}" data-act="mealPay" data-v="card">En ligne</button>
+          <div class="chips"><button class="chip" aria-pressed="${S.mealPay==='card'}" data-act="mealPay" data-v="card">Carte, Apple Pay, Google Pay</button>
           <button class="chip" aria-pressed="${S.mealPay==='cash'}" data-act="mealPay" data-v="cash">Espèces au comptoir</button></div></div>`:'')}
       <div class="row"><div class="f">Repas</div><div class="price">${euro(total)}</div></div>
-      ${dl?`<div class="row"><div class="f">Frais de livraison (réglés à l'acceptation du livreur)</div><div class="price">${euro(fee())}</div></div>`:''}
+      ${dl?`<div class="row"><div class="f">Frais de livraison (payés au livreur)</div><div class="price">${euro(fee())}</div></div>`:''}
       <div class="row"><div class="f"><b>Total</b></div><div class="price">${euro(total+(dl?fee():0))}</div></div>
-      <p class="mute" style="margin:0">${cashMeal?'Vous payez en espèces en récupérant la commande. Rien n\'est débité en ligne.':(dl?'Vous payez maintenant le repas ('+euro(total)+'), autorisé puis débité si le restaurant accepte. La livraison se règle ensuite.':'Votre carte est seulement autorisée : vous êtes débité si le restaurant accepte.')}</p>`,
-      `<button class="btn" data-act="order" ${S.lines.length?'':'disabled'}>${cashMeal?'Commander (paiement au comptoir)':'Payer '+euro(total)}</button>`);
+      <p class="mute" style="margin:0">${cashMeal?'Vous payez en espèces en récupérant la commande.':'Rien n\'est payé maintenant. Dès que le restaurant accepte, vous le payez directement par carte, Apple Pay ou Google Pay, via son lien de paiement.'+(dl?' La livraison se paie de la même façon au livreur.':'')}</p>`,
+      `<button class="btn" data-act="order" ${S.lines.length?'':'disabled'}>${cashMeal?'Commander (paiement au comptoir)':'Commander · '+euro(total+(dl?fee():0))}</button>`);
   }
   return track();
 }
@@ -141,12 +141,13 @@ function track(){
   let ride='';
   if(d&&['accepted','ready','out'].includes(x.status)){
     if(!x.courier) ride=`<div class="note">🔎 Recherche d'un livreur…</div>`;
-    else if(x.ridePay==='card'&&!x.ridePaid) ride=`<div class="card" style="border-color:var(--green)"><div class="sub">${x.courier} prend votre livraison</div>
-      <div class="mute">Réglez la livraison avant <b data-count="${x.due}">${mmss(x.due-Date.now())}</b>, sinon elle sera proposée à un autre livreur.</div>
-      <button class="btn" data-act="payRide">Régler la livraison · ${euro(x.fee)}</button></div>`;
-    else if(x.ridePay==='card') ride=`<div class="note ok">✅ ${x.courier} livre votre commande. Livraison réglée par carte.</div>`;
+    else if(x.ridePay==='card'&&!x.ridePaid) ride=payCard('ride','Payer votre livreur '+x.courier,x.fee,x.rideDeclared,x.courier,'PayPal');
+    else if(x.ridePay==='card') ride=`<div class="note ok">✅ ${x.courier} a reçu votre paiement de ${euro(x.fee)} pour la livraison.</div>`;
     else ride=`<div class="note ok">🛵 ${x.courier} livre votre commande. Prévoyez ${euro(x.fee)} en espèces.</div>`;
   }
+  const mealBox=x.mealPay!=='card'?'':x.status==='placed'?`<div class="note">Vous paierez ${esc(S.shop.name)} par carte dès qu'il aura accepté votre commande.</div>`
+    :x.mealPaid?`<div class="note ok">✅ ${esc(S.shop.name)} a reçu votre paiement de ${euro(x.total)}.</div>`
+    :payCard('meal','Payer '+S.shop.name,x.total,x.mealDeclared,S.shop.name,'SumUp');
   const codeCard=x.status==='out'?`<div class="card"><div class="mute" style="text-align:center">Code de livraison à donner au livreur</div><div class="code">${x.dcode}</div></div>`
     :(!d&&['accepted','ready'].includes(x.status)?`<div class="card"><div class="mute" style="text-align:center">Code de retrait au comptoir</div><div class="code">${x.code}</div></div>`:'');
   const rate=x.status==='delivered'?(S.rated?`<div class="note ok">Merci pour votre avis !</div>`:`<div class="card"><div class="sub">Comment c'était ?</div>
@@ -158,15 +159,23 @@ function track(){
     <div class="h">${title}</div>
     <div class="timeline">${steps.map(([k,l])=>`<div class="${order.indexOf(k)<=idx?'done':''}">${l}</div>`).join('')}</div>
     ${x.skipNote?`<div class="note bad">${x.skipNote}</div>`:''}
-    ${ride}${codeCard}${rate}
+    ${mealBox}${ride}${codeCard}${rate}
     <div class="card"><div class="sub">${esc(S.shop.name)}</div>${x.items.map(l=>`<div class="row"><div class="f">${l.q} × ${esc(l.name)}</div><div class="price">${euro(l.price*l.q)}</div></div>`).join('')}
       <hr style="border:0;border-top:1px solid var(--line);margin:4px 0">
       <div class="row"><div class="f">Repas</div><div class="price">${euro(x.total)}</div></div>
       ${d?`<div class="row"><div class="f">Frais de livraison</div><div class="price">${euro(x.fee)}</div></div>`:''}
       <div class="row"><div class="f"><b>Total</b></div><div class="price">${euro(x.total+(d?x.fee:0))}</div></div>
-      <div class="mute">${x.mealPay==='cash'?`Repas : ${euro(x.total)} en espèces au comptoir.`:`Repas : ${euro(x.total)} payés par carte au restaurant.`}</div>
-      ${d?`<div class="mute">${x.ridePay==='cash'?`Livraison : ${euro(x.fee)} en espèces au livreur.`:(x.ridePaid?`Livraison : ${euro(x.fee)} payés par carte au livreur.`:`Livraison : ${euro(x.fee)} à régler par carte au livreur.`)}</div>`:''}</div>`,
+      <div class="mute">${x.mealPay==='cash'?`Repas : ${euro(x.total)} en espèces au comptoir.`:(x.mealPaid?`Repas : ${euro(x.total)} payés par carte au restaurant.`:`Repas : ${euro(x.total)} à payer au restaurant (carte).`)}</div>
+      ${d?`<div class="mute">${x.ridePay==='cash'?`Livraison : ${euro(x.fee)} en espèces au livreur.`:(x.ridePaid?`Livraison : ${euro(x.fee)} payés par carte au livreur.`:`Livraison : ${euro(x.fee)} à payer au livreur (carte).`)}</div>`:''}
+      <div class="mute">Paiements directs aux professionnels : ZeeRoo n'encaisse rien.</div></div>`,
     x.status==='delivered'?`<button class="btn dark" data-act="newOrder">Nouvelle commande</button>`:'');
+}
+// Paiement direct : le client ouvre la page de paiement du professionnel (son lien SumUp, PayPal…).
+function payCard(kind,title,amount,declared,who,provider){
+  return `<div class="card" style="border-color:var(--green)"><div class="row"><div class="sub f">${esc(title)}</div><div class="price">${euro(amount)}</div></div>
+    ${declared?`<div class="note">Vous avez payé. ${esc(who)} confirme la réception.</div>`
+      :`<div class="mute">Carte, Apple Pay ou Google Pay, sur la page de paiement de ${esc(who)} (${provider}). L'argent va directement sur son compte.</div>
+      <button class="btn" data-act="${kind==='meal'?'payMeal':'payRide'}">Payer ${euro(amount)}</button>`}</div>`;
 }
 function sheet(){
   if(S.pick){const it=S.menu.items[itemIdx(S.pick.id)];const sel=S.pick.sel;
@@ -175,7 +184,7 @@ function sheet(){
       ${it.opts.map(p=>`<button class="lr" data-act="pickOpt" data-v="${esc(p.name)}"><div class="f">${esc(p.name)}</div><span class="price">${p.delta?'+'+euro(p.delta):'Offert'}</span><span class="sw" style="pointer-events:none" role="switch" aria-checked="${sel.includes(p.name)}"></span></button>`).join('')}
       <button class="btn" data-act="pickAdd">Ajouter · ${euro(price)}</button><button class="btn ghost" data-act="pickCancel">Annuler</button></div></div>`}
   const s=S.sheet; if(!s) return '';
-  return `<div class="sheet"><div><div class="sub">${s.title}</div><div class="row"><div class="f mute">${s.who}</div><div class="price">${euro(s.amount)}</div></div>
-    <button class="btn dark" data-act="sheetPay">Apple Pay</button><button class="btn ghost" data-act="sheetPay">Carte •••• 4242</button>
+  return `<div class="sheet"><div><div class="mute">${s.provider} · page de paiement de ${esc(s.who)}</div><div class="row"><div class="f sub">${esc(s.who)}</div><div class="price">${euro(s.amount)}</div></div>
+    <button class="btn dark" data-act="sheetPay">Apple Pay</button><button class="btn ghost" data-act="sheetPay">Google Pay</button><button class="btn ghost" data-act="sheetPay">Carte •••• 4242</button>
     <button class="btn ghost" data-act="sheetCancel">Annuler</button></div></div>`;
 }

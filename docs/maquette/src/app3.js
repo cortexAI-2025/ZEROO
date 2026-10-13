@@ -18,10 +18,10 @@ function courierRuns(tb){
   if(!linked) body+=`<div class="note bad">Chez Samir ne vous a pas (ou plus) rattaché. Demandez à livrer depuis l'onglet Profil.</div>`;
   if(m){
     const d=m,cash=d.ridePay==='cash',F=d.fee;
-    const awaiting=!cash&&!d.ridePaid&&['accepted','ready'].includes(d.status);
+    const awaiting=!cash&&!d.ridePaid;
     body+=`<div class="card" style="border-color:var(--green)">
       <div class="row"><div class="f"><div class="sub">Retrait : ${esc(S.shop.name)}</div><div class="mute">${esc(S.shop.addr)}, ${esc(S.shop.city)} · puis 5 rue Saint-Augustin (650 m)</div></div><span class="badge">${euro(F)}</span></div>
-      ${awaiting?`<div class="note">⏳ En attente du règlement du client (avant <b data-count="${d.due}">${mmss(d.due-Date.now())}</b>). Sinon la mission repart chez les autres livreurs.</div>`:''}
+      ${awaiting?`<div class="note">${d.rideDeclared?'Le client indique avoir payé '+euro(F)+' via votre lien : vérifiez la réception.':'Le client doit vous payer '+euro(F)+' via votre lien de paiement (PayPal).'}</div><button class="btn sm" data-act="confirmRide">Paiement reçu</button>`:''}
       ${!awaiting&&!cash&&d.status!=='out'?`<div class="note ok">Livraison payée par carte.</div>`:''}
       ${cash&&d.status!=='out'?`<div class="note">À encaisser en espèces à la livraison : ${euro(F)}.</div>`:''}
       ${['accepted','ready'].includes(d.status)?`<div class="mute" style="text-align:center">Code de retrait à montrer au restaurant</div><div class="code">${d.code}</div>
@@ -52,9 +52,9 @@ function courierEarn(tb){
    <div class="card"><div class="sub">Répartition</div>
      <div class="dist"><span style="width:92px;color:var(--ink)">Carte</span><span class="tr"><i style="width:${100-cashShare}%"></i></span><span>${100-cashShare} %</span></div>
      <div class="dist"><span style="width:92px;color:var(--ink)">Espèces</span><span class="tr"><i style="width:${cashShare}%"></i></span><span>${cashShare} %</span></div>
-     <div class="mute">Les paiements par carte arrivent directement sur votre compte Stripe. Les espèces sont déjà dans votre poche.</div></div>
+     <div class="mute">Les paiements par carte arrivent par votre lien de paiement, sur votre compte bancaire. Les espèces sont déjà dans votre poche.</div></div>
    <div class="note ok"><b>0 % de commission.</b> Chaque livraison vous est payée en totalité par le client.</div>
-   <div class="card"><div class="row"><div class="f"><div class="sub">Compte Stripe</div><div class="mute">Virements automatiques sur •••• 7714</div></div><span class="badge">Actif</span></div></div>`,'',tb);
+   <div class="card"><div class="row"><div class="f"><div class="sub">Lien de paiement</div><div class="mute">paypal.me/karim · les clients vous paient directement</div></div><span class="badge">Actif</span></div></div>`,'',tb);
 }
 function courierHist(tb){
   const all=[...(S.runsToday||[]),...S.runs];
@@ -108,7 +108,7 @@ function renderExcept(id){
   if(id!=='p-livreur')$('p-livreur').innerHTML=livreur();
   hints();
 }
-function devbar(){$('dev').innerHTML=`<span class="lbl">Simuler :</span><button data-act="rival">Léa accepte avant vous</button><button data-act="load">Livraisons déjà en cours : ${S.load}</button><button data-act="fast">Délai de paiement dépassé</button>`}
+function devbar(){$('dev').innerHTML=`<span class="lbl">Simuler :</span><button data-act="rival">Léa accepte avant vous</button><button data-act="load">Livraisons déjà en cours : ${S.load}</button>`}
 function tabsUI(){
   document.querySelectorAll('[data-col]').forEach(c=>c.classList.toggle('show',c.dataset.col===S.tab));
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===S.tab));
@@ -119,13 +119,16 @@ function hints(){
   else if(x.status==='placed'){i=1;t='Restaurant : acceptez la commande (le repas est encaissé à ce moment).'}
   else if(x.status==='refused'){i=1;t='Commande refusée : le client n\'est pas débité. Recommencez la démo.'}
   else if(x.status==='accepted'&&x.fulfil==='delivery'&&!x.courier){i=2;t=x.skipKarim?'La mission est revenue dans le pool. Cliquez « Recommencer » pour rejouer, ou faites accepter Léa.':'Livreur : la mission apparaît chez tous les livreurs. Acceptez-la, le premier gagne.'}
-  else if(x.courier&&x.ridePay==='card'&&!x.ridePaid&&x.status!=='delivered'){i=3;t='Client : réglez la livraison en un geste. Vous avez 5 minutes, sinon la mission repart.'}
+  else if(x.status==='accepted'&&x.mealPay==='card'&&!x.mealDeclared&&!x.mealPaid){i=3;t='Client : payez le restaurant via son lien de paiement (carte, Apple Pay, Google Pay).'}
+  else if(x.courier&&x.ridePay==='card'&&!x.rideDeclared&&!x.ridePaid&&x.status!=='delivered'){i=3;t='Client : payez votre livreur via son lien de paiement.'}
+  else if(x.mealDeclared&&!x.mealPaid){i=3;t='Restaurant : vérifiez la réception puis appuyez sur « Paiement reçu ».'}
+  else if(x.rideDeclared&&!x.ridePaid&&x.status!=='delivered'){i=3;t='Livreur : vérifiez la réception puis appuyez sur « Paiement reçu ».'}
   else if(x.status==='accepted'){i=4;t='Restaurant : marquez la commande prête.'}
   else if(x.status==='ready'){i=4;t=x.fulfil==='delivery'?'Restaurant : entrez le code de retrait du livreur et remettez la commande.':'Restaurant : entrez le code du client pour remettre la commande.'}
   else if(x.status==='out'){i=5;t='Livreur : demandez au client son code de livraison et validez.'}
   else {i=5;t='Terminé. Notez la livraison côté client : la note de Karim se met à jour dans son profil. Puis regardez Activité et Revenus.'}
   $('hint').textContent=t;
-  $('steps').innerHTML=['Commande','Acceptation','Mission','Livraison payée','Préparation','Livraison'].map((s,k)=>`<i class="${k===i?'on':''}">${s}</i>`).join('');
+  $('steps').innerHTML=['Commande','Acceptation','Mission','Paiements','Préparation','Livraison'].map((s,k)=>`<i class="${k===i?'on':''}">${s}</i>`).join('');
 }
 
 /* ---------- actions ---------- */
@@ -133,10 +136,10 @@ function newOrder(){
   const d=S.fulfil==='delivery'&&canDeliver();
   S.order={fulfil:d?'delivery':'pickup',mealPay:d?'card':(S.shop.cash?S.mealPay:'card'),ridePay:S.ridePay,fee:fee(),
     items:S.lines.map(l=>({name:l.name+(l.opts.length?' ('+l.opts.join(', ')+')':''),price:l.price,q:l.q})),total:subtotal(),
-    status:'placed',code:rnd(4),dcode:rnd(4),prep:S.prep,courier:null,ridePaid:false,due:null,skipKarim:false,counted:false};
+    status:'placed',code:rnd(4),dcode:rnd(4),prep:S.prep,courier:null,ridePaid:false,rideDeclared:false,mealPaid:false,mealDeclared:false,due:null,skipKarim:false,counted:false};
   S.rated=false;S.rateC=0;S.rateR=0;S.rateTxt='';S.view='home';S.sheet=null;
 }
-function releaseMission(note,msg){const x=o();x.courier=null;x.due=null;x.skipKarim=true;x.skipNote=note;S.courierErr='';if(msg)toast(msg)}
+function releaseMission(note,msg){const x=o();x.courier=null;x.due=null;x.rideDeclared=false;x.skipKarim=true;x.skipNote=note;S.courierErr='';if(msg)toast(msg)}
 function finish(){ // commande terminée : alimente l'activité du restaurant et les revenus du livreur
   const x=o();if(x.counted)return;x.counted=true;
   const d=x.fulfil==='delivery';
@@ -160,12 +163,14 @@ const A={
   fulfil(e){S.fulfil=e.dataset.v},ridePay(e){S.ridePay=e.dataset.v},mealPay(e){S.mealPay=e.dataset.v},
   order(){
     const dl=S.fulfil==='delivery'&&canDeliver(),cash=!dl&&S.mealPay==='cash'&&S.shop.cash;
-    if(cash){newOrder();toast('Commande envoyée, rien à payer en ligne.');return}
-    S.sheet={kind:'meal',title:S.shop.name,who:'Repas · autorisé, débité à l\'acceptation',amount:subtotal()};
+    newOrder();toast(cash?'Commande envoyée, paiement au comptoir.':'Commande envoyée. Vous paierez le restaurant dès qu\'il accepte.');
   },
-  sheetPay(){if(S.sheet.kind==='meal'){newOrder();toast('Paiement autorisé. Commande envoyée.')}else{o().ridePaid=true;S.sheet=null;toast('Livraison réglée.')}},
-  sheetCancel(){S.sheet=null;toast('Paiement annulé, aucun montant débité.')},
-  payRide(){if(!o().courier||o().ridePaid)return;S.sheet={kind:'ride',title:o().courier+' · livraison',who:'Débitée tout de suite, sur le compte du livreur',amount:o().fee}},
+  sheetPay(){const x=o();if(S.sheet.kind==='meal')x.mealDeclared=true;else x.rideDeclared=true;const who=S.sheet.who;S.sheet=null;toast('Paiement envoyé à '+who+'. Il confirme la réception.')},
+  sheetCancel(){S.sheet=null;toast('Paiement annulé.')},
+  payMeal(){const x=o();if(!x||x.mealPaid)return;S.sheet={kind:'meal',who:S.shop.name,provider:'SumUp',amount:x.total}},
+  payRide(){const x=o();if(!x.courier||x.ridePaid)return;S.sheet={kind:'ride',who:x.courier,provider:'PayPal',amount:x.fee}},
+  confirmMeal(){o().mealPaid=true;toast('Paiement du repas confirmé.')},
+  confirmRide(){o().ridePaid=true;toast('Paiement de la livraison confirmé.')},
   newOrder(){S.order=null;S.lines=[{key:'k|',id:'k',name:'Kebab galette',opts:[],price:850,q:1}];S.view='home'},
   rateC(e){S.rateC=+e.dataset.v},rateR(e){S.rateR=+e.dataset.v},
   sendRate(){
@@ -176,24 +181,23 @@ const A={
     S.rated=true;toast('Merci ! Les notes sont mises à jour.');
   },
   prep(e){S.prep=+e.dataset.v},
-  accept(){const x=o();x.status='accepted';x.prep=S.prep;S.restoErr='';toast(x.mealPay==='cash'?'Commande acceptée.':'Commande acceptée : repas encaissé.')},
-  refuse(){o().status='refused';toast('Commande refusée : le client n\'est pas débité.')},
+  accept(){const x=o();x.status='accepted';x.prep=S.prep;S.restoErr='';toast(x.mealPay==='cash'?'Commande acceptée.':'Commande acceptée : le client peut vous payer.')},
+  refuse(){o().status='refused';toast('Commande refusée : le client n\'a rien payé.')},
   ready(){o().status='ready'},
   collect(){const x=o();if(S.pickIn!==x.code){S.restoErr='Code de retrait incorrect.';return}x.status='delivered';S.restoErr='';S.pickIn='';finish()},
   handover(){const x=o();S.restoErr='';
     if(!x.courier){S.restoErr='Aucun livreur n\'a pris la livraison.';return}
-    if(x.ridePay==='card'&&!x.ridePaid){S.restoErr='Le client n\'a pas encore réglé la livraison : attendez son paiement.';return}
     if(S.pickIn!==x.code){S.restoErr='Code de retrait incorrect.';return}
     x.status='out';S.pickIn=''},
   avail(){S.avail=!S.avail},
   accept2(){const x=o();if(S.load>=2){S.courierErr='Vous avez déjà 2 livraisons en cours.';return}
-    x.courier='Karim';x.skipNote='';S.courierErr='';if(x.ridePay==='card')x.due=Date.now()+DUE_MS;
-    toast(x.ridePay==='card'?'Mission acceptée : le client a 5 minutes pour régler.':'Mission acceptée : livraison en espèces.')},
+    x.courier='Karim';x.skipNote='';S.courierErr='';
+    toast(x.ridePay==='card'?'Mission acceptée : le client vous paie via votre lien.':'Mission acceptée : livraison en espèces.')},
   release(){releaseMission('Votre livreur a abandonné la mission. Elle est reproposée à d\'autres livreurs.','Mission abandonnée.')},
   deliver(){const x=o();if(S.dcodeIn!==x.dcode){S.courierErr='Code de livraison incorrect.';return}
     x.status='delivered';S.dcodeIn='';S.courierErr='';finish();toast(x.ridePay==='cash'?'Livré. Espèces encaissées.':'Livraison validée.')},
   rival(){const x=o();if(!x||!missionVisible()){toast('Aucune mission à prendre pour le moment.');return}
-    x.courier='Léa';x.due=x.ridePay==='card'?Date.now()+DUE_MS:null;toast('Léa a accepté la mission avant vous.')},
+    x.courier='Léa';toast('Léa a accepté la mission avant vous.')},
   load(){S.load=(S.load+1)%3},
   fast(){const x=o();if(x&&x.courier&&x.ridePay==='card'&&!x.ridePaid)x.due=Date.now()-1;else toast('Acceptez une mission avec une livraison par carte d\'abord.')},
   /* tableau de bord client */
