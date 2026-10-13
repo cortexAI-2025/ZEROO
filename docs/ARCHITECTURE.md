@@ -10,7 +10,7 @@
 | Fidélité | **9 menus payés et récupérés chez un commerçant = 1 menu offert**, en comptant chaque menu, même s'ils sont achetés dans une seule commande (validé). Le commerçant indique quels produits sont des « menus » éligibles. Voir §3.1. |
 | Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro 29,99 € HT/mois avec l'option livraison (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
-| Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
+| Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte. **Le client paie directement chaque professionnel** (restaurant, livreur) par carte, Apple Pay ou Google Pay via **le lien de paiement de ce professionnel** (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), ou en espèces ; l'argent arrive sur le compte bancaire du professionnel. ZeeRoo n'encaisse jamais l'argent des commandes. **Stripe ne sert qu'aux abonnements**, encaissés par AiWorkPay. Voir §3.6. |
 | Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. ZeeRoo n'encaisse jamais d'argent. Voir §3.4. |
 | Domaine | **zeroo.online** : site vitrine et liens commerçant `https://zeroo.online/m/<slug>` (cibles des QR codes, redirigés vers l'app web). **app.zeroo.online** : app web, page d'abonnement et retours Stripe. |
 | Site public | **zeroo.online** : site vitrine statique (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages) avec la démo interactive. Ce dépôt ne contient que l'application. |
@@ -27,7 +27,7 @@
 | Stockage local | `expo-sqlite/localStorage` | Session Supabase et préférences, avec la même API que `localStorage` sur le web. |
 | Formulaires | react-hook-form + zod | Les mêmes schémas zod sont réutilisés pour valider les payloads côté Edge Functions. |
 | Backend | Supabase : Postgres + PostGIS, Auth, Realtime, RLS, Edge Functions (Deno), pg_cron | |
-| Paiement client | Stripe Connect, **charges directes** sur le compte du commerçant, `application_fee_amount` absent (0 commission) | Le commerçant est le vendeur, et les frais Stripe sont prélevés sur son compte. |
+| Paiement client | **Lien de paiement du professionnel** (carte, Apple Pay, Google Pay chez son propre fournisseur) ou espèces ; le client indique « J'ai payé », le professionnel confirme la réception | Plus de Stripe Connect pour les commandes (§3.6). |
 | Abonnement commerçant | Stripe Billing (Checkout + Customer Portal) | |
 | Push | Expo Notifications (Expo Push Service) | Son personnalisé « nouvelle commande ». |
 | Temps de trajet | Google Routes API (`computeRoutes`), appelée **uniquement côté serveur** | La clé ne sort jamais de l'Edge Function. |
@@ -344,7 +344,7 @@ create table stripe_events (            -- idempotence du webhook
 | `create_order(customer_id, merchant_id, items, note)` | Service role uniquement (Edge Function `create-order`). Recalcule tout côté serveur : prix du menu, options (existence, disponibilité, min / max par groupe), disponibilité des produits, commerce en état d'encaisser. Crée la commande en `pending_payment`. |
 | `mark_order_authorized` / `mark_order_payment_failed` | Idempotentes, appelées par le webhook ou après la feuille de paiement : `pending_payment → placed` ou `→ cancelled`. |
 | `apply_order_transition(order, actor, status, …)` | Service role. Moteur unique des transitions ; vérifie l'acteur (commerçant propriétaire, ou client pour l'annulation). `set_order_status` (commerçant) n'autorise plus que préparation / prête / remise : accepter et refuser passent par `order-decision`, qui capture ou annule le paiement. |
-| `is_payments_ready`, `is_subscription_active` | Compte Stripe avec `charges_enabled`, abonnement `trialing` ou `active`. Inclus dans `is_accepting_orders`. |
+| `is_payments_ready`, `is_subscription_active` | Lien de paiement renseigné (ou espèces acceptées au comptoir), abonnement `trialing` ou `active`. Inclus dans `is_accepting_orders`. |
 | `expire_stale_orders()` | Sans réponse après 10 min → `expired`, paiement jamais finalisé après 35 min → `cancelled`. Appelée par pg_cron via `expire-orders`, qui libère les autorisations Stripe. |
 | `set_order_status(order_id, status)` | Machine à états pour les transitions sans Stripe (`accepted → preparing → ready → collected`), réservée au commerçant. |
 | trigger `orders_apply_loyalty` | Dans la même transaction que le changement de statut. À `collected` (une seule fois, `loyalty_counted`) : ajoute les menus formules **payés** (instantané `order_items.is_loyalty_menu`, ligne offerte exclue) ; tous les 9 → `rewards_available + 1`, avec retenue (ex. 8 + 3 menus → 1 offert, compteur à 2). À `refused` / `cancelled` / `expired` : rend le menu offert réservé. |
@@ -355,6 +355,8 @@ Transitions autorisées :
 `pending_payment → placed | cancelled` (webhook / annulation client / expiration) · `placed → accepted | refused` (Edge Function `order-decision`, avec Stripe) · `placed → cancelled` (client, `customer-cancel-order`) · `placed → expired` (pg_cron) · `accepted → preparing → ready → collected` (RPC commerçant).
 
 ### 3.4 Livraison par livreur indépendant (étape g)
+
+> **Remplacé pour les paiements par le §3.6** : plus de Stripe Connect ni de délai de 5 minutes. Les règles de missions (premier qui accepte, 2 livraisons au plus) restent valables.
 
 **Principes validés.**
 - Le client choisit **retrait** ou **livraison** si le restaurant livre.
@@ -450,6 +452,19 @@ Migration `20261013120000_dashboards.sql`, écrans calqués sur la démo `docs/m
 - **Client** : adresses enregistrées (`customer_addresses`, 10 au plus, une par défaut, proposées dans le panier), restaurants favoris (`customer_favorites`), « Commander à nouveau » qui remet dans le panier les produits encore à la carte.
 - **Statistiques** : `merchant_sales_by_day` et `merchant_top_items` (onglet Activité du restaurant), `courier_earnings_by_day` (gains par jour, carte / espèces).
 
+### 3.6 Paiements directs par lien de paiement (décision du 13 octobre 2026)
+
+Migration `20261013140000_payment_links.sql`.
+
+- **Stripe sert uniquement aux abonnements** des restaurants et des livreurs (compte d'AiWorkPay, webhook `stripe-webhook` limité aux abonnements). Plus de Stripe Connect : les fonctions `connect-onboarding`, `pay-delivery` et `order-payment-status` sont supprimées.
+- Chaque restaurant et chaque livreur renseigne **son lien de paiement** (`merchants.payment_link`, `couriers.payment_link`, `https://…`) : la page de son propre fournisseur (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), qui accepte la carte, Apple Pay et Google Pay et verse l'argent sur son compte bancaire.
+- **Commande** : `create-order` crée la commande et l'envoie aussitôt au restaurant, sans paiement préalable (carte refusée si le restaurant n'a pas de lien : `merchant_no_payment_link`).
+- **Repas** : une fois la commande acceptée, le client ouvre le lien du restaurant, paie, puis appuie sur « J'ai payé » (`customer_declare_payment(order, 'meal')` → `meal_payment_declared_at`). Le restaurant confirme la réception (`merchant_confirm_payment` → `paid_at`). Espèces au comptoir : `paid_at` au retrait.
+- **Livraison** : quand un livreur prend la mission, le client paie via le lien du livreur (fourni par `order_courier_profile`), déclare (`delivery_payment_declared_at`) et le livreur confirme (`courier_confirm_delivery_payment` → `delivery_paid_at`). Espèces : `delivery_paid_at` à la livraison.
+- **Plus de délai de paiement** : `expire_unpaid_missions` ne libère plus rien ; la remise au livreur n'exige plus que la livraison soit payée. Le restaurant et le livreur voient l'état du paiement et décident. Un livreur ne peut plus abandonner une course dont il a confirmé le paiement.
+- **Disponibilité** : un restaurant reçoit des commandes avec un lien de paiement ou les espèces au comptoir (`is_payments_ready`) ; un livreur doit avoir un lien de paiement et un abonnement actif (`is_courier_active`, `courier_payment_link_required`).
+- Limite assumée : ZeeRoo ne peut pas vérifier les paiements faits hors de l'app ; c'est le professionnel qui confirme. Les anciennes colonnes Stripe des commandes restent en base, inutilisées.
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.
@@ -488,7 +503,6 @@ EXPO_PUBLIC_WEB_URL=                 # pour les liens QR / abonnement
 # Edge Functions (secrets Supabase, jamais dans l'app)
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-STRIPE_CONNECT_WEBHOOK_SECRET=
 STRIPE_PRICE_START_MONTH=
 STRIPE_PRICE_START_YEAR=
 STRIPE_PRICE_PRO_MONTH=

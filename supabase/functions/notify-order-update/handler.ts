@@ -105,7 +105,7 @@ export const handler = handle(async (req) => {
         order.delivery_payment_method === 'card'
           ? {
               title: `${courier} prend votre livraison 🛵`,
-              body: `Réglez la course (${formatCents(order.delivery_fee_cents)}) dans les 5 minutes pour la confirmer.`,
+              body: `Réglez la livraison (${formatCents(order.delivery_fee_cents)}) avec son lien de paiement, dans l'app.`,
               channelId: 'orders',
             }
           : {
@@ -125,7 +125,7 @@ export const handler = handle(async (req) => {
           body: `${customer} · ${formatCents(order.total_cents)}${order.is_loyalty_reward ? ' · menu offert' : ''}`,
           sound: 'new-order.wav',
           channelId: 'orders',
-        })
+        }),
       );
       break;
     case 'accepted': {
@@ -140,7 +140,7 @@ export const handler = handle(async (req) => {
             : readyAt
               ? `${merchant.name} prépare votre commande, prête vers ${readyAt}.`
               : `${merchant.name} prépare votre commande.`,
-        })
+        }),
       );
       break;
     }

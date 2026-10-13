@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
-import { AppText, Badge, Button, Card, Chip } from '@/components/ui';
+import { AppText, Button, Card, Chip } from '@/components/ui';
 import { formatDay } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -18,8 +18,8 @@ import {
 } from './plans';
 
 /**
- * Cartes « Paiements » (Stripe Connect) et « Abonnement » : onglet Boutique du restaurant,
- * onglet Compte du livreur. Les textes viennent de merchant.billing ou courier.billing.
+ * Carte « Abonnement » (seul usage de Stripe) : onglet Boutique du restaurant, onglet Compte
+ * du livreur. Les textes viennent de merchant.billing ou courier.billing.
  */
 export function BillingCards({ target }: { target: BillingTarget }) {
   const { t } = useTranslation();
@@ -46,7 +46,6 @@ export function BillingCards({ target }: { target: BillingTarget }) {
     }
   };
 
-  const account = billing.data?.account ?? null;
   const subscription = billing.data?.subscription ?? null;
   const isWeb = Platform.OS === 'web';
   const subscriptionActive =
@@ -54,37 +53,6 @@ export function BillingCards({ target }: { target: BillingTarget }) {
 
   return (
     <>
-      <Card testID="payments-card">
-        <AppText variant="subtitle">{t(`${ns}.billing.paymentsTitle`)}</AppText>
-        {account?.charges_enabled ? (
-          <>
-            <Badge label="Stripe ✓" tone="success" />
-            <AppText variant="muted">{t(`${ns}.billing.paymentsActive`)}</AppText>
-            <Button
-              variant="ghost"
-              title={t(`${ns}.billing.stripeDashboard`)}
-              onPress={() => void Linking.openURL('https://dashboard.stripe.com')}
-            />
-          </>
-        ) : (
-          <>
-            <AppText variant="muted">
-              {account?.details_submitted
-                ? t(`${ns}.billing.paymentsPending`)
-                : t(`${ns}.billing.paymentsNone`)}
-            </AppText>
-            <Button
-              testID="setup-payments"
-              title={
-                account ? t(`${ns}.billing.paymentsContinue`) : t(`${ns}.billing.paymentsSetup`)
-              }
-              loading={busy === 'payments'}
-              onPress={() => void run('payments', actions.setupPayments)()}
-            />
-          </>
-        )}
-      </Card>
-
       <Card testID="subscription-card">
         <AppText variant="subtitle">{t(`${ns}.billing.subscriptionTitle`)}</AppText>
         {subscription?.status === 'trialing' && subscription.trial_end ? (

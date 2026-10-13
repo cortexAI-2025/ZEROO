@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/features/auth/AuthProvider';
+import { confirmDeliveryPayment } from '@/features/payments/pay';
 import { useRealtimeChanges } from '@/lib/realtime';
 
 import {
@@ -18,6 +19,7 @@ import {
   markDelivered,
   requestLink,
   setAvailability,
+  setCourierPaymentLink,
   setCourierPhoto,
   updateCourierProfile,
 } from './api';
@@ -115,6 +117,7 @@ export function useCourierActions() {
       onSuccess,
     }),
     requestLink: useMutation({ mutationFn: requestLink, onSuccess }),
+    confirmPayment: useMutation({ mutationFn: confirmDeliveryPayment, onSuccess }),
     leave: useMutation({ mutationFn: leaveMerchant, onSuccess }),
   };
 }
@@ -138,6 +141,14 @@ export function useSetCourierPhoto(courierId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (url: string | null) => setCourierPhoto(courierId, url),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
+}
+
+export function useSetCourierPaymentLink(courierId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (link: string | null) => setCourierPaymentLink(courierId, link),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
   });
 }

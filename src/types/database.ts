@@ -106,6 +106,7 @@ export type Database = {
       };
       couriers: {
         Row: {
+          payment_link: string | null;
           photo_url: string | null;
           work_zone: string | null;
           created_at: string;
@@ -122,6 +123,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          payment_link?: string | null;
           photo_url?: string | null;
           work_zone?: string | null;
           created_at?: string;
@@ -137,6 +139,7 @@ export type Database = {
           vehicle?: Database['public']['Enums']['courier_vehicle'];
         };
         Update: {
+          payment_link?: string | null;
           photo_url?: string | null;
           work_zone?: string | null;
           created_at?: string;
@@ -586,6 +589,7 @@ export type Database = {
       };
       merchants: {
         Row: {
+          payment_link: string | null;
           photo_url: string | null;
           legal_name: string | null;
           siret: string | null;
@@ -630,6 +634,7 @@ export type Database = {
           | 'is_payments_ready'
           | 'is_subscription_active';
         Insert: {
+          payment_link?: string | null;
           photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;
@@ -661,6 +666,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          payment_link?: string | null;
           photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;
@@ -821,6 +827,8 @@ export type Database = {
       };
       orders: {
         Row: {
+          meal_payment_declared_at: string | null;
+          delivery_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -880,6 +888,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          meal_payment_declared_at?: string | null;
+          delivery_payment_declared_at?: string | null;
           accepted_at?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
@@ -938,6 +948,8 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          meal_payment_declared_at?: string | null;
+          delivery_payment_declared_at?: string | null;
           accepted_at?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
@@ -1162,6 +1174,8 @@ export type Database = {
           p_status: Database['public']['Enums']['order_status'];
         };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1271,6 +1285,8 @@ export type Database = {
       courier_accept_mission: {
         Args: { p_order_id: string };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1335,6 +1351,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      courier_confirm_delivery_payment: {
+        Args: { p_order_id: string };
+        Returns: Database['public']['Tables']['orders']['Row'];
+      };
       courier_earnings_by_day: {
         Args: { p_days?: number };
         Returns: { card_cents: number; cash_cents: number; day: string; runs_count: number }[];
@@ -1352,6 +1372,8 @@ export type Database = {
       courier_mark_delivered: {
         Args: { p_delivery_code: string; p_order_id: string };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1450,6 +1472,7 @@ export type Database = {
           vehicle: Database['public']['Enums']['courier_vehicle'];
           work_zone: string | null;
           photo_url: string | null;
+          payment_link: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -1515,6 +1538,8 @@ export type Database = {
           p_merchant_id: string;
         };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1580,6 +1605,10 @@ export type Database = {
         };
       };
       current_courier_id: { Args: Record<PropertyKey, never>; Returns: string };
+      customer_declare_payment: {
+        Args: { p_kind: string; p_order_id: string };
+        Returns: Database['public']['Tables']['orders']['Row'];
+      };
       decide_courier_link: {
         Args: { p_approve: boolean; p_courier_id: string };
         Returns: {
@@ -1674,6 +1703,8 @@ export type Database = {
       mark_delivery_authorized: {
         Args: { p_order_id: string; p_payment_intent_id: string };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1741,6 +1772,8 @@ export type Database = {
       mark_order_authorized: {
         Args: { p_order_id: string; p_payment_intent_id: string };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1808,6 +1841,8 @@ export type Database = {
       mark_order_payment_failed: {
         Args: { p_order_id: string };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -1872,6 +1907,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      merchant_confirm_payment: {
+        Args: { p_order_id: string };
+        Returns: Database['public']['Tables']['orders']['Row'];
+      };
       merchant_delivery_quote: {
         Args: { p_latitude: number; p_longitude: number; p_merchant_id: string };
         Returns: {
@@ -1920,6 +1959,7 @@ export type Database = {
         Returns: {
           average: number | null;
           display_name: string;
+          payment_link: string | null;
           photo_url: string | null;
           reviews_count: number;
           vehicle: Database['public']['Enums']['courier_vehicle'];
@@ -1974,6 +2014,7 @@ export type Database = {
           vehicle: Database['public']['Enums']['courier_vehicle'];
           work_zone: string | null;
           photo_url: string | null;
+          payment_link: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -1990,6 +2031,8 @@ export type Database = {
           p_travel_seconds: number;
         };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -2080,6 +2123,8 @@ export type Database = {
           p_status: Database['public']['Enums']['order_status'];
         };
         Returns: {
+          delivery_payment_declared_at: string | null;
+          meal_payment_declared_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;

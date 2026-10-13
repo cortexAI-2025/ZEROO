@@ -100,13 +100,14 @@ values ('20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-0000000
 update public.merchants
 set delivery_enabled = true, delivery_fee_cents = 350, delivery_radius_m = 3000,
     legal_name = 'Samir Food SAS', siret = '73282932000074', vat_number = 'FR32732829320',
-    contact_email = 'contact@chezsamir.test'
+    contact_email = 'contact@chezsamir.test', payment_link = 'https://pay.sumup.com/b2c/chez-samir-demo'
 where id = '30000000-0000-0000-0000-000000000001';
 
 insert into public.couriers (id, user_id, display_name, phone, legal_status, siret, vehicle, is_available)
 values ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'Karim L.',
         '06 12 34 56 78', 'auto_entrepreneur', '88212345600015', 'scooter', true);
-update public.couriers set work_zone = 'Paris centre' where id = '80000000-0000-0000-0000-000000000001';
+update public.couriers set work_zone = 'Paris centre', payment_link = 'https://paypal.me/karim-demo'
+where id = '80000000-0000-0000-0000-000000000001';
 
 insert into public.courier_stripe_accounts (courier_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)
 values ('80000000-0000-0000-0000-000000000001', 'acct_demo_karim', true, true, true);

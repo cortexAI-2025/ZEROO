@@ -1,6 +1,5 @@
 import { HttpError, handle, json, readJson } from '../_shared/http.ts';
-import { fetchOrder, mealPayment, releaseOrderPayments } from '../_shared/orders.ts';
-import { type Stripe, stripeClient } from '../_shared/stripe.ts';
+import { fetchOrder } from '../_shared/orders.ts';
 import { adminClient, requireUser, unwrap } from '../_shared/supabase.ts';
 
 type Body = {
@@ -11,10 +10,9 @@ type Body = {
 };
 
 /**
- * Réponse du commerçant à une nouvelle commande.
- *   accepter : capture du repas (rien à capturer en espèces), puis « accepted ». Pour une
- *              livraison, la course est ensuite proposée aux livreurs (missions) ;
- *   refuser  : annulation de l'autorisation (aucun débit, aucun frais), puis « refused ».
+ * Réponse du commerçant à une nouvelle commande : « accepted » (le client peut alors payer
+ * le repas via le lien du restaurant ; pour une livraison, la course est proposée aux
+ * livreurs) ou « refused ». Rien n'a été payé avant l'acceptation : rien à rembourser.
  */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
@@ -40,10 +38,7 @@ export const handler = handle(async (req) => {
       ...extra,
     });
 
-  const stripe = stripeClient();
-
   if (body.decision === 'refuse') {
-    await releaseOrderPayments(stripe, order);
     unwrap(await transition('refused', { p_refusal_reason: body.reason ?? null }));
     return json({ orderId: order.id, status: 'refused' });
   }
@@ -52,43 +47,6 @@ export const handler = handle(async (req) => {
   if (!Number.isInteger(prepMinutes) || prepMinutes < 1 || prepMinutes > 180) {
     throw new HttpError(400, 'prep_minutes_required');
   }
-
-  const meal = mealPayment(order);
-  if (!(await capture(stripe, meal, `capture-${order.id}`))) {
-    unwrap(await transition('refused', { p_refusal_reason: 'Paiement non abouti' }));
-    throw new HttpError(402, 'payment_capture_failed');
-  }
-
-  const { error } = await transition('accepted', { p_prep_minutes: prepMinutes });
-  if (error) {
-    // Cas rare (annulation ou expiration simultanée) : on rembourse ce qui vient d'être capturé.
-    await refund(stripe, meal, `refund-${order.id}`);
-    throw new Error(error.message);
-  }
+  unwrap(await transition('accepted', { p_prep_minutes: prepMinutes }));
   return json({ orderId: order.id, status: 'accepted' });
 });
-
-type Payment = ReturnType<typeof mealPayment>;
-
-/** Capture une autorisation ; sans paiement (menu offert), rien à capturer. */
-async function capture(stripe: Stripe, payment: Payment, idempotencyKey: string) {
-  if (!payment.paymentIntentId || !payment.account) return true;
-  try {
-    await stripe.paymentIntents.capture(payment.paymentIntentId, undefined, {
-      stripeAccount: payment.account,
-      idempotencyKey,
-    });
-    return true;
-  } catch (error) {
-    console.warn('Capture impossible', (error as Error).message);
-    return false;
-  }
-}
-
-async function refund(stripe: Stripe, payment: Payment, idempotencyKey: string) {
-  if (!payment.paymentIntentId || !payment.account) return;
-  await stripe.refunds.create(
-    { payment_intent: payment.paymentIntentId },
-    { stripeAccount: payment.account, idempotencyKey },
-  );
-}

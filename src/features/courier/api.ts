@@ -146,3 +146,11 @@ export async function setCourierPhoto(courierId: string, photoUrl: string | null
     .eq('id', courierId);
   if (error) throw error;
 }
+
+export async function setCourierPaymentLink(courierId: string, link: string | null) {
+  const { error } = await supabase
+    .from('couriers')
+    .update({ payment_link: link })
+    .eq('id', courierId);
+  if (error) throw error;
+}

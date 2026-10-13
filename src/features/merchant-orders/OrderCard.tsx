@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, Chip, TextField } from '@/components/ui';
 import { formatDistance } from '@/features/discover/location';
+import { confirmMealPayment } from '@/features/payments/pay';
 import { formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -98,6 +100,8 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
           ) : null}
         </>
       ) : null}
+
+      <MealPayment order={order} />
 
       {order.customer_eta_at &&
       ['placed', 'accepted', 'preparing', 'ready'].includes(order.status) ? (
@@ -244,6 +248,7 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
+  payment: { gap: spacing.xs },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -252,3 +257,62 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });
+
+/**
+ * Paiement du repas, payé directement au restaurant : espèces au comptoir, ou carte via le
+ * lien de paiement du restaurant (le client indique l'avoir fait, le restaurant confirme).
+ */
+function MealPayment({ order }: { order: Order }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const amount = formatCents(order.total_cents);
+  if (order.total_cents === 0) return null;
+
+  const confirm = async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      await confirmMealPayment(order.id);
+      await queryClient.invalidateQueries({ queryKey: ['merchant-orders', order.merchant_id] });
+    } catch (e) {
+      setError(t(errorKey(e)));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (order.paid_at) {
+    return (
+      <Badge label={t('merchant.orders.payment.received', { price: amount })} tone="success" />
+    );
+  }
+  if (order.meal_payment_method === 'cash') {
+    return <AppText variant="link">{t('merchant.orders.payment.cash', { price: amount })}</AppText>;
+  }
+  if (order.status === 'placed') {
+    return (
+      <AppText variant="muted">
+        {t('merchant.orders.payment.afterAccept', { price: amount })}
+      </AppText>
+    );
+  }
+  return (
+    <View style={styles.payment} testID={`meal-payment-${order.pickup_code}`}>
+      <AppText variant={order.meal_payment_declared_at ? 'link' : 'muted'}>
+        {order.meal_payment_declared_at
+          ? t('merchant.orders.payment.declared', { price: amount })
+          : t('merchant.orders.payment.waiting', { price: amount })}
+      </AppText>
+      <Button
+        testID={`confirm-payment-${order.pickup_code}`}
+        variant="secondary"
+        title={t('merchant.orders.payment.confirm')}
+        loading={busy}
+        onPress={() => void confirm()}
+      />
+      {error ? <AppText variant="error">{error}</AppText> : null}
+    </View>
+  );
+}

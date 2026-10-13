@@ -9,10 +9,10 @@ import { fetchMerchantPage } from '@/features/discover/api';
 import { directionsUrl } from '@/features/discover/location';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { cancelMyOrder } from '@/features/orders/api';
-import { payDelivery } from '@/features/payments/pay';
-import { CourierBadge } from '@/features/orders/CourierBadge';
+import { CourierBadge, useOrderCourier } from '@/features/orders/CourierBadge';
 import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
+import { PaymentCard } from '@/features/orders/PaymentCard';
 import { rebuildLines } from '@/features/orders/reorder';
 import { ReviewCard } from '@/features/reviews/ReviewCard';
 import { confirmAsync } from '@/lib/confirm';
@@ -39,8 +39,8 @@ export default function OrderScreen() {
   const order = query.data;
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
-  const [paying, setPaying] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
+  // Lien de paiement du livreur (paiement de la livraison par carte).
+  const orderCourier = useOrderCourier(id, order?.courier_name ?? null);
   const [reordering, setReordering] = useState(false);
   const [reorderNote, setReorderNote] = useState<string | null>(null);
 
@@ -86,20 +86,6 @@ export default function OrderScreen() {
     }
   };
 
-  // Course par carte à régler dès qu'un livreur a accepté la mission.
-  const payRide = async () => {
-    setPayError(null);
-    setPaying(true);
-    try {
-      await payDelivery(id);
-      await query.refetch();
-    } catch (e) {
-      setPayError(t(errorKey(e)));
-    } finally {
-      setPaying(false);
-    }
-  };
-
   const cancel = async () => {
     const ok = await confirmAsync({
       title: t('client.order.cancelConfirmTitle'),
@@ -136,12 +122,29 @@ export default function OrderScreen() {
   const orderActive = ['placed', 'accepted', 'preparing', 'ready', 'out_for_delivery'].includes(
     order.status,
   );
-  const ridePayable =
+  const paidSoFar = [
+    'accepted',
+    'preparing',
+    'ready',
+    'out_for_delivery',
+    'collected',
+    'delivered',
+  ];
+  // Repas par carte : payé au restaurant via son lien, une fois la commande acceptée.
+  const mealByCard =
+    order.meal_payment_method === 'card' &&
+    order.total_cents > 0 &&
+    paidSoFar.includes(order.status);
+  const mealCardPending = order.meal_payment_method === 'card' && order.status === 'placed';
+  // Livraison par carte : payée au livreur via son lien, dès qu'il a pris la mission.
+  const rideByCard =
     isDelivery &&
-    orderActive &&
     !!order.courier_id &&
     order.delivery_payment_method === 'card' &&
-    !order.delivery_authorized_at;
+    paidSoFar.includes(order.status);
+  const refetch = () => {
+    void query.refetch();
+  };
   const rideCash = isDelivery && order.delivery_payment_method === 'cash';
   const statusText =
     isDelivery && order.status === 'placed'
@@ -248,28 +251,39 @@ export default function OrderScreen() {
               {t('client.order.rideCash', { price: formatCents(order.delivery_fee_cents) })}
             </AppText>
           ) : null}
-          {isDelivery && order.delivery_authorized_at ? (
-            <AppText variant="muted">{t('client.order.ridePaid')}</AppText>
-          ) : null}
         </Card>
       ) : null}
 
-      {ridePayable ? (
-        <Card testID="ride-payment-card">
-          <AppText variant="subtitle">{t('client.order.payRideTitle', { name: courier })}</AppText>
-          <AppText variant="muted">
-            {order.delivery_payment_due_at
-              ? t('client.order.payRideBefore', { time: formatTime(order.delivery_payment_due_at) })
-              : t('client.order.payRideHint')}
-          </AppText>
-          <Button
-            testID="pay-ride"
-            title={t('client.order.payRide', { price: formatCents(order.delivery_fee_cents) })}
-            loading={paying}
-            onPress={() => void payRide()}
-          />
-          {payError ? <AppText variant="error">{payError}</AppText> : null}
-        </Card>
+      {mealCardPending ? (
+        <AppText variant="muted">
+          {t('client.payment.afterAcceptance', { name: merchant?.name ?? '' })}
+        </AppText>
+      ) : null}
+      {mealByCard ? (
+        <PaymentCard
+          orderId={order.id}
+          kind="meal"
+          payee={merchant?.name ?? ''}
+          amountCents={order.total_cents}
+          link={merchant?.payment_link}
+          reference={order.pickup_code}
+          declaredAt={order.meal_payment_declared_at}
+          paidAt={order.paid_at}
+          onChanged={refetch}
+        />
+      ) : null}
+      {rideByCard ? (
+        <PaymentCard
+          orderId={order.id}
+          kind="delivery"
+          payee={courier}
+          amountCents={order.delivery_fee_cents}
+          link={orderCourier.data?.payment_link}
+          reference={order.pickup_code}
+          declaredAt={order.delivery_payment_declared_at}
+          paidAt={order.delivery_paid_at}
+          onChanged={refetch}
+        />
       ) : null}
 
       <Card>

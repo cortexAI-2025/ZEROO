@@ -17,13 +17,15 @@ function liveOrder(){
   const d=x.fulfil==='delivery';
   const head=`<div class="row"><div class="f"><div class="sub">Nadia · ${d?'🛵 Livraison':'À emporter'}</div><div class="mute">Code ${x.code}</div></div><span class="badge ${x.status==='placed'?'w':''}">${{placed:'Nouvelle',accepted:'En préparation',ready:'Prête',out:'Partie',delivered:'Terminée'}[x.status]}</span></div>
     ${x.items.map(l=>`<div class="row"><div class="f">${l.q} × ${esc(l.name)}</div></div>`).join('')}
-    <div class="mute">${euro(x.total)} · ${x.mealPay==='cash'?'espèces au comptoir':'carte (autorisée)'}${x.status!=='placed'&&x.mealPay==='card'?' → encaissé':''}</div>`;
+    <div class="mute">${euro(x.total)} · ${x.mealPay==='cash'?'espèces au comptoir':'carte via votre lien de paiement'}</div>
+    ${x.mealPay!=='card'||x.status==='placed'||x.status==='refused'?'':x.mealPaid?`<div class="note ok">Repas payé : ${euro(x.total)} reçus.</div>`
+      :`<div class="note">${x.mealDeclared?'Le client indique avoir payé '+euro(x.total)+' : vérifiez la réception.':'En attente du paiement du client ('+euro(x.total)+').'}</div><button class="btn sm" data-act="confirmMeal">Paiement reçu</button>`}`;
   let act='';
   if(x.status==='placed') act=`<div class="mute">Temps de préparation</div><div class="chips">${[10,15,20,30].map(m=>`<button class="chip" aria-pressed="${S.prep===m}" data-act="prep" data-v="${m}">${m} min</button>`).join('')}</div>
     <button class="btn" data-act="accept">Accepter</button><button class="btn ghost" data-act="refuse">Refuser</button>`;
   else if(x.status==='accepted') act=`<button class="btn" data-act="ready">Commande prête</button>`;
   else if(x.status==='ready'&&!d) act=`<input class="t" data-path="pickIn" inputmode="numeric" maxlength="4" placeholder="Code" value="${S.pickIn}" aria-label="Code de retrait"><div class="mute">Code du client : ${x.code}</div><button class="btn" data-act="collect">${x.mealPay==='cash'?'Remettre et encaisser en espèces':'Remettre au client'}</button>`;
-  else if(x.status==='ready'&&d) act=`<div class="note ${x.courier?(x.ridePay==='card'&&!x.ridePaid?'':'ok'):''}">${!x.courier?'Aucun livreur n\'a encore pris la livraison. Elle est proposée à vos livreurs.':(x.ridePay==='card'&&!x.ridePaid?`${x.courier} attend le règlement de la livraison par le client.`:`${x.courier} est là pour récupérer la commande.`)}</div>
+  else if(x.status==='ready'&&d) act=`<div class="note ${x.courier?(x.ridePay==='card'&&!x.ridePaid?'':'ok'):''}">${!x.courier?'Aucun livreur n\'a encore pris la livraison. Elle est proposée à vos livreurs.':(x.ridePay==='card'&&!x.ridePaid?`${x.courier} attend le paiement de la livraison par le client (vous pouvez remettre la commande).`:`${x.courier} est là pour récupérer la commande.`)}</div>
     <input class="t" data-path="pickIn" inputmode="numeric" maxlength="4" placeholder="Code" value="${S.pickIn}" aria-label="Code de retrait du livreur"><div class="mute">Le livreur présente le code ${x.code}</div>
     <button class="btn" data-act="handover">Remettre au livreur</button>`;
   if(x.status==='accepted'&&d) act=`<div class="note">${x.courier?x.courier+' a pris la livraison.':'Un livreur va être trouvé parmi vos livreurs.'}</div>`+act;
@@ -60,9 +62,9 @@ function restoStats(tb){
    <div class="stat"><b>${euro(Math.round(wr/wo))}</b><span>Panier moyen</span></div><div class="stat"><b><span class="stars">★</span> ${avg(S.rating.r).toFixed(2)}</b><span>${S.rating.r.count} avis</span></div></div>
    <div class="card"><div class="sub">Chiffre d'affaires par jour</div>${barChart(rev,DAYS,v=>euro(v))}</div>
    <div class="card"><div class="sub">Produits les plus vendus (7 jours)</div>${top.map(([n,c])=>`<div class="dist"><span style="width:104px;color:var(--ink)">${n}</span><span class="tr"><i style="width:${Math.round(c/tm*100)}%"></i></span><span>${c}</span></div>`).join('')}</div>
-   <div class="note ok"><b>Commission ZeeRoo : 0,00 €</b><br>Les paiements par carte arrivent directement sur votre compte Stripe. Les espèces restent chez vous.</div>
+   <div class="note ok"><b>Commission ZeeRoo : 0,00 €</b><br>Vos clients vous paient directement, par carte via votre lien de paiement ou en espèces.</div>
    <div class="card"><div class="sub">Répartition des paiements</div>
-     <div class="dist"><span style="width:104px;color:var(--ink)">Carte en ligne</span><span class="tr"><i style="width:78%"></i></span><span>78 %</span></div>
+     <div class="dist"><span style="width:104px;color:var(--ink)">Carte (votre lien)</span><span class="tr"><i style="width:78%"></i></span><span>78 %</span></div>
      <div class="dist"><span style="width:104px;color:var(--ink)">Espèces</span><span class="tr"><i style="width:22%"></i></span><span>22 %</span></div></div>`,'',tb);
 }
 function restoShop(tb){
@@ -75,7 +77,7 @@ function restoShop(tb){
      ${row('Horaires d\'ouverture',s.hours.filter(h=>h.on).length+' jours par semaine','sub:hours')}
      ${row('Livraison',s.deliveryOn?'Activée · '+euro(s.fee)+' · '+s.radius/1000+' km':'Désactivée','sub:delivery')}
      ${row('Mes livreurs',Object.values({a:S.links.karim,b:S.links.lea}).filter(v=>v==='approved').length+' actifs'+(pend?' · '+pend+' demande':''),'sub:couriers',pend?'<span class="badge w">Nouveau</span>':'')}
-     ${row('Paiements','Carte via Stripe · espèces au comptoir '+(s.cash?'activées':'désactivées'),'sub:pay')}
+     ${row('Lien de paiement',(s.payLink?'SumUp · actif':'À renseigner')+' · espèces au comptoir '+(s.cash?'activées':'désactivées'),'sub:pay')}
      ${row('Abonnement','Pro (option livraison) · essai gratuit','sub:plan')}
    </div>`,'',tb);
 }
@@ -103,15 +105,18 @@ function restoSub(sub){
         <div class="row">${st==='pending'?`<button class="btn sm" data-act="link" data-k="${k}" data-v="approved">Accepter</button><button class="btn sm ghost" data-act="link" data-k="${k}" data-v="rejected">Refuser</button>`:st==='approved'?`<button class="btn sm ghost" data-act="link" data-k="${k}" data-v="rejected">Retirer</button>`:'<span class="mute">Ne reçoit plus vos missions.</span>'}</div></div>`}).join('');
     return page('Mes livreurs',back,`<div class="mute">Les livreurs indépendants de votre secteur demandent à livrer pour vous. Vous acceptez ou refusez chaque demande.</div>${list}`);
   }
-  if(sub==='pay') return page('Paiements',back,`
-    <div class="card"><div class="row"><div class="f"><div class="sub">Compte Stripe</div><div class="mute">Vérifié · virements sur l'IBAN •••• 4821</div></div><span class="badge">Actif</span></div>
-      <div class="mute">Les clients vous paient directement. ZeeRoo ne touche jamais l'argent des commandes.</div></div>
+  if(sub==='pay') return page('Lien de paiement',back,`
+    <div class="card"><div class="sub">Votre page de paiement</div>
+      <div class="mute">Vos clients vous paient par carte, Apple Pay ou Google Pay sur la page de votre fournisseur (SumUp, PayPal, Stripe Payment Link, Lydia Pro…). L'argent arrive sur votre compte bancaire ; ZeeRoo n'encaisse rien.</div>
+      ${field('Adresse de la page','shop.payLink')}
+      <div class="mute">Vous confirmez chaque paiement reçu dans l'onglet Commandes.</div></div>
     <div class="card"><div class="row"><div class="f"><div class="sub">Espèces au comptoir</div><div class="mute">Retrait uniquement. La commande part sans paiement en ligne et vous encaissez au retrait.</div></div>${sw('shop.cash',s.cash)}</div></div>`,'<button class="btn" data-act="rback">Terminé</button>');
   if(sub==='plan') return page('Abonnement',back,`
     <div class="card"><div class="sub">Start · retrait</div><div class="price">19,99 € HT / mois</div><div class="mute">23,99 € TTC · ou 199,99 € HT par an. Retrait sur place, commandes illimitées, 0 % de commission.</div></div>
     <div class="card" style="border-color:var(--green)"><div class="row"><div class="sub f">Pro · option livraison</div><span class="badge">Votre formule · essai</span></div><div class="price">29,99 € HT / mois</div><div class="mute">35,99 € TTC · ou 299,99 € HT par an. Retrait et livraison par vos livreurs.</div></div>
     <div class="mute">30 jours d'essai gratuit, résiliable à tout moment. Le client ne paie aucun frais.</div>
-    <button class="btn ghost" data-act="toastPortal">Gérer sur le portail Stripe</button>`);
+    <button class="btn ghost" data-act="toastPortal">Gérer mon abonnement</button>
+    <div class="mute">Seul l'abonnement passe par Stripe (AiWorkPay). Vos ventes vous sont payées directement par vos clients.</div>`);
   if(sub==='item') return restoItem();
   return '';
 }

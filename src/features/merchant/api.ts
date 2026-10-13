@@ -41,6 +41,7 @@ export type MerchantPatch = Pick<
   TablesUpdate<'merchants'>,
   | 'legal_name'
   | 'photo_url'
+  | 'payment_link'
   | 'siret'
   | 'vat_number'
   | 'contact_email'

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -19,9 +19,8 @@ import {
 import { formatDistance } from '@/features/discover/location';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { AddressField } from '@/features/merchant/AddressField';
-import { cancelMyOrder } from '@/features/orders/api';
 import { customerOrderKeys } from '@/features/orders/hooks';
-import { payOrder } from '@/features/payments/pay';
+import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
 import { spacing, useThemeColors } from '@/theme';
@@ -78,7 +77,6 @@ export default function CartScreen() {
   const activeRewardKey = rewardsAvailable > 0 ? rewardLineKey : null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cancelledNotice, setCancelledNotice] = useState(false);
   // Espèces : au comptoir pour un retrait (si le restaurant l'accepte), au livreur pour une course.
   const [mealCash, setMealCash] = useState(false);
   const [rideCash, setRideCash] = useState(false);
@@ -91,27 +89,18 @@ export default function CartScreen() {
     : 0;
   const grandTotal = total + deliveryFee;
   const canPayCashAtCounter = !isDelivery && !!deliverySettings?.accepts_cash_pickup;
-  const cashMeal = canPayCashAtCounter && mealCash;
+  // Sans lien de paiement, le restaurant n'encaisse qu'en espèces au comptoir.
+  const canPayByCard = !!deliverySettings?.payment_link;
+  const cashMeal = canPayCashAtCounter && (mealCash || !canPayByCard);
   const deliveryReady =
     !isDelivery ||
     (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone));
-  // Retour de Stripe Checkout (web) sans paiement : on annule la commande en attente.
-  const { cancelled } = useLocalSearchParams<{ cancelled?: string }>();
-
-  useEffect(() => {
-    if (!cancelled) return;
-    void cancelMyOrder(cancelled)
-      .catch(() => undefined)
-      .then(() => setCancelledNotice(true));
-  }, [cancelled]);
-
   const order = async () => {
     if (!merchant) return;
     setError(null);
-    setCancelledNotice(false);
     setBusy(true);
     try {
-      const result = await payOrder({
+      const result = await placeOrder({
         merchantId: merchant.id,
         merchantName: merchant.name,
         lines,
@@ -128,12 +117,9 @@ export default function CartScreen() {
               }
             : undefined,
       });
-      if (result.kind === 'cancelled') setCancelledNotice(true);
-      if (result.kind === 'paid') {
-        clear();
-        await queryClient.invalidateQueries({ queryKey: customerOrderKeys.all });
-        router.replace({ pathname: '/order/[id]', params: { id: result.orderId } });
-      }
+      clear();
+      await queryClient.invalidateQueries({ queryKey: customerOrderKeys.all });
+      router.replace({ pathname: '/order/[id]', params: { id: result.orderId } });
     } catch (e) {
       setError(t(errorKey(e)));
     } finally {
@@ -303,12 +289,14 @@ export default function CartScreen() {
         <Card testID="meal-payment">
           <AppText variant="subtitle">{t('client.cart.payHow')}</AppText>
           <View style={styles.chips}>
-            <Chip
-              testID="meal-payment-card"
-              label={t('client.cart.payOnline')}
-              selected={!cashMeal}
-              onPress={() => setMealCash(false)}
-            />
+            {canPayByCard ? (
+              <Chip
+                testID="meal-payment-card"
+                label={t('client.cart.payOnline')}
+                selected={!cashMeal}
+                onPress={() => setMealCash(false)}
+              />
+            ) : null}
             <Chip
               testID="meal-payment-cash"
               label={t('client.cart.payCash')}
@@ -386,9 +374,6 @@ export default function CartScreen() {
       </AppText>
       {isDelivery ? <AppText variant="muted">{t('client.cart.twoPayments')}</AppText> : null}
       <AppText variant="muted">{t('client.cart.noFees')}</AppText>
-      {cancelledNotice ? (
-        <AppText variant="muted">{t('client.cart.paymentCancelled')}</AppText>
-      ) : null}
 
       {error ? <AppText variant="error">{error}</AppText> : null}
       {session ? (

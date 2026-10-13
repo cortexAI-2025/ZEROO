@@ -9,16 +9,13 @@ import type { Tables } from '@/types/database';
 import type { Interval, PlanId } from './plans';
 
 /**
- * Professionnel abonné à ZeeRoo et payé via Stripe Connect : un restaurant ou un livreur.
- * Abonnements HT (restaurant Start ou Pro, livreur : voir plans.ts), 30 jours d'essai, tables distinctes.
+ * Professionnel abonné à ZeeRoo : un restaurant ou un livreur. Stripe ne sert qu'à ces
+ * abonnements (encaissés par AiWorkPay) ; les clients paient les pros via leur propre lien.
+ * Abonnements HT (restaurant Start ou Pro, livreur : voir plans.ts), 30 jours d'essai.
  */
 export type BillingTarget = { role: 'merchant' | 'courier'; id: string };
 
 export type BillingState = {
-  account: Pick<
-    Tables<'merchant_stripe_accounts'>,
-    'charges_enabled' | 'payouts_enabled' | 'details_submitted'
-  > | null;
   subscription: Pick<
     Tables<'subscriptions'>,
     'status' | 'trial_end' | 'current_period_end' | 'cancel_at_period_end' | 'trial_used'
@@ -26,20 +23,12 @@ export type BillingState = {
 };
 
 export async function fetchBilling({ role, id }: BillingTarget): Promise<BillingState> {
-  const [account, subscription] = await Promise.all(
+  const subscription =
     role === 'merchant'
-      ? [
-          supabase.from('merchant_stripe_accounts').select('*').eq('merchant_id', id).maybeSingle(),
-          supabase.from('subscriptions').select('*').eq('merchant_id', id).maybeSingle(),
-        ]
-      : [
-          supabase.from('courier_stripe_accounts').select('*').eq('courier_id', id).maybeSingle(),
-          supabase.from('courier_subscriptions').select('*').eq('courier_id', id).maybeSingle(),
-        ],
-  );
-  if (account.error) throw account.error;
+      ? await supabase.from('subscriptions').select('*').eq('merchant_id', id).maybeSingle()
+      : await supabase.from('courier_subscriptions').select('*').eq('courier_id', id).maybeSingle();
   if (subscription.error) throw subscription.error;
-  return { account: account.data, subscription: subscription.data };
+  return { subscription: subscription.data };
 }
 
 export const billingKey = ({ role, id }: BillingTarget) => [role, id, 'billing'] as const;
@@ -57,7 +46,7 @@ async function openStripePage(url: string) {
   await WebBrowser.openBrowserAsync(url);
 }
 
-/** Actions des cartes « Paiements » et « Abonnement ». Rafraîchit l'état au retour. */
+/** Actions de la carte « Abonnement ». Rafraîchit l'état au retour de Stripe. */
 export function useBillingActions(target: BillingTarget) {
   const queryClient = useQueryClient();
   const { role } = target;
@@ -66,24 +55,10 @@ export function useBillingActions(target: BillingTarget) {
     await queryClient.invalidateQueries({ queryKey: billingKey(target) });
     await queryClient.invalidateQueries({ queryKey: [role] });
   };
-  /** Interroge Stripe une fois (retour d'inscription), puis relit la base. */
-  const refresh = async () => {
-    await callFunction('connect-onboarding', { action: 'refresh', role }).catch(() => undefined);
-    await reload();
-  };
-
   return {
-    refresh,
+    /** Retour de Stripe : relit l'abonnement (mis à jour par le webhook). */
+    refresh: reload,
     reload,
-    /** Inscription Stripe Connect (ou reprise d'un dossier incomplet). */
-    setupPayments: async () => {
-      const { url } = await callFunction<{ url: string }>('connect-onboarding', {
-        action: 'link',
-        role,
-      });
-      await openStripePage(url);
-      if (Platform.OS !== 'web') await refresh(); // le navigateur intégré vient d'être fermé
-    },
     /** Abonnement : page Stripe Checkout (web uniquement, voir docs/ARCHITECTURE.md). */
     subscribe: async (plan: PlanId = 'start', interval: Interval = 'month') => {
       const { url } = await callFunction<{ url: string }>('billing', {

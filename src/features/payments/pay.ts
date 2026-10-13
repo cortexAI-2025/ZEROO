@@ -1,31 +1,39 @@
 import { callFunction } from '@/lib/functions';
+import { supabase } from '@/lib/supabase';
 
-import { orderPayload, type PayOrderInput, type PayOrderResult } from './types';
+import { orderPayload, type PayOrderInput } from './types';
 
 /**
- * Paiement sur le web (client arrivé par le QR code sans l'app) : page Stripe Checkout
- * hébergée, qui renvoie ensuite vers /order/<id>?paid=1 ou /cart?cancelled=<id>.
+ * Envoie la commande au restaurant. Aucun paiement à ce stade : ZeeRoo n'encaisse rien.
+ * Le client paie ensuite chaque professionnel via son lien de paiement (carte, Apple Pay,
+ * Google Pay) ou en espèces, puis le professionnel confirme la réception.
  */
-export async function payOrder(input: PayOrderInput): Promise<PayOrderResult> {
-  const created = await callFunction<{
-    orderId: string;
-    checkoutUrl?: string;
-    free?: boolean;
-    cash?: boolean;
-  }>('create-order', orderPayload(input, 'web'));
-  // Menu offert ou espèces au comptoir : la commande part sans passer par Stripe.
-  if (created.free || created.cash || !created.checkoutUrl)
-    return { kind: 'paid', orderId: created.orderId };
-  globalThis.location.assign(created.checkoutUrl);
-  return { kind: 'redirect' };
+export async function placeOrder(input: PayOrderInput): Promise<{ orderId: string }> {
+  return callFunction<{ orderId: string }>('create-order', orderPayload(input));
 }
 
-/** Règle la course sur le web (page Stripe Checkout du livreur), une fois la mission prise. */
-export async function payDelivery(orderId: string): Promise<'paid' | 'cancelled' | 'redirect'> {
-  const result = await callFunction<{ orderId: string; checkoutUrl: string }>('pay-delivery', {
-    orderId,
-    channel: 'web',
+/** Le client indique avoir payé le repas ou la livraison via le lien du professionnel. */
+export async function declarePayment(orderId: string, kind: 'meal' | 'delivery') {
+  const { error } = await supabase.rpc('customer_declare_payment', {
+    p_order_id: orderId,
+    p_kind: kind,
   });
-  globalThis.location.assign(result.checkoutUrl);
-  return 'redirect';
+  if (error) throw error;
 }
+
+/** Le restaurant confirme avoir reçu le paiement du repas. */
+export async function confirmMealPayment(orderId: string) {
+  const { error } = await supabase.rpc('merchant_confirm_payment', { p_order_id: orderId });
+  if (error) throw error;
+}
+
+/** Le livreur confirme avoir reçu le paiement de la livraison. */
+export async function confirmDeliveryPayment(orderId: string) {
+  const { error } = await supabase.rpc('courier_confirm_delivery_payment', {
+    p_order_id: orderId,
+  });
+  if (error) throw error;
+}
+
+/** Lien de paiement valide : une adresse https (SumUp, PayPal, Stripe Payment Link…). */
+export const isValidPaymentLink = (value: string) => /^https:\/\/\S{4,}$/.test(value.trim());
