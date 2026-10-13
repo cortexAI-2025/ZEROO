@@ -12,12 +12,10 @@ export async function payOrder(input: PayOrderInput): Promise<PayOrderResult> {
     checkoutUrl?: string;
     free?: boolean;
     cash?: boolean;
-  }>(
-    'create-order',
-    orderPayload(input, 'web'),
-  );
+  }>('create-order', orderPayload(input, 'web'));
   // Menu offert ou espèces au comptoir : la commande part sans passer par Stripe.
-  if (created.free || created.cash || !created.checkoutUrl) return { kind: 'paid', orderId: created.orderId };
+  if (created.free || created.cash || !created.checkoutUrl)
+    return { kind: 'paid', orderId: created.orderId };
   globalThis.location.assign(created.checkoutUrl);
   return { kind: 'redirect' };
 }

@@ -215,9 +215,7 @@ export default function OrderScreen() {
 
       {ridePayable ? (
         <Card testID="ride-payment-card">
-          <AppText variant="subtitle">
-            {t('client.order.payRideTitle', { name: courier })}
-          </AppText>
+          <AppText variant="subtitle">{t('client.order.payRideTitle', { name: courier })}</AppText>
           <AppText variant="muted">
             {order.delivery_payment_due_at
               ? t('client.order.payRideBefore', { time: formatTime(order.delivery_payment_due_at) })

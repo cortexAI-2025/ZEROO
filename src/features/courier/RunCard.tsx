@@ -29,7 +29,8 @@ export function RunCard({ run }: { run: CourierRun }) {
   const merchant = run.merchants;
   const early = ['accepted', 'preparing', 'ready'].includes(run.status);
   const paidByCard = run.delivery_payment_method === 'card' && !!run.delivery_authorized_at;
-  const awaitingPayment = early && run.delivery_payment_method === 'card' && !run.delivery_authorized_at;
+  const awaitingPayment =
+    early && run.delivery_payment_method === 'card' && !run.delivery_authorized_at;
   const cash = run.delivery_payment_method === 'cash';
   const itemsCount = run.order_items.reduce((sum, item) => sum + item.quantity, 0);
   const deliveryAddress = [
