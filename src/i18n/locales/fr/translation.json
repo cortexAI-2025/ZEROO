@@ -53,6 +53,10 @@
     "forgotPassword": "Mot de passe oublié ?",
     "continueWithApple": "Continuer avec Apple",
     "continueWithGoogle": "Continuer avec Google",
+    "orWithEmail": "ou avec votre adresse e-mail",
+    "signInIntro": "Le plus simple : continuez avec Google ou Apple, sans mot de passe.",
+    "signUpIntro": "Le plus rapide : continuez avec Google ou Apple. Pas de mot de passe à retenir.",
+    "proHint": "Commerçant ou livreur ? Google et Apple fonctionnent aussi. Avant d'ouvrir votre espace, nous vérifierons votre e-mail et votre numéro de téléphone par SMS.",
     "checkEmailTitle": "Vérifiez votre boîte mail",
     "checkEmailBody": "Nous avons envoyé un lien à {{email}}. Ouvrez-le depuis ce téléphone pour activer votre compte.",
     "resetTitle": "Réinitialiser le mot de passe",
@@ -71,7 +75,34 @@
       "emailNotConfirmed": "Confirmez d'abord votre adresse e-mail via le lien reçu",
       "userAlreadyExists": "Un compte existe déjà avec cette adresse",
       "weakPassword": "Mot de passe trop faible",
-      "rateLimited": "Trop de tentatives, réessayez dans quelques minutes"
+      "rateLimited": "Trop de tentatives, réessayez dans quelques minutes",
+      "otpInvalid": "Code incorrect ou expiré",
+      "phoneInvalid": "Numéro de téléphone invalide",
+      "phoneTaken": "Ce numéro est déjà utilisé par un autre compte",
+      "smsFailed": "Le SMS n'a pas pu être envoyé. Vérifiez le numéro et réessayez.",
+      "smsUnavailable": "La vérification par SMS n'est pas encore activée. Réessayez plus tard.",
+      "codeInvalid": "Saisissez le code à 6 chiffres reçu par SMS"
+    },
+    "proVerification": {
+      "title": "Vérifiez votre compte professionnel",
+      "intro": "Pour la confiance de vos clients, chaque commerce et chaque livreur ZeeRoo a une adresse e-mail confirmée et un numéro de téléphone vérifié.",
+      "emailStep": "Adresse e-mail",
+      "emailDone": "Confirmée : {{email}}",
+      "emailPending": "Ouvrez le lien envoyé à {{email}} pour la confirmer, puis revenez ici.",
+      "resendEmail": "Renvoyer le lien",
+      "emailResent": "Lien renvoyé. Pensez à regarder dans les courriers indésirables.",
+      "refresh": "J'ai confirmé mon e-mail",
+      "phoneStep": "Téléphone mobile",
+      "phoneDone": "Vérifié : {{phone}}",
+      "phoneLabel": "Votre numéro de mobile",
+      "phoneHint": "Vous recevrez un code à 6 chiffres par SMS.",
+      "sendCode": "Recevoir le code",
+      "codeLabel": "Code reçu par SMS",
+      "codeSent": "Code envoyé au {{phone}}.",
+      "verify": "Valider le code",
+      "resendCode": "Renvoyer le code",
+      "changePhone": "Modifier le numéro",
+      "done": "Compte vérifié"
     }
   },
   "space": {
@@ -662,7 +693,8 @@
     "courierPaymentLinkRequired": "Renseignez d'abord votre lien de paiement (onglet Compte) : c'est par lui que les clients vous paient.",
     "merchantNoPaymentLink": "Ce restaurant n'accepte pas encore la carte : choisissez le paiement en espèces au comptoir.",
     "paymentNotExpected": "Ce paiement n'est pas attendu pour le moment.",
-    "invalidPaymentKind": "Type de paiement inconnu."
+    "invalidPaymentKind": "Type de paiement inconnu.",
+    "proVerificationRequired": "Vérifiez d'abord votre e-mail et votre numéro de téléphone."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",

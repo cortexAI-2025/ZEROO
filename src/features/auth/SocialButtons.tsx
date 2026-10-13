@@ -1,7 +1,7 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { Platform, StyleSheet, View, useColorScheme } from 'react-native';
 
 import { AppText, Button } from '@/components/ui';
 import { radius, spacing } from '@/theme';
@@ -14,11 +14,19 @@ import {
   signInWithGoogle,
 } from './social';
 
-export function SocialButtons() {
+type Provider = 'apple' | 'google';
+
+/**
+ * Connexion / inscription en un geste avec Apple ou Google : c'est la voie mise en avant pour
+ * les clients. Le compte est créé automatiquement à la première connexion. Rien n'est affiché
+ * quand aucun fournisseur n'est disponible (le formulaire e-mail reste seul).
+ */
+/** `intro` : phrase d'accroche affichée au-dessus des boutons quand ils sont disponibles. */
+export function SocialButtons({ intro }: { intro?: string }) {
   const { t } = useTranslation();
   const scheme = useColorScheme();
   const [appleAvailable, setAppleAvailable] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
   const googleAvailable = isGoogleSignInAvailable();
 
@@ -28,51 +36,69 @@ export function SocialButtons() {
 
   if (!appleAvailable && !googleAvailable) return null;
 
-  const run = async (signIn: () => Promise<unknown>) => {
+  const run = async (provider: Provider) => {
     setError(null);
-    setBusy(true);
+    setBusy(provider);
     try {
-      await signIn();
+      await (provider === 'apple' ? signInWithApple() : signInWithGoogle());
     } catch (e) {
       setError(t(authErrorKey(e)));
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
+  // Bouton natif Apple sur iOS (exigé par Apple), bouton standard sur le web.
+  const appleButton =
+    Platform.OS === 'ios' ? (
+      <AppleAuthentication.AppleAuthenticationButton
+        buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+        buttonStyle={
+          scheme === 'dark'
+            ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+            : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+        }
+        cornerRadius={radius.md}
+        style={styles.apple}
+        onPress={() => void run('apple')}
+      />
+    ) : (
+      <Button
+        testID="sign-in-apple"
+        variant="secondary"
+        title={t('auth.continueWithApple')}
+        loading={busy === 'apple'}
+        disabled={busy !== null}
+        onPress={() => void run('apple')}
+      />
+    );
+
   return (
     <View style={styles.container}>
-      <AppText variant="muted" style={styles.or}>
-        {t('common.or')}
-      </AppText>
-      {appleAvailable ? (
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-          buttonStyle={
-            scheme === 'dark'
-              ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
-              : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-          }
-          cornerRadius={radius.md}
-          style={styles.apple}
-          onPress={() => void run(signInWithApple)}
-        />
-      ) : null}
+      {intro ? <AppText style={styles.intro}>{intro}</AppText> : null}
       {googleAvailable ? (
         <Button
+          testID="sign-in-google"
           variant="secondary"
           title={t('auth.continueWithGoogle')}
-          loading={busy}
-          onPress={() => void run(signInWithGoogle)}
+          loading={busy === 'google'}
+          disabled={busy !== null}
+          onPress={() => void run('google')}
         />
       ) : null}
+      {appleAvailable ? appleButton : null}
       {error ? <AppText variant="error">{error}</AppText> : null}
+      {/* Placés au-dessus du formulaire : on annonce l'alternative par e-mail. */}
+      <AppText variant="muted" style={styles.or}>
+        {t('auth.orWithEmail')}
+      </AppText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { gap: spacing.sm },
-  or: { textAlign: 'center' },
+  intro: { textAlign: 'center' },
+  or: { textAlign: 'center', marginVertical: spacing.xs },
   apple: { height: 50, width: '100%' },
 });

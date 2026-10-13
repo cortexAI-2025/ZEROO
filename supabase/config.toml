@@ -266,8 +266,10 @@ template = "Your code is {{ .Code }}"
 max_frequency = "5s"
 
 # Use pre-defined map of phone number to OTP for testing.
+# ZeeRoo : le téléphone sert à vérifier les professionnels (pas d'inscription par SMS).
+# Pour tester la vérification en local, décommentez et utilisez le code fixe ci-dessous.
 # [auth.sms.test_otp]
-# 4152127777 = "123456"
+# 33600000000 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]

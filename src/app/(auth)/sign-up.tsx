@@ -45,6 +45,7 @@ export default function SignUpScreen() {
   return (
     <Screen scroll>
       <AppText variant="title">{t('auth.signUp')}</AppText>
+      <SocialButtons intro={t('auth.signUpIntro')} />
       <FormTextField
         control={control}
         name="displayName"
@@ -76,7 +77,7 @@ export default function SignUpScreen() {
         loading={formState.isSubmitting}
         onPress={() => void onSubmit()}
       />
-      <SocialButtons />
+      <AppText variant="muted">{t('auth.proHint')}</AppText>
       <Link href="/sign-in">
         <AppText variant="link">{t('auth.hasAccount')}</AppText>
       </Link>

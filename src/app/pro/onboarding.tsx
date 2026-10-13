@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText, Button, Screen } from '@/components/ui';
 import { signOut } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { ProVerificationScreen, useProVerification } from '@/features/auth/ProVerification';
 import { createMerchant } from '@/features/merchant/api';
 import { merchantKeys } from '@/features/merchant/hooks';
 import { MerchantForm } from '@/features/merchant/MerchantForm';
@@ -14,6 +15,17 @@ export default function OnboardingScreen() {
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const { setSpace } = useSpace();
+  const { verified } = useProVerification();
+
+  // E-mail confirmé et téléphone vérifié avant de créer le commerce (règle appliquée en base).
+  if (!verified) {
+    return (
+      <ProVerificationScreen
+        exitLabel={t('space.switchToClient')}
+        onExit={() => setSpace('client')}
+      />
+    );
+  }
 
   return (
     <Screen scroll>

@@ -1,19 +1,34 @@
-// Version web : l'espace commerçant sur navigateur utilise la connexion par e-mail.
-// Apple et Google (via signInWithOAuth) pourront être ajoutés ici si besoin.
+// Version web (app.zeroo.online) : Google et Apple passent par la redirection OAuth de Supabase.
+// Au retour sur /auth-callback, supabase-js installe la session lui-même (detectSessionInUrl).
+import { env } from '@/lib/env';
+import { supabase } from '@/lib/supabase';
+
+import { authCallbackUrl } from './api';
+
 export type SocialResult = 'signed-in' | 'cancelled';
 
 export async function isAppleSignInAvailable() {
-  return false;
+  return env.oauthProviders.includes('apple');
 }
 
 export function isGoogleSignInAvailable() {
-  return false;
+  return env.oauthProviders.includes('google');
 }
 
-export async function signInWithApple(): Promise<SocialResult> {
-  throw new Error('Connexion Apple indisponible sur le web');
+async function redirectTo(provider: 'google' | 'apple'): Promise<SocialResult> {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: authCallbackUrl() },
+  });
+  if (error) throw error;
+  // Le navigateur quitte la page vers Google / Apple.
+  return 'signed-in';
 }
 
-export async function signInWithGoogle(): Promise<SocialResult> {
-  throw new Error('Connexion Google indisponible sur le web');
+export function signInWithApple() {
+  return redirectTo('apple');
+}
+
+export function signInWithGoogle() {
+  return redirectTo('google');
 }

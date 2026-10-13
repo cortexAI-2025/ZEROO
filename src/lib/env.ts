@@ -9,6 +9,19 @@ const schema = z.object({
   functionsUrl: z.url().optional(),
   googleWebClientId: z.string().optional(),
   googleIosClientId: z.string().optional(),
+  // Fournisseurs de connexion activés dans Supabase (Authentication > Providers), pour le web.
+  oauthProviders: z
+    .string()
+    .default('google,apple')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((provider) => provider.trim())
+        .filter(
+          (provider): provider is 'google' | 'apple' =>
+            provider === 'google' || provider === 'apple',
+        ),
+    ),
 });
 
 const parsed = schema.safeParse({
@@ -18,6 +31,7 @@ const parsed = schema.safeParse({
   functionsUrl: process.env.EXPO_PUBLIC_FUNCTIONS_URL || undefined,
   googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || undefined,
   googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || undefined,
+  oauthProviders: process.env.EXPO_PUBLIC_OAUTH_PROVIDERS || undefined,
 });
 
 if (!parsed.success) {

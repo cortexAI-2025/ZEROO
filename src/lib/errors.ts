@@ -60,6 +60,7 @@ const businessErrors = {
   merchant_no_payment_link: 'errors.merchantNoPaymentLink',
   payment_not_expected: 'errors.paymentNotExpected',
   invalid_payment_kind: 'errors.invalidPaymentKind',
+  pro_verification_required: 'errors.proVerificationRequired',
 } as const;
 
 export type ErrorKey =

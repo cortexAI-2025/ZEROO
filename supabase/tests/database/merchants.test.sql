@@ -10,6 +10,9 @@ insert into auth.users (id, email) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'samir@test.fr'),
   ('aaaaaaaa-0000-0000-0000-000000000002', 'lea@test.fr'),
   ('cccccccc-0000-0000-0000-000000000001', 'client@test.fr');
+-- Professionnels : e-mail et téléphone vérifiés (voir pro_verification.test.sql).
+update auth.users set email_confirmed_at = now(), phone = '3361000000' || right(id::text, 1), phone_confirmed_at = now()
+where id::text like 'aaaaaaaa-%';
 
 -- -----------------------------------------------------------------------------
 -- Création du commerce
@@ -45,7 +48,8 @@ select is(
 reset role;
 
 -- Doublon de slug : suffixe numérique.
-insert into auth.users (id, email) values ('aaaaaaaa-0000-0000-0000-000000000003', 'autre@test.fr');
+insert into auth.users (id, email, email_confirmed_at, phone, phone_confirmed_at)
+values ('aaaaaaaa-0000-0000-0000-000000000003', 'autre@test.fr', now(), '33610000003', now());
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "aaaaaaaa-0000-0000-0000-000000000003", "role": "authenticated"}';
 select is(
