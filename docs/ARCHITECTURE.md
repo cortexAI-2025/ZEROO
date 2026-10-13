@@ -1,4 +1,4 @@
-# Zéroo : architecture (étape 0, proposition)
+# ZeeRoo : architecture (étape 0, proposition)
 
 > Statut : **validé** (étape 0). Mis à jour au fil des étapes.
 
@@ -10,11 +10,11 @@
 | Fidélité | **9 menus payés et récupérés chez un commerçant = 1 menu offert**, en comptant chaque menu, même s'ils sont achetés dans une seule commande (validé). Le commerçant indique quels produits sont des « menus » éligibles. Voir §3.1. |
 | Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro multisite 29,99 € HT/mois (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
-| Positionnement | **Zéroo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
-| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. Zéroo n'encaisse jamais d'argent. Voir §3.4. |
+| Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
+| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. ZeeRoo n'encaisse jamais d'argent. Voir §3.4. |
 | Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
 | Site public | **zeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
-| Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme Zéroo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
+| Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme ZeeRoo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
 
 ## 1. Stack retenue et ajustements
 
@@ -362,8 +362,8 @@ Transitions autorisées :
 - Le client paie **deux paiements séparés**, chacun en charge directe Stripe Connect sans commission :
   - le repas sur le compte du restaurant ;
   - la course sur le compte du livreur.
-- Zéroo ne touche jamais l'argent. Le relevé du client porte deux lignes : le restaurant et le livreur.
-- Le livreur paie l'abonnement Zéroo (14,99 € HT par mois, 30 jours d'essai). Le restaurant ne le rémunère pas.
+- ZeeRoo ne touche jamais l'argent. Le relevé du client porte deux lignes : le restaurant et le livreur.
+- Le livreur paie l'abonnement ZeeRoo (14,99 € HT par mois, 30 jours d'essai). Le restaurant ne le rémunère pas.
 
 **Activation d'un livreur.** Un livreur peut se rendre disponible s'il remplit trois conditions :
 1. Son compte Stripe Connect est actif (`charges_enabled`). Stripe vérifie l'identité et l'immatriculation (SIRET, Kbis ou avis de situation INSEE selon le statut).
@@ -386,7 +386,7 @@ Le SIRET saisi est contrôlé (14 chiffres, clé de Luhn) et unique.
 - **Course** (`delivery_payment_method`, choix du client à la commande) :
   - **carte** : quand un livreur accepte, le client dispose de **5 minutes** (`delivery_payment_due_at`) pour la régler en un geste (Edge Function `pay-delivery`, charge directe sur le compte du livreur, encaissée tout de suite). Non payée à temps, la mission repart dans le pool (`expire_unpaid_missions`, appelée par `expire-orders`) et le paiement ouvert est annulé. Le paiement est rattaché au livreur actuel (`delivery_payment_intent_id`) : un paiement d'un ancien livreur est ignoré ou remboursé. Le restaurant ne remet pas la commande au livreur tant que la course par carte n'est pas payée (`delivery_not_paid`) ;
   - **espèces** : aucun paiement en ligne, le livreur encaisse à la porte ; `delivery_paid_at` est posé à la validation par code.
-- Zidozid ne touche jamais l'argent des commandes. Le relevé du client porte une ligne par vendeur.
+- ZeeRoo ne touche jamais l'argent des commandes. Le relevé du client porte une ligne par vendeur.
 - Phase 2 prévue : carte enregistrée à la commande et course prélevée automatiquement à l'acceptation (nécessite des clients Stripe côté plateforme et le clonage des moyens de paiement vers les comptes livreurs).
 
 **Statuts** (ajouts `out_for_delivery`, `delivered`).
@@ -497,7 +497,7 @@ ORDER_ACCEPT_TIMEOUT_MINUTES=10
 | a ✅ | Expo SDK 57 + Router + TS + i18n + Supabase local + profils + auth (e-mail, Apple, Google) + choix d’espace + suppression de compte | Voir README : tests pgTAP, Jest, parcours manuel |
 | b ✅ | Création du commerce (adresse géocodée), menu (catégories, produits, options, rupture, ordre), horaires, pause, publication, commandes en temps réel avec sonnerie, transitions de statut, code de retrait, CA du jour, historique, QR code | `npm run dev:order`, tests pgTAP, parcours web de bout en bout |
 | c ✅ | Recherche (proximité + nom / ville / code postal), fiche et menu publics (lien du QR code), panier avec options, commande via `create_order()` (sans paiement), suivi temps réel, historique | pgTAP + `npm run e2e` (client et commerçant dans deux navigateurs) |
-| d ✅ | Stripe Connect (inscription + webhooks), PaymentSheet (mobile) et Checkout (web), pré-autorisation puis capture à l'acceptation, refus / annulation / expiration sans débit, abonnement Billing avec essai de 30 jours (web) | pgTAP, `e2e/payments.e2e.js` contre stripe-mock, parcours web avec pages Stripe simulées ; à valider avec les clés de test du compte Zéroo |
+| d ✅ | Stripe Connect (inscription + webhooks), PaymentSheet (mobile) et Checkout (web), pré-autorisation puis capture à l'acceptation, refus / annulation / expiration sans débit, abonnement Billing avec essai de 30 jours (web) | pgTAP, `e2e/payments.e2e.js` contre stripe-mock, parcours web avec pages Stripe simulées ; à valider avec les clés de test du compte ZeeRoo |
 | e ✅ | Fidélité (menus formules uniquement) : décompte au trigger, menu offert réservé à la commande et rendu en cas d'échec, commande à 0 € sans Stripe, carte client (onglet + fiche commerce), affichage commerçant | 24 tests pgTAP, `e2e/loyalty.e2e.js` |
 | f ✅ | Push Expo sur changement de statut (trigger + pg_net + `notify-order-update`), « Je pars maintenant » (`customer-departure`, Google Routes avec repli sur une estimation), conseil « lancer la préparation dans X min » | 15 tests pgTAP, `e2e/notifications.e2e.js` (faux Expo Push et Google), parcours web ; à valider sur appareil physique |
 | g ✅ | Livraison par livreur indépendant : espace livreur (profil, SIRET, Stripe Connect, abonnement 14,99 € HT, rattachement aux restaurants, disponibilité, courses, revenus), réglages de livraison du restaurant (prix, rayon, livreurs), choix retrait / livraison et adresse côté client, double paiement repas + course, codes de retrait et de livraison | pgTAP (`delivery.test.sql`), `e2e/delivery.e2e.js` contre stripe-mock |

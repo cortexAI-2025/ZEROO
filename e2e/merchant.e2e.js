@@ -54,7 +54,7 @@ run('Espace commerçant', async () => {
   await label('Mot de passe').fill('motdepasse1');
   await v(page.getByTestId('sign-in-submit')).click();
   await page.getByTestId('choose-space-merchant').click();
-  await text('Bienvenue sur Zéroo Pro').waitFor();
+  await text('Bienvenue sur ZeeRoo Pro').waitFor();
   step('nouveau commerçant : écran de création du commerce');
 
   await v(page.getByTestId('merchant-submit')).click();

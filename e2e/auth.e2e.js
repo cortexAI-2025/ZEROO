@@ -76,11 +76,11 @@ run('Authentification', async () => {
     .catch(async () => page.getByText('Compte').filter({ visible: true }).last().click());
   await page.getByText(`Connecté en tant que ${email}`).filter({ visible: true }).waitFor();
   await page.getByText("Passer à l'espace commerçant").filter({ visible: true }).click();
-  await page.getByText('Bienvenue sur Zéroo Pro').filter({ visible: true }).waitFor();
+  await page.getByText('Bienvenue sur ZeeRoo Pro').filter({ visible: true }).waitFor();
   step("bascule vers l'espace commerçant");
 
   await page.reload();
-  await page.getByText('Bienvenue sur Zéroo Pro').filter({ visible: true }).waitFor();
+  await page.getByText('Bienvenue sur ZeeRoo Pro').filter({ visible: true }).waitFor();
   step('session et espace conservés après rechargement');
 
   await page.getByText('Se déconnecter').filter({ visible: true }).click();
@@ -93,7 +93,7 @@ run('Authentification', async () => {
   await page.getByText('E-mail ou mot de passe incorrect').filter({ visible: true }).waitFor();
   await page.getByLabel('Mot de passe').filter({ visible: true }).fill('motdepasse1');
   await page.getByTestId('sign-in-submit').filter({ visible: true }).click();
-  await page.getByText('Bienvenue sur Zéroo Pro').filter({ visible: true }).waitFor();
+  await page.getByText('Bienvenue sur ZeeRoo Pro').filter({ visible: true }).waitFor();
   step('reconnexion (mauvais puis bon mot de passe)');
 
   // Mot de passe oublié.
@@ -128,7 +128,7 @@ run('Authentification', async () => {
   await page.getByText('Enregistrer').filter({ visible: true }).click();
   await page.getByText('Votre mot de passe a été mis à jour.').filter({ visible: true }).waitFor();
   await page.getByText('Continuer').filter({ visible: true }).click();
-  await page.getByText('Bienvenue sur Zéroo Pro').filter({ visible: true }).waitFor();
+  await page.getByText('Bienvenue sur ZeeRoo Pro').filter({ visible: true }).waitFor();
   step("mot de passe oublié : lien e-mail → nouveau mot de passe → retour dans l'app");
 
   await page.getByText("Passer à l'espace client").filter({ visible: true }).click();

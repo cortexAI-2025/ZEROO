@@ -119,7 +119,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 }
 
 /**
- * Page d'accueil de zeroo.fr (web). Message central : Zéroo est un service. Le client
+ * Page d'accueil de zeroo.fr (web). Message central : ZeeRoo est un service. Le client
  * paie le prix de la carte, le restaurant un abonnement fixe, sans commission.
  */
 export function LandingPage() {
