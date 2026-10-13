@@ -12,8 +12,8 @@
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro 29,99 € HT/mois avec l'option livraison (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
 | Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
 | Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. ZeeRoo n'encaisse jamais d'argent. Voir §3.4. |
-| Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
-| Site public | **zeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
+| Domaine | **zeroo.online** : site vitrine et liens commerçant `https://zeroo.online/m/<slug>` (cibles des QR codes, redirigés vers l'app web). **app.zeroo.online** : app web, page d'abonnement et retours Stripe. |
+| Site public | **zeroo.online** : site vitrine statique (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages) avec la démo interactive. Ce dépôt ne contient que l'application. |
 | Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme ZeeRoo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
 
 ## 1. Stack retenue et ajustements
@@ -39,7 +39,7 @@
 
 1. **Type de compte Stripe Connect.** Avec des comptes Express ou Custom où la plateforme gère la tarification, Stripe facture la plateforme environ 2 € par compte actif et par mois, plus des frais par virement. Ça représenterait environ environ 10 % d'un abonnement Start à 19,99 € HT. Je recommande des comptes dont **Stripe gère la tarification** (configuration `controller` : `fees.payer = account`, `losses.payments = stripe`, `stripe_dashboard.type = full`, l'équivalent des comptes « Standard »). Avec cette configuration, la plateforme ne paie aucun frais Connect, et le commerçant a son propre dashboard Stripe pour ses virements, ses remboursements et ses litiges.
 2. **Pré-autorisation puis capture.** Le paiement est autorisé à la commande (`capture_method = manual`) et **capturé seulement quand le commerçant accepte**. Si le commerçant refuse, ou ne répond pas sous N minutes, l'autorisation est annulée. Cette approche a deux avantages : aucun remboursement n'est nécessaire, et donc aucun frais Stripe n'est perdu pour le commerçant, qui ne les récupère pas sur un remboursement. Le client, lui, n'est jamais débité pour une commande refusée.
-3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`zeroo.fr/commercant`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
+3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`app.zeroo.online/pro`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
 4. **Code de retrait.** Pour que le compteur de fidélité ne s'incrémente qu'à la remise réelle, chaque commande porte un code court (ex. `K7P2`) que le client montre en caisse. Le commerçant passe la commande à « récupérée » en le saisissant ou en scannant le QR de la commande.
 5. **« Je pars maintenant » sans traçage continu (RGPD).** La position est envoyée **une seule fois**, au moment du clic. Le serveur calcule l'ETA et **ne stocke pas les coordonnées**, seulement `customer_eta_at`. Le client pourra cliquer à nouveau pour rafraîchir l'ETA.
 6. **Un compte = un commerce.** Le même compte peut aussi commander comme client : l'app propose deux espaces, avec une bascule dans « Compte ».
@@ -79,7 +79,7 @@ zeroo/
 ├── src/
 │   ├── app/                          # Expo Router : routes uniquement, écrans fins
 │   │   ├── _layout.tsx               # providers + gardes (Stack.Protected) session / espace
-│   │   ├── index.tsx                 # zeroo.fr : page d'accueil (visiteur web) ou redirection
+│   │   ├── index.tsx                 # app.zeroo.online : page d'accueil (visiteur web) ou redirection
 │   │   ├── mentions-legales.tsx, confidentialite.tsx
 │   │   ├── auth-callback.tsx         # retour des liens e-mail (confirmation, mot de passe)
 │   │   ├── choose-space.tsx          # « Commander » ou « Gérer mon commerce »
@@ -167,7 +167,7 @@ create table profiles (
 create table merchants (
   id                   uuid primary key default gen_random_uuid(),
   owner_id             uuid not null unique references profiles(id),  -- 1 compte = 1 commerce
-  slug                 text not null unique,            -- lien / QR code : zeroo.fr/m/<slug>
+  slug                 text not null unique,            -- lien / QR code : zeroo.online/m/<slug>
   name                 text not null,
   description          text,
   category             text not null,                   -- 'snack' | 'sandwicherie' | 'restaurant'…
