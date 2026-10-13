@@ -1,0 +1,7 @@
+*.md
+package-lock.json
+supabase/.temp
+supabase/.branches
+.expo
+dist
+docs/maquette

@@ -1,0 +1,939 @@
+{
+  "common": {
+    "appName": "Zéroo",
+    "continue": "Continuer",
+    "cancel": "Annuler",
+    "loading": "Chargement…",
+    "or": "ou",
+    "genericError": "Une erreur est survenue. Réessayez dans un instant.",
+    "comingSoon": "Bientôt disponible",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "retry": "Réessayer",
+    "minutes": "{{count}} min",
+    "yes": "Oui",
+    "no": "Non",
+    "close": "Fermer",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié"
+  },
+  "billing": {
+    "plans": {
+      "start": "Start",
+      "pro": "Pro"
+    },
+    "intervals": {
+      "month": "Mensuel",
+      "year": "Annuel"
+    },
+    "price": {
+      "month": "{{ht}} HT par mois ({{ttc}} TTC)",
+      "year": "{{ht}} HT par an ({{ttc}} TTC)"
+    },
+    "yearlyHint": "Soit {{monthly}} HT par mois avec l'abonnement annuel."
+  },
+  "auth": {
+    "tagline": "Commandez, payez, récupérez. Sans attendre.",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "displayName": "Prénom (facultatif)",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "noAccount": "Pas encore de compte ? Inscrivez-vous",
+    "hasAccount": "Déjà un compte ? Connectez-vous",
+    "forgotPassword": "Mot de passe oublié ?",
+    "continueWithApple": "Continuer avec Apple",
+    "continueWithGoogle": "Continuer avec Google",
+    "checkEmailTitle": "Vérifiez votre boîte mail",
+    "checkEmailBody": "Nous avons envoyé un lien à {{email}}. Ouvrez-le depuis ce téléphone pour activer votre compte.",
+    "resetTitle": "Réinitialiser le mot de passe",
+    "resetBody": "Saisissez votre adresse e-mail, nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+    "sendResetLink": "Envoyer le lien",
+    "resetSent": "Si un compte existe pour {{email}}, un lien vient de lui être envoyé.",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "saveNewPassword": "Enregistrer",
+    "passwordUpdated": "Votre mot de passe a été mis à jour.",
+    "backToSignIn": "Retour à la connexion",
+    "callbackFailed": "Ce lien n'est plus valide. Demandez-en un nouveau.",
+    "errors": {
+      "emailInvalid": "Adresse e-mail invalide",
+      "passwordTooShort": "8 caractères minimum, avec au moins une lettre et un chiffre",
+      "invalidCredentials": "E-mail ou mot de passe incorrect",
+      "emailNotConfirmed": "Confirmez d'abord votre adresse e-mail via le lien reçu",
+      "userAlreadyExists": "Un compte existe déjà avec cette adresse",
+      "weakPassword": "Mot de passe trop faible",
+      "rateLimited": "Trop de tentatives, réessayez dans quelques minutes"
+    }
+  },
+  "space": {
+    "title": "Que souhaitez-vous faire ?",
+    "client": "Commander",
+    "clientHint": "Trouver un snack ou un restaurant et commander à emporter",
+    "merchant": "Gérer mon commerce",
+    "merchantHint": "Recevoir les commandes, gérer le menu, sans commission",
+    "switchToClient": "Passer à l'espace client",
+    "switchToMerchant": "Passer à l'espace commerçant",
+    "courier": "Livrer",
+    "courierHint": "Livreur indépendant : livrez pour les restaurants de votre secteur, sans commission",
+    "switchToCourier": "Passer à l'espace livreur"
+  },
+  "client": {
+    "tabs": {
+      "explore": "À proximité",
+      "orders": "Commandes",
+      "account": "Compte",
+      "loyalty": "Fidélité"
+    },
+    "explore": {
+      "title": "Commander à emporter",
+      "searchLabel": "Rechercher un commerce",
+      "searchPlaceholder": "Nom, ville ou code postal",
+      "useLocation": "Utiliser ma position",
+      "locationHint": "Votre position sert uniquement à trouver les commerces proches. Elle n'est pas enregistrée.",
+      "locationDenied": "Localisation refusée. Vous pouvez chercher par ville ou code postal, ou l'autoriser dans les réglages.",
+      "locationFailed": "Impossible d'obtenir votre position. Cherchez par ville ou code postal.",
+      "nearbyTitle": "Autour de vous",
+      "resultsTitle": "Résultats",
+      "noNearby": "Aucun commerce Zéroo dans un rayon de 10 km pour l'instant.",
+      "noResults": "Aucun commerce trouvé.",
+      "locating": "Localisation…"
+    },
+    "merchant": {
+      "notFound": "Ce commerce est introuvable ou n'est plus disponible.",
+      "closedBanner": "Fermé pour le moment : vous pouvez consulter le menu, mais pas commander.",
+      "pausedBanner": "Ce commerce ne prend plus de commandes pour l'instant. Réessayez dans quelques minutes.",
+      "hours": "Horaires",
+      "today": "Aujourd'hui",
+      "closedToday": "Fermé",
+      "directions": "Itinéraire",
+      "call": "Appeler",
+      "from": "à partir de",
+      "unavailable": "Épuisé",
+      "loyaltyMenu": "Menu formule",
+      "loyaltyRule": "Fidélité : 9 menus formules achetés = le 10e offert.",
+      "delivers": "Livraison possible · {{price}}"
+    },
+    "item": {
+      "required": "Obligatoire",
+      "chooseOne": "1 au choix",
+      "chooseUpTo": "Jusqu'à {{count}} au choix",
+      "chooseBetween": "{{min}} à {{max}} au choix",
+      "add": "Ajouter · {{price}}",
+      "missing": "Choisissez : {{group}}",
+      "quantity": "Quantité"
+    },
+    "cart": {
+      "title": "Mon panier",
+      "empty": "Votre panier est vide.",
+      "viewCart": "Voir le panier ({{count}})",
+      "total": "Total",
+      "note": "Une précision pour le commerçant ? (facultatif)",
+      "notePlaceholder": "Ex. sans oignons",
+      "order": "Payer · {{price}}",
+      "signInToOrder": "Se connecter pour commander",
+      "replaceTitle": "Nouveau panier ?",
+      "replaceBody": "Votre panier contient des produits de {{name}}. Le vider pour commander ici ?",
+      "replaceAction": "Vider et ajouter",
+      "pickupInfo": "À récupérer chez {{name}}, {{address}}",
+      "continueShopping": "Continuer mes achats",
+      "cartAt": "Panier en cours chez {{name}}",
+      "paymentInfo": "Votre carte est seulement autorisée : vous n'êtes débité que si le commerçant accepte la commande.",
+      "paymentCancelled": "Paiement annulé : aucun montant n'a été débité. Votre panier est conservé.",
+      "subtotal": "Sous-total",
+      "orderFree": "Commander mon menu offert",
+      "noFees": "Prix de la carte, sans frais de service.",
+      "pickup": "À emporter",
+      "delivery": "Livraison",
+      "deliveryPhone": "Téléphone pour le livreur",
+      "deliveryInstructions": "Instructions pour le livreur (facultatif)",
+      "instructionsPlaceholder": "Ex. digicode, étage, interphone",
+      "deliveryFee": "Livraison",
+      "quoteChecking": "Vérification de la livraison…",
+      "quoteOk": "Livraison possible à {{distance}} du restaurant.",
+      "quoteReasons": {
+        "delivery_unavailable": "Ce restaurant ne livre pas pour le moment.",
+        "delivery_out_of_range": "Cette adresse est hors de la zone de livraison du restaurant.",
+        "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
+      },
+      "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
+      "twoPayments": "Deux paiements : le repas au restaurant, la course au livreur. Aucun frais Zéroo.",
+      "deliveryAddress": "Adresse de livraison",
+      "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve."
+    },
+    "orders": {
+      "title": "Mes commandes",
+      "empty": "Vos commandes apparaîtront ici.",
+      "active": "En cours",
+      "past": "Terminées"
+    },
+    "order": {
+      "title": "Ma commande",
+      "pickupCode": "Code de retrait",
+      "pickupCodeHint": "Montrez ce code au comptoir pour récupérer votre commande.",
+      "steps": {
+        "placed": "Commande envoyée",
+        "accepted": "Acceptée",
+        "preparing": "En préparation",
+        "ready": "Prête !",
+        "collected": "Récupérée",
+        "out_for_delivery": "En route",
+        "delivered": "Livrée"
+      },
+      "status": {
+        "placed": "En attente de confirmation par le commerçant…",
+        "accepted": "Acceptée : prête vers {{time}}.",
+        "preparing": "En préparation, prête vers {{time}}.",
+        "ready": "Votre commande est prête, vous pouvez venir la chercher !",
+        "collected": "Commande récupérée. Bon appétit !",
+        "refused": "Le commerçant n'a pas pu accepter votre commande. Vous n'avez pas été débité.",
+        "expired": "Le commerçant n'a pas répondu à temps. Vous n'avez pas été débité.",
+        "cancelled": "Commande annulée. Aucun montant n'a été débité.",
+        "pending_payment": "Confirmation du paiement en cours…",
+        "out_for_delivery": "{{courier}} est en route avec votre commande.",
+        "delivered": "Commande livrée. Bon appétit !",
+        "placedDelivery": "En attente de confirmation du restaurant et du livreur…",
+        "acceptedDelivery": "Acceptée : {{courier}} livrera votre commande."
+      },
+      "reason": "Motif : {{reason}}",
+      "items": "Détail",
+      "orderAgain": "Revoir le menu",
+      "placedAt": "Passée le {{date}} à {{time}}",
+      "cancel": "Annuler ma commande",
+      "cancelConfirmTitle": "Annuler la commande ?",
+      "cancelConfirmBody": "Le commerçant n'a pas encore accepté : vous ne serez pas débité.",
+      "cancelConfirmAction": "Annuler la commande",
+      "keep": "Garder",
+      "deliveryCode": "Code de livraison",
+      "deliveryCodeHint": "Donnez ce code au livreur à son arrivée.",
+      "deliveryTo": "Livraison : {{address}}",
+      "courier": "Votre livreur : {{name}}",
+      "deliveryFee": "Livraison",
+      "totalPaid": "Total payé"
+    },
+    "loyalty": {
+      "title": "Mes cartes de fidélité",
+      "rule": "9 menus formules achetés = le 10e offert. Les produits au détail ne comptent pas.",
+      "empty": "Vos cartes apparaîtront ici après votre première commande récupérée.",
+      "progress": "{{count}}/{{total}} menus",
+      "remaining_one": "encore {{count}} menu pour un menu offert",
+      "remaining_other": "encore {{count}} menus pour un menu offert",
+      "rewardsAvailable_one": "🎁 {{count}} menu formule offert à utiliser",
+      "rewardsAvailable_other": "🎁 {{count}} menus formules offerts à utiliser",
+      "cardHere": "Ma carte chez {{name}}",
+      "signInForCard": "Connectez-vous pour cumuler vos menus formules sur votre carte de fidélité.",
+      "useReward": "Utiliser mon menu offert ici",
+      "removeReward": "Ne plus utiliser le menu offert",
+      "rewardApplied": "Menu offert (fidélité)",
+      "rewardHint": "Le menu est offert ; les suppléments payants restent dus.",
+      "addMenuForReward": "Ajoutez un menu formule au panier pour utiliser votre menu offert.",
+      "earned_one": "+{{count}} menu formule ajouté à votre carte",
+      "earned_other": "+{{count}} menus formules ajoutés à votre carte",
+      "freeOrder": "Commande offerte : aucun paiement."
+    },
+    "departure": {
+      "title": "Je pars maintenant",
+      "body": "Prévenez le commerçant de votre départ : il lancera la préparation pour que tout soit prêt à votre arrivée.",
+      "privacy": "Votre position est utilisée une seule fois pour calculer le trajet. Elle n'est pas enregistrée.",
+      "modes": {
+        "walk": "À pied",
+        "bike": "À vélo",
+        "drive": "En voiture"
+      },
+      "go": "Je pars maintenant",
+      "update": "Mettre à jour mon heure d'arrivée",
+      "announced": "Le commerçant sait que vous arrivez vers {{time}}.",
+      "locationDenied": "Sans accès à votre position, le trajet ne peut pas être calculé. Vous pouvez l'autoriser dans les réglages.",
+      "failed": "Impossible d'envoyer votre départ. Réessayez dans un instant."
+    }
+  },
+  "merchant": {
+    "tabs": {
+      "orders": "Commandes",
+      "menu": "Menu",
+      "shop": "Boutique",
+      "account": "Compte"
+    },
+    "categories": {
+      "snack": "Snack",
+      "sandwicherie": "Sandwicherie",
+      "restaurant": "Restaurant",
+      "boulangerie": "Boulangerie",
+      "autre": "Autre"
+    },
+    "noMerchantTitle": "Bienvenue sur Zéroo Pro",
+    "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 19,99 € HT par mois (23,99 € TTC).",
+    "createMerchant": "Créer mon commerce",
+    "form": {
+      "name": "Nom du commerce",
+      "category": "Type de commerce",
+      "description": "Description (facultatif)",
+      "phone": "Téléphone (facultatif)",
+      "address": "Adresse",
+      "addressPlaceholder": "Ex. 12 rue de la Paix, Paris",
+      "addressHint": "Choisissez l'adresse dans la liste pour que les clients vous trouvent sur la carte.",
+      "addressSelected": "Adresse retenue : {{label}}",
+      "addressNoResult": "Aucune adresse trouvée",
+      "addressUnavailable": "Recherche d'adresse indisponible, réessayez.",
+      "prepTime": "Délai de préparation habituel",
+      "create": "Créer mon commerce"
+    },
+    "errors": {
+      "nameRequired": "Indiquez le nom du commerce",
+      "phoneInvalid": "Numéro de téléphone invalide",
+      "addressRequired": "Choisissez une adresse dans la liste"
+    },
+    "status": {
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "paused": "En pause",
+      "unpublished": "Non publié",
+      "acceptingOrders": "Vous recevez des commandes",
+      "notAccepting": "Vous ne recevez pas de commandes",
+      "setup": "Configuration à terminer"
+    },
+    "orders": {
+      "title": "Commandes",
+      "today": "Aujourd'hui",
+      "revenue": "Chiffre d'affaires",
+      "ordersCount_one": "{{count}} commande",
+      "ordersCount_other": "{{count}} commandes",
+      "new": "Nouvelles",
+      "inProgress": "En préparation",
+      "ready": "Prêtes",
+      "empty": "Aucune commande pour le moment. Laissez cet écran ouvert : une sonnerie vous préviendra.",
+      "orderOf": "Commande de {{name}}",
+      "anonymousCustomer": "Client",
+      "receivedAt": "Reçue à {{time}}",
+      "readyAt": "Prête vers {{time}}",
+      "note": "Note : {{note}}",
+      "total": "Total",
+      "prepTime": "Délai de préparation",
+      "accept": "Accepter ({{count}} min)",
+      "refuse": "Refuser",
+      "refuseTitle": "Pourquoi refuser ?",
+      "refuseReasons": {
+        "outOfStock": "Produit en rupture",
+        "tooBusy": "Trop de commandes en cours",
+        "closingSoon": "Fermeture imminente",
+        "other": "Autre raison"
+      },
+      "startPreparing": "Lancer la préparation",
+      "markReady": "Commande prête",
+      "pickupCode": "Code de retrait du client",
+      "handOver": "Remettre au client",
+      "soundOff": "Le son est désactivé par le navigateur.",
+      "enableSound": "Activer la sonnerie",
+      "history": "Historique des commandes",
+      "statuses": {
+        "pending_payment": "Paiement en cours",
+        "placed": "Nouvelle",
+        "accepted": "Acceptée",
+        "preparing": "En préparation",
+        "ready": "Prête",
+        "collected": "Récupérée",
+        "refused": "Refusée",
+        "expired": "Expirée",
+        "cancelled": "Annulée",
+        "out_for_delivery": "En livraison",
+        "delivered": "Livrée"
+      },
+      "historyEmpty": "Aucune commande terminée pour l'instant.",
+      "setupBanner": "Terminez la configuration des paiements et de l'abonnement (onglet Boutique) pour recevoir des commandes.",
+      "rewardLine": "🎁 Offert (fidélité)",
+      "discount": "Menu offert",
+      "eta": "{{icon}} Arrivée prévue vers {{time}} (dans {{count}} min)",
+      "startNow": "⏱ Lancez la préparation maintenant",
+      "startLater": "⏱ Lancez la préparation dans {{count}} min",
+      "delivery": "🛵 Livraison · {{city}} · {{distance}}",
+      "courierWaiting": "En attente de la confirmation de {{name}}, le livreur.",
+      "courierConfirmed": "{{name}} a confirmé la course.",
+      "acceptBlocked": "Vous pourrez accepter dès que le livreur aura confirmé.",
+      "courierCode": "Code de retrait présenté par le livreur",
+      "handOverCourier": "Remettre au livreur"
+    },
+    "menu": {
+      "title": "Menu",
+      "empty": "Votre menu est vide. Commencez par une catégorie, par exemple « Menus » ou « Sandwichs ».",
+      "newCategory": "Nouvelle catégorie",
+      "categoryName": "Nom de la catégorie",
+      "addItem": "Ajouter un produit",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "unavailable": "Indisponible",
+      "categoryHidden": "Masquée",
+      "editCategory": "Modifier la catégorie",
+      "categoryActive": "Visible des clients",
+      "deleteCategoryConfirm": "Supprimer la catégorie « {{name}} » et tous ses produits ?",
+      "emptyCategory": "Aucun produit dans cette catégorie.",
+      "item": {
+        "newTitle": "Nouveau produit",
+        "editTitle": "Modifier le produit",
+        "name": "Nom",
+        "description": "Description (facultatif)",
+        "price": "Prix (€)",
+        "priceInvalid": "Prix invalide (ex. 8,50)",
+        "nameRequired": "Indiquez un nom",
+        "category": "Catégorie",
+        "available": "Disponible aujourd'hui",
+        "loyaltyMenu": "Menu formule (compte pour la fidélité)",
+        "loyaltyMenuHint": "Cochez uniquement les menus formules : 9 achetés chez vous = le 10e offert à votre client. Les produits au détail ne comptent pas.",
+        "deleteConfirm": "Supprimer « {{name}} » ?",
+        "options": "Options",
+        "optionsHint": "Ex. « Sauce » (1 au choix) ou « Suppléments » (0 à 3).",
+        "saveFirst": "Enregistrez le produit pour pouvoir ajouter des options.",
+        "addGroup": "Ajouter un groupe d'options",
+        "groupName": "Nom du groupe",
+        "minSelect": "Minimum",
+        "maxSelect": "Maximum",
+        "required": "Obligatoire",
+        "addOption": "Ajouter une option",
+        "optionName": "Option",
+        "optionPrice": "Supplément (€)",
+        "newGroupDefault": "Sauce",
+        "newOptionDefault": "Nouvelle option",
+        "deleteGroupConfirm": "Supprimer le groupe « {{name}} » ?"
+      }
+    },
+    "shop": {
+      "title": "Ma boutique",
+      "visibility": "Visible des clients",
+      "visibilityHint": "Votre commerce apparaît dans l'app et peut recevoir des commandes pendant vos horaires.",
+      "publishBlocked": "Ajoutez au moins un produit disponible et un créneau d'ouverture avant de publier.",
+      "pause": "Pause",
+      "pauseHint": "Coupez temporairement les nouvelles commandes, par exemple en cas de rush.",
+      "pausedUntil": "En pause jusqu'à {{time}}",
+      "pausedIndefinitely": "En pause jusqu'à réactivation",
+      "resume": "Reprendre les commandes",
+      "pauseFor": "{{count}} min",
+      "pauseIndefinitely": "Jusqu'à réactivation",
+      "info": "Informations du commerce",
+      "hours": "Horaires d'ouverture",
+      "qr": "QR code à afficher",
+      "history": "Historique des commandes",
+      "delivery": "Livraison"
+    },
+    "hours": {
+      "title": "Horaires d'ouverture",
+      "hint": "Un créneau peut finir après minuit (ex. 18:00 → 02:00).",
+      "closed": "Fermé",
+      "addSlot": "Ajouter un créneau",
+      "opens": "Ouverture",
+      "closes": "Fermeture",
+      "copyMonday": "Copier le lundi sur toute la semaine",
+      "invalidSlot": "Créneau invalide le {{day}} : utilisez le format 11:30.",
+      "days": {
+        "1": "Lundi",
+        "2": "Mardi",
+        "3": "Mercredi",
+        "4": "Jeudi",
+        "5": "Vendredi",
+        "6": "Samedi",
+        "7": "Dimanche"
+      }
+    },
+    "qr": {
+      "title": "Votre QR code",
+      "body": "Imprimez-le et affichez-le en caisse et en vitrine : vos clients commandent directement chez vous, sans commission.",
+      "cta": "Commandez en ligne, récupérez sans attendre",
+      "shareMessage": "Commandez chez {{name}} sur Zéroo : {{url}}",
+      "print": "Imprimer"
+    },
+    "billing": {
+      "paymentsTitle": "Paiements",
+      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission Zéroo.",
+      "paymentsSetup": "Configurer mes paiements",
+      "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
+      "paymentsContinue": "Compléter mon dossier Stripe",
+      "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
+      "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
+      "subscriptionTitle": "Abonnement Zéroo",
+      "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
+      "startTrial": "Démarrer mon essai gratuit de 30 jours",
+      "subscribe": "M'abonner",
+      "manage": "Gérer mon abonnement",
+      "trialing": "Essai gratuit jusqu'au {{date}}.",
+      "active": "Abonnement actif · prochain prélèvement le {{date}}.",
+      "activeNoDate": "Abonnement actif.",
+      "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
+      "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des commandes.",
+      "inactive": "Abonnement inactif : vous ne recevez plus de commandes.",
+      "webOnly": "L'abonnement se gère depuis zeroo.fr/pro, sur ordinateur ou dans le navigateur de votre téléphone.",
+      "returnTitle": "Retour de Stripe",
+      "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
+      "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Boutique.",
+      "backToShop": "Retour à ma boutique"
+    },
+    "delivery": {
+      "title": "Livraison",
+      "shopRowOn": "Activée · {{price}} · zone de {{distance}}",
+      "shopRowOff": "Désactivée",
+      "enabled": "Proposer la livraison",
+      "enabledHint": "Vos clients choisissent le retrait ou la livraison par un livreur indépendant rattaché à votre restaurant.",
+      "fee": "Prix de la course",
+      "feeHint": "Payé par le client directement au livreur. Vous ne payez rien et ne prélevez rien.",
+      "radius": "Zone de livraison",
+      "radiusHint": "Distance maximale autour de votre restaurant.",
+      "couriers": "Vos livreurs",
+      "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app Zéroo.",
+      "noCourierWarning": "Aucun livreur accepté : la livraison n'est pas encore proposée à vos clients.",
+      "requests": "Demandes de livreurs",
+      "approve": "Accepter",
+      "reject": "Refuser",
+      "remove": "Retirer",
+      "removeConfirmTitle": "Retirer ce livreur ?",
+      "removeConfirmBody": "Il ne recevra plus vos courses. Il pourra vous renvoyer une demande.",
+      "available": "Disponible",
+      "unavailable": "Indisponible",
+      "courierLine": "{{vehicle}} · {{phone}}"
+    }
+  },
+  "account": {
+    "title": "Mon compte",
+    "signedInAs": "Connecté en tant que {{email}}",
+    "signOut": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteConfirmTitle": "Supprimer votre compte ?",
+    "deleteConfirmBody": "Vos données personnelles et vos cartes de fidélité seront définitivement supprimées. Cette action est irréversible.",
+    "deleteConfirmAction": "Supprimer définitivement"
+  },
+  "errors": {
+    "merchantAlreadyExists": "Ce compte gère déjà un commerce.",
+    "invalidPickupCode": "Code de retrait incorrect. Demandez au client de vous montrer son code.",
+    "invalidTransition": "Cette commande a déjà changé de statut. La liste a été actualisée.",
+    "prepMinutesRequired": "Indiquez un délai de préparation.",
+    "orderNotFound": "Commande introuvable.",
+    "merchantOwnerCannotDelete": "Ce compte gère un commerce. Pour le supprimer, contactez le support Zéroo afin de clôturer d'abord votre commerce et votre abonnement.",
+    "merchantNotAccepting": "Ce commerce ne prend pas de commandes pour le moment (fermé ou en pause).",
+    "itemUnavailable": "Un produit de votre panier n'est plus disponible. Retirez-le puis réessayez.",
+    "invalidOptions": "Les options d'un produit ne sont plus valides. Retirez-le puis ajoutez-le à nouveau.",
+    "invalidQuantity": "Quantité invalide.",
+    "emptyOrder": "Votre panier est vide.",
+    "amountTooSmall": "Le montant minimum d'une commande est de 0,50 €.",
+    "paymentCaptureFailed": "Le paiement du client n'a pas pu être encaissé : la commande a été refusée automatiquement.",
+    "paymentFailed": "Le paiement n'a pas abouti. Aucun montant n'a été débité.",
+    "paymentsNotConfigured": "Le paiement n'est pas encore configuré dans cette version de l'app.",
+    "alreadySubscribed": "Votre abonnement est déjà actif.",
+    "invalidReward": "Le menu offert ne s'applique qu'à un menu formule, une seule fois par commande.",
+    "noRewardAvailable": "Vous n'avez plus de menu offert disponible chez ce commerçant.",
+    "deliveryUnavailable": "Ce restaurant ne livre pas pour le moment.",
+    "deliveryOutOfRange": "Cette adresse est hors de la zone de livraison du restaurant.",
+    "noCourierAvailable": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait.",
+    "invalidDeliveryAddress": "Adresse de livraison incomplète : choisissez-la dans la liste.",
+    "invalidDeliveryPhone": "Indiquez un numéro de téléphone valide pour le livreur.",
+    "courierNotConfirmed": "Le livreur n'a pas encore confirmé la course.",
+    "invalidDeliveryCode": "Code de livraison incorrect. Demandez au client son code à 4 chiffres.",
+    "courierExists": "Ce compte a déjà un profil livreur.",
+    "invalidSiret": "Numéro SIRET invalide (14 chiffres).",
+    "siretTaken": "Ce SIRET est déjà utilisé par un autre livreur.",
+    "courierProfileRequired": "Créez d'abord votre profil livreur.",
+    "courierPaymentsNotReady": "Configurez d'abord vos paiements Stripe (onglet Compte).",
+    "courierSubscriptionInactive": "Votre abonnement livreur n'est pas actif (onglet Compte).",
+    "courierNoMerchant": "Aucun restaurant ne vous a encore accepté (onglet Restaurants).",
+    "linkRejected": "Ce restaurant a refusé votre demande.",
+    "merchantNotFound": "Restaurant introuvable.",
+    "courierNotFound": "Livreur introuvable.",
+    "courierHasActiveDelivery": "Terminez votre course en cours avant de supprimer votre compte.",
+    "courierSubscriptionActive": "Résiliez d'abord votre abonnement livreur (onglet Compte, « Gérer mon abonnement »).",
+    "invalidPlan": "Cette formule d'abonnement n'est pas disponible."
+  },
+  "notifications": {
+    "clientTitle": "Être prévenu quand c'est prêt",
+    "clientBody": "Recevez une notification quand le commerçant accepte votre commande et quand elle est prête.",
+    "merchantTitle": "Ne manquez aucune commande",
+    "merchantBody": "Activez les notifications pour être alerté des nouvelles commandes, même téléphone verrouillé.",
+    "enable": "Activer les notifications",
+    "denied": "Notifications refusées : vous pouvez les autoriser dans les réglages du téléphone.",
+    "courierTitle": "Ne manquez aucune course",
+    "courierBody": "Activez les notifications pour être prévenu de chaque nouvelle course, même téléphone verrouillé."
+  },
+  "landing": {
+    "metaTitle": "Zéroo · À emporter au prix de la carte, sans commission",
+    "metaDescription": "Zéroo relie les restaurants, snacks et sandwicheries à leurs clients : commande et paiement en ligne, retrait sans attente. Le client paie le prix de la carte, le restaurant un abonnement fixe, sans commission.",
+    "signIn": "Se connecter",
+    "hero": {
+      "title": "À emporter, au prix de la carte. Sans commission.",
+      "subtitle": "Zéroo est un service qui relie les restaurants, snacks et sandwicheries à leurs clients. Vous commandez et payez depuis votre téléphone, le restaurant prépare au bon moment, vous récupérez sans attendre.",
+      "ctaCustomer": "Commander",
+      "ctaRestaurant": "Inscrire mon restaurant",
+      "badges": {
+        "commission": "0 % de commission",
+        "fees": "Aucun frais pour le client",
+        "trial": "30 jours d'essai pour les restaurants"
+      },
+      "stores": "Bientôt sur l'App Store et Google Play. Dès maintenant sur zeroo.fr."
+    },
+    "model": {
+      "title": "Un service, pas un intermédiaire qui se paie sur vos repas",
+      "items": {
+        "sellers": {
+          "title": "Les repas sont vendus par les restaurants",
+          "body": "Zéroo ne vend aucun repas. Chaque restaurant fixe ses prix, et le paiement du client lui est versé directement."
+        },
+        "price": {
+          "title": "Le client paie le prix de la carte",
+          "body": "Pas de frais de service, pas de majoration, pas de frais de commande : le même prix qu'au comptoir."
+        },
+        "subscription": {
+          "title": "Le restaurant paie un abonnement fixe",
+          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
+        }
+      }
+    },
+    "customers": {
+      "title": "Pour les clients",
+      "items": {
+        "pay": {
+          "title": "Commandez et payez en ligne",
+          "body": "Carte bancaire, Apple Pay ou Google Pay. Votre carte n'est débitée que si le restaurant accepte la commande."
+        },
+        "ready": {
+          "title": "Prête à votre arrivée",
+          "body": "Touchez « Je pars maintenant » : le restaurant lance la préparation pour que tout soit prêt quand vous arrivez."
+        },
+        "pickup": {
+          "title": "Récupérez sans attendre",
+          "body": "Montrez votre code de retrait au comptoir, c'est tout."
+        },
+        "loyalty": {
+          "title": "Le 10e menu offert",
+          "body": "9 menus formules achetés dans un restaurant, le 10e est offert. Votre carte de fidélité est dans l'app."
+        }
+      }
+    },
+    "restaurants": {
+      "title": "Pour les restaurants",
+      "items": {
+        "commission": {
+          "title": "0 % de commission",
+          "body": "Vous gardez le prix de vos ventes. Seuls les frais bancaires du paiement par carte s'appliquent, comme sur votre terminal."
+        },
+        "live": {
+          "title": "Les commandes en direct",
+          "body": "Tablette, téléphone ou ordinateur : les commandes arrivent avec une sonnerie, vous acceptez et indiquez votre délai en un geste."
+        },
+        "timing": {
+          "title": "Préparation au bon moment",
+          "body": "Vos clients vous préviennent quand ils partent : vous savez quand lancer la préparation."
+        },
+        "menu": {
+          "title": "Votre menu, vos règles",
+          "body": "Produits, options, ruptures du jour, horaires, pause en cas de rush : vous gérez tout depuis l'application."
+        },
+        "loyalty": {
+          "title": "Vos clients reviennent",
+          "body": "Fidélité intégrée et QR code à afficher en caisse et en vitrine pour faire commander vos propres clients."
+        },
+        "payouts": {
+          "title": "Votre argent, directement",
+          "body": "Les paiements de vos clients sont versés sur votre compte bancaire par Stripe, le prestataire de paiement."
+        }
+      }
+    },
+    "steps": {
+      "title": "Comment ça marche",
+      "items": {
+        "choose": {
+          "title": "Choisissez",
+          "body": "Trouvez un restaurant près de vous ou scannez son QR code, et composez votre commande."
+        },
+        "pay": {
+          "title": "Payez",
+          "body": "Paiement sécurisé : vous n'êtes débité que lorsque le restaurant accepte."
+        },
+        "collect": {
+          "title": "Récupérez",
+          "body": "Suivez la préparation en direct et récupérez votre commande prête, avec votre code."
+        }
+      }
+    },
+    "comparison": {
+      "title": "Ce que coûte une commande",
+      "headers": {
+        "label": "",
+        "zeroo": "Zéroo",
+        "others": "Plateforme à commission"
+      },
+      "rows": {
+        "commission": {
+          "label": "Commission sur chaque commande",
+          "zeroo": "0 %",
+          "others": "souvent 15 à 30 %"
+        },
+        "customerFees": {
+          "label": "Frais pour le client",
+          "zeroo": "Aucun",
+          "others": "frais de service fréquents"
+        },
+        "customerPrice": {
+          "label": "Prix pour le client",
+          "zeroo": "Prix de la carte",
+          "others": "parfois majoré"
+        },
+        "restaurantCost": {
+          "label": "Coût pour le restaurant",
+          "zeroo": "Dès 19,99 € HT par mois",
+          "others": "variable, selon les ventes"
+        }
+      },
+      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 19,99 € HT (23,99 € TTC).",
+      "note": "Montants indicatifs : les taux varient selon les plateformes et les contrats."
+    },
+    "pricing": {
+      "title": "Des abonnements fixes, sans commission",
+      "restaurants": "Restaurants",
+      "couriers": "Livreurs",
+      "perMonth": "HT par mois",
+      "ttcMonth": "soit {{ttc}} TTC par mois",
+      "yearly": "ou {{ht}} HT par an ({{ttc}} TTC)",
+      "plans": {
+        "start": "Start",
+        "pro": "Pro",
+        "courier": "Livreur"
+      },
+      "features": {
+        "unlimited": "Commandes illimitées",
+        "commission": "0 % de commission",
+        "tools": "Menu, horaires, QR code et fidélité",
+        "trial": "30 jours d'essai gratuit",
+        "noCommitment": "Sans engagement, résiliable à tout moment"
+      },
+      "cta": "Essayer gratuitement 30 jours",
+      "customers": "Pour les clients, Zéroo est gratuit."
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "items": {
+        "sell": {
+          "q": "Zéroo vend-il des repas ?",
+          "a": "Non. Zéroo est un service. Les repas sont vendus par les restaurants, à leurs prix, et le paiement leur est versé directement."
+        },
+        "fees": {
+          "q": "Le client paie-t-il des frais ?",
+          "a": "Non. Le client paie le prix de la carte du restaurant, rien de plus."
+        },
+        "restaurantCost": {
+          "q": "Que paie le restaurant ?",
+          "a": "Un abonnement fixe, sans commission : Start à 19,99 € HT par mois (23,99 € TTC) ou Pro multisite à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+        },
+        "delivery": {
+          "q": "Faites-vous de la livraison ?",
+          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. Zéroo n'encaisse jamais l'argent des commandes."
+        },
+        "trial": {
+          "q": "Comment fonctionne l'essai gratuit ?",
+          "a": "30 jours pour tout tester. L'abonnement démarre ensuite, sans engagement : vous pouvez résilier à tout moment depuis votre espace."
+        },
+        "charge": {
+          "q": "Quand le client est-il débité ?",
+          "a": "Seulement quand le restaurant accepte la commande. Si elle est refusée ou annulée, rien n'est débité."
+        }
+      }
+    },
+    "final": {
+      "title": "Prêt à commander, ou à recevoir vos premières commandes ?"
+    },
+    "footer": {
+      "tagline": "Zéroo · la vente à emporter sans commission.",
+      "legal": "Mentions légales",
+      "privacy": "Confidentialité",
+      "copyright": "© {{year}} Zéroo"
+    }
+  },
+  "legal": {
+    "toComplete": "Les éléments entre crochets sont à compléter avant la mise en ligne.",
+    "back": "Retour à l'accueil",
+    "mentions": {
+      "title": "Mentions légales",
+      "sections": {
+        "editor": {
+          "title": "Éditeur et exploitant",
+          "body": "Zéroo est édité et exploité commercialement par aiworkpay, société par actions simplifiée unipersonnelle (SASU) au capital de 10 000 €, dont le siège est situé 60 rue François 1er, 75008 Paris, France, immatriculée sous le numéro 941 861 775 RCS Paris.\nDirecteur de la publication : Ahmed AKAFOU.\nContact : contact@zeroo.fr."
+        },
+        "service": {
+          "title": "Nature du service",
+          "body": "Zéroo est un service de commande à emporter mis à disposition des restaurants, contre un abonnement, et des clients, gratuitement. Zéroo ne vend aucun repas : les produits sont vendus par chaque restaurant, à ses prix, et le paiement lui est versé directement."
+        },
+        "hosting": {
+          "title": "Hébergement",
+          "body": "Site web : [hébergeur, adresse].\nDonnées de l'application : Supabase, région [à préciser].\nNom de domaine : IONOS SE, Elgendorfer Straße 57, 56410 Montabaur, Allemagne.\nPaiements : Stripe Payments Europe, Ltd. (Irlande), établissement de paiement agréé."
+        },
+        "ip": {
+          "title": "Propriété intellectuelle",
+          "body": "Les contenus de Zéroo (textes, marque, logo, interface) sont protégés. Les menus, photos et descriptions publiés par les restaurants restent leur propriété et leur responsabilité."
+        }
+      }
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "sections": {
+        "controller": {
+          "title": "Responsable du traitement",
+          "body": "aiworkpay SASU, 60 rue François 1er, 75008 Paris, France (941 861 775 RCS Paris). Contact pour toute question sur vos données : contact@zeroo.fr."
+        },
+        "data": {
+          "title": "Données traitées",
+          "body": "Compte : adresse e-mail, mot de passe (stocké chiffré), prénom et téléphone facultatifs.\nCommandes : produits, montants, horaires, note pour le restaurant ; votre prénom est communiqué au restaurant concerné.\nFidélité : nombre de menus achetés et menus offerts, par restaurant.\nPosition : utilisée ponctuellement pour la recherche à proximité et pour « Je pars maintenant », uniquement après votre action. Elle n'est jamais enregistrée : seule l'heure d'arrivée estimée l'est.\nNotifications : identifiant de votre appareil, si vous les activez.\nPaiement : traité par Stripe. Zéroo n'a jamais accès à votre numéro de carte.\nRestaurants : informations du commerce, compte de paiement Stripe et abonnement."
+        },
+        "purposes": {
+          "title": "Finalités et bases légales",
+          "body": "Fournir le service et exécuter les commandes (contrat) ; tenir la comptabilité des ventes des restaurants (obligation légale) ; sécuriser le service (intérêt légitime). Aucune publicité, aucune revente de données."
+        },
+        "recipients": {
+          "title": "Destinataires",
+          "body": "Le restaurant auprès duquel vous commandez ; Stripe (paiements) ; Supabase (hébergement des données) ; Google (calcul du temps de trajet, à partir de votre position transmise ponctuellement) ; Expo (envoi des notifications)."
+        },
+        "retention": {
+          "title": "Durées de conservation",
+          "body": "Compte : jusqu'à sa suppression. Commandes : 10 ans, durée imposée par la comptabilité des restaurants ; elles sont anonymisées si vous supprimez votre compte. Position : jamais conservée."
+        },
+        "rights": {
+          "title": "Vos droits",
+          "body": "Vous pouvez accéder à vos données, les rectifier, demander leur portabilité ou vous opposer à un traitement en écrivant à contact@zeroo.fr. Vous pouvez supprimer votre compte à tout moment dans l'application (Compte → Supprimer mon compte). Vous pouvez aussi saisir la CNIL (cnil.fr)."
+        },
+        "storage": {
+          "title": "Stockage sur votre appareil",
+          "body": "L'application conserve sur votre appareil votre session de connexion, votre panier et l'espace choisi. Ces éléments sont nécessaires au fonctionnement du service ; aucun traceur publicitaire n'est utilisé."
+        }
+      }
+    }
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "Cette adresse n’existe pas ou plus.",
+    "home": "Retour à l’accueil"
+  },
+  "courier": {
+    "tabs": {
+      "runs": "Courses",
+      "restaurants": "Restaurants",
+      "earnings": "Revenus",
+      "account": "Compte"
+    },
+    "onboarding": {
+      "title": "Devenir livreur Zéroo",
+      "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 14,99 € HT par mois (17,99 € TTC), 30 jours d'essai.",
+      "name": "Nom affiché",
+      "nameHint": "Le client ne voit que votre prénom.",
+      "phone": "Téléphone",
+      "legalStatus": "Statut",
+      "statuses": {
+        "auto_entrepreneur": "Auto-entrepreneur",
+        "societe": "Société"
+      },
+      "siret": "SIRET",
+      "siretHint": "14 chiffres, sur votre avis de situation INSEE ou votre extrait Kbis.",
+      "vehicle": "Véhicule",
+      "vehicles": {
+        "bike": "Vélo",
+        "scooter": "Scooter",
+        "car": "Voiture",
+        "foot": "À pied"
+      },
+      "submit": "Créer mon profil livreur",
+      "verification": "Stripe vérifiera votre identité et votre immatriculation quand vous configurerez vos paiements."
+    },
+    "validation": {
+      "nameRequired": "Indiquez votre nom (2 caractères minimum).",
+      "phoneInvalid": "Numéro de téléphone invalide.",
+      "siretInvalid": "SIRET invalide : 14 chiffres, vérifiez votre saisie."
+    },
+    "runs": {
+      "title": "Mes courses",
+      "available": "Je suis disponible",
+      "availableHint": "Vous recevez les courses des restaurants qui vous ont accepté.",
+      "setupTitle": "Avant votre première course",
+      "setupPayments": "Configurer vos paiements Stripe",
+      "setupSubscription": "Démarrer votre abonnement (30 jours d'essai)",
+      "setupMerchant": "Être accepté par au moins un restaurant",
+      "setupGo": "Compléter",
+      "empty": "Aucune course en cours. Restez disponible : les nouvelles courses s'affichent ici.",
+      "new": "Nouvelle course",
+      "fee": "Course : {{price}}",
+      "pickupAt": "Retrait : {{name}}, {{address}}",
+      "deliverTo": "Livraison : {{address}}",
+      "distance": "{{distance}} du restaurant",
+      "instructions": "Instructions : {{text}}",
+      "customer": "Client : {{name}}",
+      "items_one": "{{count}} article",
+      "items_other": "{{count}} articles",
+      "call": "Appeler le client",
+      "toRestaurant": "Itinéraire vers le restaurant",
+      "toCustomer": "Itinéraire vers le client",
+      "confirm": "Confirmer la course",
+      "decline": "Décliner",
+      "declineConfirmTitle": "Décliner cette course ?",
+      "declineConfirmBody": "La commande sera annulée et le client ne sera pas débité.",
+      "waitingRestaurant": "Course confirmée. En attente de l'acceptation du restaurant.",
+      "preparing": "Le restaurant prépare la commande, prête vers {{time}}.",
+      "ready": "Commande prête : rendez-vous au restaurant.",
+      "pickupCode": "Code de retrait à montrer au restaurant",
+      "onTheWay": "En route vers le client.",
+      "deliveryCode": "Code de livraison donné par le client",
+      "markDelivered": "Valider la livraison"
+    },
+    "restaurants": {
+      "title": "Mes restaurants",
+      "intro": "Demandez à livrer pour les restaurants de votre secteur. Chaque restaurant accepte ou refuse votre demande.",
+      "search": "Trouver un restaurant",
+      "searchPlaceholder": "Nom, ville ou code postal",
+      "request": "Demander à livrer",
+      "statuses": {
+        "pending": "En attente",
+        "approved": "Accepté",
+        "rejected": "Refusé"
+      },
+      "leave": "Quitter",
+      "leaveConfirmTitle": "Quitter ce restaurant ?",
+      "leaveConfirmBody": "Vous ne recevrez plus ses courses.",
+      "empty": "Aucun restaurant pour le moment : recherchez ceux de votre secteur ci-dessous.",
+      "fee": "Course : {{price}} · zone de {{distance}}",
+      "noDelivery": "Ne livre pas encore"
+    },
+    "earnings": {
+      "title": "Mes revenus",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine",
+      "month": "Ce mois-ci",
+      "runs_one": "{{count}} course",
+      "runs_other": "{{count}} courses",
+      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission Zéroo. Stripe la verse sur votre compte bancaire.",
+      "history": "Dernières courses",
+      "empty": "Aucune course livrée pour le moment."
+    },
+    "account": {
+      "profile": "Mon profil livreur",
+      "siret": "SIRET {{siret}}"
+    },
+    "billing": {
+      "paymentsTitle": "Paiements",
+      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission Zéroo. Stripe vérifie votre identité et votre SIRET.",
+      "paymentsSetup": "Configurer mes paiements",
+      "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
+      "paymentsContinue": "Compléter mon dossier Stripe",
+      "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
+      "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
+      "subscriptionTitle": "Abonnement Zéroo Livreur",
+      "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
+      "startTrial": "Démarrer mon essai gratuit de 30 jours",
+      "subscribe": "M'abonner",
+      "manage": "Gérer mon abonnement",
+      "trialing": "Essai gratuit jusqu'au {{date}}.",
+      "active": "Abonnement actif · prochain prélèvement le {{date}}.",
+      "activeNoDate": "Abonnement actif.",
+      "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
+      "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des courses.",
+      "inactive": "Abonnement inactif : vous ne recevez plus de courses.",
+      "webOnly": "L'abonnement se gère depuis zeroo.fr, sur ordinateur ou dans le navigateur de votre téléphone.",
+      "returnTitle": "Retour de Stripe",
+      "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
+      "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Compte.",
+      "backToShop": "Retour à mon compte"
+    }
+  }
+}

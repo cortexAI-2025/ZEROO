@@ -1,0 +1,20 @@
+import type { Tables } from '@/types/database';
+
+export type Merchant = Tables<'merchants'>;
+export type OpeningHour = Tables<'merchant_opening_hours'>;
+
+export const MERCHANT_CATEGORIES = [
+  'snack',
+  'sandwicherie',
+  'restaurant',
+  'boulangerie',
+  'autre',
+] as const;
+export type MerchantCategory = (typeof MERCHANT_CATEGORIES)[number];
+
+/** Colonnes lues partout : la ligne + les colonnes calculées par Postgres. */
+export const MERCHANT_SELECT =
+  '*, is_open_now, is_paused_now, is_accepting_orders, is_payments_ready, is_subscription_active' as const;
+
+/** Lien public du commerce, cible du QR code. */
+export const merchantPublicUrl = (slug: string) => `https://zeroo.fr/m/${slug}`;
