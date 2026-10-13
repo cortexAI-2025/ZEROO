@@ -1,5 +1,5 @@
 import type { Order } from '@/features/merchant-orders/types';
-import type { Enums, Tables } from '@/types/database';
+import type { Database, Enums, Tables } from '@/types/database';
 
 export type Courier = Tables<'couriers'>;
 export type CourierVehicle = Enums<'courier_vehicle'>;
@@ -19,6 +19,9 @@ export type CourierRun = Order & {
     'name' | 'address_line' | 'postal_code' | 'city' | 'latitude' | 'longitude' | 'phone'
   > | null;
 };
+
+/** Mission proposée aux livreurs : sans l'adresse précise du client. */
+export type Mission = Database['public']['Functions']['available_missions']['Returns'][number];
 
 export const RUN_ACTIVE_STATUSES = [
   'placed',

@@ -1,12 +1,12 @@
 import { useColorScheme } from 'react-native';
 
-// Couleurs du logo Zéroo : vert vif et vert forêt. Le vif (#5DBE3A) n'a que 2,4:1 avec
-// le blanc : les boutons utilisent un vert plus soutenu (contraste 5,4:1 avec le texte blanc).
+// Couleurs du logo ZeeRoo : vert vif #3AAD17 et encre #0B1C1C. Le vert vif n'a que 2,9:1 avec
+// le blanc : les boutons utilisent un vert plus soutenu (contraste 5:1 avec le texte blanc).
 const palette = {
-  brand: '#1F7A35',
-  brandPressed: '#17602A',
-  brandLime: '#5DBE3A',
-  brandForest: '#0D3B2A',
+  brand: '#2A8010',
+  brandPressed: '#226A0C',
+  brandLime: '#3AAD17',
+  brandForest: '#0B1C1C',
   danger: '#DC2626',
   success: '#16A34A',
 };
@@ -26,12 +26,12 @@ type ColorTokens = Record<
 export const colors: { light: ColorTokens; dark: ColorTokens } = {
   light: {
     ...palette,
-    text: '#111827',
+    text: '#0B1C1C',
     textMuted: '#6B7280',
     background: '#FFFFFF',
     surface: '#F3F4F6',
     border: '#E5E7EB',
-    link: '#1F7A35', // texte coloré sur fond clair : 5,4:1
+    link: '#2A8010', // texte coloré sur fond clair : 5:1
     onBrand: '#FFFFFF',
   },
   dark: {

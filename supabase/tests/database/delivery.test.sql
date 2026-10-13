@@ -1,5 +1,5 @@
 begin;
-select plan(59);
+select plan(88);
 
 -- Contexte (seed) : « Chez Samir » (48.8686, 2.3314) livre à 3 km pour 3,50 € ; Karim est
 -- livreur, rattaché, actif et disponible. Nadia est cliente, Samir le commerçant.
@@ -160,7 +160,7 @@ select is(
 );
 
 -- -----------------------------------------------------------------------------
--- Commande livrée
+-- Commande livrée : repas payé en ligne, course prise puis réglée plus tard
 -- -----------------------------------------------------------------------------
 select throws_ok($$select pg_temp.deliver_order(pg_temp.kebab(), pg_temp.addr(48.9000, 2.4000))$$,
                  'delivery_out_of_range', 'commande hors du rayon refusée');
@@ -168,43 +168,59 @@ select throws_ok($$select pg_temp.deliver_order(pg_temp.kebab(), pg_temp.addr(p_
                  'invalid_delivery_phone', 'téléphone obligatoire pour la livraison');
 select throws_ok($$select pg_temp.deliver_order(pg_temp.kebab(), '{"city": "Paris"}'::jsonb)$$,
                  'invalid_delivery_address', 'adresse incomplète refusée');
+select throws_ok($$select public.create_order('20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001',
+                    pg_temp.kebab(), null, pg_temp.addr(), 'cash')$$,
+                 'cash_not_allowed_for_delivery', 'le repas livré ne se paie pas en espèces');
+select throws_ok($$select public.create_order('20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001',
+                    pg_temp.kebab(), null, null, 'cash')$$,
+                 'cash_not_accepted', 'espèces refusées si le restaurant ne les accepte pas');
 
 insert into o values ('a', pg_temp.deliver_order(pg_temp.menu()));
 select is(
-  (select fulfillment || '|' || status || '|' || total_cents || '|' || delivery_fee_cents || '|' || courier_name
-          || '|' || courier_stripe_account_id || '|' || (delivery_code ~ '^\d{4}$')
+  (select fulfillment || '|' || status || '|' || total_cents || '|' || delivery_fee_cents || '|' || (courier_id is null)
+          || '|' || delivery_payment_method || '|' || (delivery_code ~ '^\d{4}$')
    from public.orders where id = (select id from o where key = 'a')),
-  'delivery|pending_payment|1900|350|Karim|acct_demo_karim|true',
-  'livraison : repas 19 € pour le restaurant, course 3,50 € pour Karim, code de livraison'
+  'delivery|pending_payment|1900|350|true|card|true',
+  'livraison : repas 19 € en attente de paiement, aucun livreur réservé, course 3,50 € à régler plus tard'
 );
 select ok((select delivery_distance_m between 500 and 800 from public.orders where id = (select id from o where key = 'a')),
           'distance calculée');
 select is(
-  (select reason from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.8700, 2.3400)),
-  'no_courier_available', 'Karim est réservé : plus de livreur libre'
-);
-select throws_ok($$select pg_temp.deliver_order(pg_temp.kebab())$$, 'no_courier_available',
-                 'une deuxième livraison simultanée est refusée');
-select lives_ok($$select public.create_order('20000000-0000-0000-0000-000000000001',
-                  '30000000-0000-0000-0000-000000000001', pg_temp.kebab())$$, 'le retrait reste possible');
+  (select available::text from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.8700, 2.3400)),
+  'true', 'aucun livreur n''est réservé par la commande');
 
--- Paiements : la commande part quand le repas ET la course sont autorisés.
+-- Le repas autorisé suffit à envoyer la commande au restaurant.
 select is((select status::text from public.mark_order_authorized((select id from o where key = 'a'), 'pi_repas')),
-          'pending_payment', 'repas autorisé seul : en attente du paiement de la course');
-select is((select status::text from public.mark_delivery_authorized((select id from o where key = 'a'), 'pi_course')),
-          'placed', 'course autorisée : commande envoyée');
+          'placed', 'repas autorisé : commande envoyée au restaurant');
 
--- Le restaurant n'accepte qu'après la confirmation du livreur.
-select throws_ok(
-  $$select public.apply_order_transition((select id from o where key = 'a'), '10000000-0000-0000-0000-000000000001', 'accepted', 10)$$,
-  'courier_not_confirmed', 'acceptation impossible avant la confirmation du livreur'
-);
+-- Léa et Karim sont rattachés et disponibles.
+update public.couriers set is_available = true;
 
 set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
+select is((select count(*)::int from public.available_missions()), 0, 'pas de mission avant l''acceptation du restaurant');
+reset role;
+
+select is((select status::text from public.apply_order_transition((select id from o where key = 'a'),
+            '10000000-0000-0000-0000-000000000001', 'accepted', 10)),
+          'accepted', 'le restaurant accepte sans attendre un livreur');
+
+set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
+select is((select delivery_fee_cents || '|' || payment_method || '|' || delivery_city from public.available_missions()),
+          '350|card|Paris', 'Karim voit la mission (ville seulement, pas l''adresse)');
 select pg_temp.as_user('70000000-0000-0000-0000-000000000002');
-select throws_ok($$select public.courier_confirm_order((select id from o where key = 'a'))$$, 'order_not_found',
-                 'un autre livreur ne peut pas confirmer la course');
-select is((select count(*)::int from public.orders), 0, 'un autre livreur ne voit pas la course');
+select is((select count(*)::int from public.available_missions()), 1, 'Léa voit la même mission');
+select is((select count(*)::int from public.orders), 0, 'sans voir la commande elle-même');
+select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
+select is(
+  (select courier_name || '|' || (delivery_payment_due_at is not null)
+   from public.courier_accept_mission((select id from o where key = 'a'))),
+  'Karim|true', 'Karim accepte : le client a 5 minutes pour régler la course');
+select pg_temp.as_user('70000000-0000-0000-0000-000000000002');
+select throws_ok($$select public.courier_accept_mission((select id from o where key = 'a'))$$,
+                 'mission_unavailable', 'le premier qui accepte gagne');
+select is((select count(*)::int from public.available_missions()), 0, 'la mission disparaît pour les autres');
 select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
 select is(
   (select delivery_address_line || '|' || delivery_phone from public.orders where id = (select id from o where key = 'a')),
@@ -212,16 +228,28 @@ select is(
 );
 select is((select count(*)::int from public.order_items where order_id = (select id from o where key = 'a')), 1,
           'et le contenu de la commande');
-select ok((select courier_accepted_at is not null from public.courier_confirm_order((select id from o where key = 'a'))),
-          'Karim confirme la course');
 reset role;
 
-select is(
-  (select status || '|' || (paid_at is not null) || '|' || (delivery_paid_at is not null)
-   from public.apply_order_transition((select id from o where key = 'a'), '10000000-0000-0000-0000-000000000001', 'accepted', 10)),
-  'accepted|true|true', 'le restaurant accepte : repas et course encaissés'
-);
+-- Course réglée par carte, sur le compte du livreur.
+select is((select courier_stripe_account_id from public.start_delivery_payment((select id from o where key = 'a'),
+            '20000000-0000-0000-0000-000000000001')),
+          'acct_demo_karim', 'le client règle la course sur le compte de Karim');
+select throws_ok($$select public.start_delivery_payment((select id from o where key = 'a'), '20000000-0000-0000-0000-000000000099')$$,
+                 'order_not_found', 'un autre client ne peut pas payer cette course');
+select is((select id from public.mark_delivery_authorized((select id from o where key = 'a'), 'pi_inconnu')), null::uuid,
+          'un paiement non rattaché à cette course est ignoré');
+select public.attach_delivery_payment_intent((select id from o where key = 'a'),
+  (select courier_id from public.orders where id = (select id from o where key = 'a')), 'pi_course');
+
 select public.apply_order_transition((select id from o where key = 'a'), '10000000-0000-0000-0000-000000000001', 'ready');
+select throws_ok(
+  $$select public.apply_order_transition((select id from o where key = 'a'), '10000000-0000-0000-0000-000000000001',
+      'out_for_delivery', p_pickup_code => (select pickup_code from public.orders where id = (select id from o where key = 'a')))$$,
+  'delivery_not_paid', 'pas de remise au livreur tant que la course n''est pas payée');
+select is((select delivery_paid_at is not null from public.mark_delivery_authorized((select id from o where key = 'a'), 'pi_course')),
+          true, 'course payée par carte');
+select throws_ok($$select public.start_delivery_payment((select id from o where key = 'a'), '20000000-0000-0000-0000-000000000001')$$,
+                 'delivery_not_payable', 'une course payée ne se repaie pas');
 select throws_ok(
   $$select public.apply_order_transition((select id from o where key = 'a'), '10000000-0000-0000-0000-000000000001', 'collected',
       p_pickup_code => (select pickup_code from public.orders where id = (select id from o where key = 'a')))$$,
@@ -265,32 +293,123 @@ select is((select revenue_cents from public.merchant_today_summary('30000000-000
           'chiffre d''affaires réservé au propriétaire');
 
 -- -----------------------------------------------------------------------------
--- Le livreur décline, expiration, RGPD
+-- Capacité : 2 livraisons simultanées par livreur
 -- -----------------------------------------------------------------------------
-insert into o values ('b', pg_temp.deliver_order(pg_temp.kebab()));
-select public.mark_order_authorized((select id from o where key = 'b'), 'pi_b');
+create function pg_temp.accepted_delivery(p_key text, p_method public.payment_method default 'card') returns void language plpgsql as $$
+declare v_id uuid;
+begin
+  select id into v_id from public.create_order('20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001',
+                                               pg_temp.kebab(), null, pg_temp.addr(), 'card', p_method);
+  insert into o values (p_key, v_id);
+  perform public.mark_order_authorized(v_id, 'pi_' || p_key);
+  perform public.apply_order_transition(v_id, '10000000-0000-0000-0000-000000000001', 'accepted', 10);
+end $$;
+
+select pg_temp.accepted_delivery('b');
+select pg_temp.accepted_delivery('c');
+select pg_temp.accepted_delivery('d');
+-- Léa se met indisponible : Karim est le seul livreur.
+update public.couriers set is_available = false where siret = '12345678900015';
+
+set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
+select is((select count(*)::int from public.available_missions()), 3, 'Karim voit les 3 missions');
+select lives_ok($$select public.courier_accept_mission((select id from o where key = 'b'))$$, 'Karim prend une première course');
+select lives_ok($$select public.courier_accept_mission((select id from o where key = 'c'))$$, 'et une deuxième, en même temps');
+select throws_ok($$select public.courier_accept_mission((select id from o where key = 'd'))$$,
+                 'courier_at_capacity', 'pas de troisième : 2 livraisons simultanées au maximum');
+select is((select count(*)::int from public.available_missions()), 0, 'plus de mission proposée au livreur complet');
+reset role;
+select is(
+  (select reason from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.8700, 2.3400)),
+  'no_courier_available', 'devis : aucun livreur avec de la capacité');
+select throws_ok($$select pg_temp.deliver_order(pg_temp.kebab())$$, 'no_courier_available',
+                 'commande livrée refusée tant qu''aucun livreur n''est libre');
+
+-- Renoncement, paiement obligatoire, délai de paiement.
+select is((select count(*)::int from public.courier_release_mission((select id from o where key = 'c'),
+            '70000000-0000-0000-0000-000000000001')), 1, 'Karim renonce à la course c');
+select is((select (courier_id is null)::text from public.orders where id = (select id from o where key = 'c')), 'true',
+          'la course retourne dans le pool');
+set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
+select throws_ok($$select public.courier_accept_mission((select id from o where key = 'c'))$$,
+                 'mission_unavailable', 'une course abandonnée n''est pas reproposée au même livreur');
+select lives_ok($$select public.courier_accept_mission((select id from o where key = 'd'))$$, 'la capacité libérée permet de prendre d');
+select throws_ok($$select count(*) from public.order_courier_skips$$, '42501', null, 'la table des renoncements est inaccessible aux clients de l''API');
+reset role;
+select public.attach_delivery_payment_intent((select id from o where key = 'b'),
+  (select courier_id from public.orders where id = (select id from o where key = 'b')), 'pi_b_course');
 select public.mark_delivery_authorized((select id from o where key = 'b'), 'pi_b_course');
+select throws_ok($$select public.courier_release_mission((select id from o where key = 'b'), '70000000-0000-0000-0000-000000000001')$$,
+                 'mission_locked', 'une course déjà payée ne peut plus être abandonnée');
+
+select public.attach_delivery_payment_intent((select id from o where key = 'd'),
+  (select courier_id from public.orders where id = (select id from o where key = 'd')), 'pi_d_course');
+select is((select count(*)::int from public.expire_unpaid_missions()), 0, 'délai de paiement pas encore dépassé');
+update public.orders set delivery_payment_due_at = now() - interval '1 minute' where id = (select id from o where key = 'd');
+select is((select delivery_payment_intent_id from public.expire_unpaid_missions()
+           where order_id = (select id from o where key = 'd')),
+          'pi_d_course', 'course non payée à temps : libérée, paiement à annuler chez Stripe');
+select is((select (courier_id is null)::text || '|' || (delivery_payment_intent_id is null)::text
+           from public.orders where id = (select id from o where key = 'd')), 'true|true', 'la course d retourne dans le pool');
+select is((select reason from public.order_courier_skips where order_id = (select id from o where key = 'd')),
+          'payment_timeout', 'le livreur défaillant n''est pas reproposé');
+select is((select id from public.mark_delivery_authorized((select id from o where key = 'd'), 'pi_d_course')), null::uuid,
+          'un paiement tardif de l''ancien livreur n''est pas pris en compte');
+
+-- -----------------------------------------------------------------------------
+-- Espèces
+-- -----------------------------------------------------------------------------
+-- Course en espèces : Léa (disponible à nouveau) la prend, aucun paiement en ligne à attendre.
+update public.couriers set is_available = true where siret = '12345678900015';
+select pg_temp.accepted_delivery('e', 'cash');
+set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000002');
+select is((select (delivery_payment_due_at is null)::text || '|' || delivery_payment_method
+           from public.courier_accept_mission((select id from o where key = 'e'))),
+          'true|cash', 'course en espèces : pas de délai de paiement');
+reset role;
+select public.apply_order_transition((select id from o where key = 'e'), '10000000-0000-0000-0000-000000000001', 'ready');
 select is(
-  (select status || '|' || cancelled_by from public.apply_order_transition((select id from o where key = 'b'),
-      '70000000-0000-0000-0000-000000000001', 'cancelled')),
-  'cancelled|courier', 'Karim décline : commande annulée, sans débit'
-);
-select is(
-  (select available::text from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.8700, 2.3400)),
-  'true', 'Karim est de nouveau libre'
-);
+  (select status::text from public.apply_order_transition((select id from o where key = 'e'), '10000000-0000-0000-0000-000000000001',
+      'out_for_delivery', p_pickup_code => (select pickup_code from public.orders where id = (select id from o where key = 'e')))),
+  'out_for_delivery', 'espèces : remise au livreur sans paiement en ligne');
+set local role authenticated;
+select pg_temp.as_user('70000000-0000-0000-0000-000000000002');
+select is((select (delivery_paid_at is not null)::text from public.courier_mark_delivered((select id from o where key = 'e'),
+            (select delivery_code from public.orders where id = (select id from o where key = 'e')))),
+          'true', 'course en espèces encaissée à la livraison');
+reset role;
+
+-- Retrait en espèces au comptoir (restaurant qui l'accepte).
+update public.merchants set accepts_cash_pickup = true where id = '30000000-0000-0000-0000-000000000001';
+insert into o values ('f', (select id from public.create_order('20000000-0000-0000-0000-000000000001',
+  '30000000-0000-0000-0000-000000000001', pg_temp.kebab(), null, null, 'cash')));
+select is((select status || '|' || meal_payment_method || '|' || (stripe_payment_intent_id is null)
+           from public.orders where id = (select id from o where key = 'f')),
+          'placed|cash|true', 'retrait en espèces : la commande part directement, sans paiement en ligne');
+select public.apply_order_transition((select id from o where key = 'f'), '10000000-0000-0000-0000-000000000001', 'accepted', 10);
+select public.apply_order_transition((select id from o where key = 'f'), '10000000-0000-0000-0000-000000000001', 'ready');
+select is((select (paid_at is not null)::text from public.apply_order_transition((select id from o where key = 'f'),
+            '10000000-0000-0000-0000-000000000001', 'collected',
+            p_pickup_code => (select pickup_code from public.orders where id = (select id from o where key = 'f')))),
+          'true', 'espèces encaissées au retrait');
+
+-- -----------------------------------------------------------------------------
+-- Livraison sans livreur, expiration, RGPD
+-- -----------------------------------------------------------------------------
 select throws_ok(
   $$select public.set_customer_departure((select id from o where key = 'b'), '20000000-0000-0000-0000-000000000001', 60, 'walk')$$,
   'order_not_found', '« Je pars maintenant » réservé au retrait'
 );
 
-insert into o values ('c', pg_temp.deliver_order(pg_temp.kebab()));
-select public.mark_order_authorized((select id from o where key = 'c'), 'pi_c');
-select public.mark_delivery_authorized((select id from o where key = 'c'), 'pi_c_course');
-update public.orders set placed_at = now() - interval '11 minutes' where id = (select id from o where key = 'c');
+insert into o values ('g', pg_temp.deliver_order(pg_temp.kebab()));
+select public.mark_order_authorized((select id from o where key = 'g'), 'pi_g');
+update public.orders set placed_at = now() - interval '11 minutes' where id = (select id from o where key = 'g');
 select is(
-  (select delivery_payment_intent_id from public.expire_stale_orders() where order_id = (select id from o where key = 'c')),
-  'pi_c_course', 'expiration : le paiement de la course est aussi libéré'
+  (select stripe_payment_intent_id from public.expire_stale_orders() where order_id = (select id from o where key = 'g')),
+  'pi_g', 'expiration : le repas non accepté est libéré chez Stripe'
 );
 
 update public.orders set delivered_at = now() - interval '8 days' where id = (select id from o where key = 'a');

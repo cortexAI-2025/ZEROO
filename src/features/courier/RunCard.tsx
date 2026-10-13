@@ -14,10 +14,11 @@ import { useCourierActions } from './hooks';
 import type { CourierRun } from './types';
 
 /**
- * Une course du livreur, de l'attribution à la livraison :
- *   nouvelle → confirmer ou décliner ; acceptée → attendre que ce soit prêt ;
- *   prête → retrait au restaurant avec le code de retrait ;
- *   en livraison → itinéraire, appel du client, validation avec son code de livraison.
+ * Une mission acceptée, de la prise en charge à la livraison :
+ *   course par carte → attendre le règlement du client (sinon la mission repart dans le pool) ;
+ *   prête → retrait au restaurant avec le code de retrait (course payée, ou espèces) ;
+ *   en livraison → itinéraire, appel du client, encaissement éventuel en espèces et
+ *   validation avec son code de livraison.
  */
 export function RunCard({ run }: { run: CourierRun }) {
   const { t } = useTranslation();
@@ -26,7 +27,11 @@ export function RunCard({ run }: { run: CourierRun }) {
   const [deliveryCode, setDeliveryCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const merchant = run.merchants;
-  const isNew = run.status === 'placed' && !run.courier_accepted_at;
+  const early = ['accepted', 'preparing', 'ready'].includes(run.status);
+  const paidByCard = run.delivery_payment_method === 'card' && !!run.delivery_authorized_at;
+  const awaitingPayment =
+    early && run.delivery_payment_method === 'card' && !run.delivery_authorized_at;
+  const cash = run.delivery_payment_method === 'cash';
   const itemsCount = run.order_items.reduce((sum, item) => sum + item.quantity, 0);
   const deliveryAddress = [
     run.delivery_address_line,
@@ -46,9 +51,9 @@ export function RunCard({ run }: { run: CourierRun }) {
 
   const decline = async () => {
     const ok = await confirmAsync({
-      title: t('courier.runs.declineConfirmTitle'),
-      message: t('courier.runs.declineConfirmBody'),
-      confirmLabel: t('courier.runs.decline'),
+      title: t('courier.runs.releaseConfirmTitle'),
+      message: t('courier.runs.releaseConfirmBody'),
+      confirmLabel: t('courier.runs.release'),
       cancelLabel: t('common.cancel'),
       destructive: true,
     });
@@ -63,12 +68,10 @@ export function RunCard({ run }: { run: CourierRun }) {
   return (
     <Card testID={`run-${run.pickup_code}`}>
       <View style={styles.header}>
-        <AppText variant="subtitle">
-          {isNew ? t('courier.runs.new') : t(`merchant.orders.statuses.${run.status}`)}
-        </AppText>
+        <AppText variant="subtitle">{t(`merchant.orders.statuses.${run.status}`)}</AppText>
         <Badge
           label={t('courier.runs.fee', { price: formatCents(run.delivery_fee_cents) })}
-          tone={isNew ? 'warning' : 'success'}
+          tone={awaitingPayment ? 'warning' : 'success'}
         />
       </View>
 
@@ -98,26 +101,29 @@ export function RunCard({ run }: { run: CourierRun }) {
         · {t('courier.runs.items', { count: itemsCount })}
       </AppText>
 
-      {isNew ? (
-        <>
-          <Button
-            testID={`confirm-run-${run.pickup_code}`}
-            title={t('courier.runs.confirm')}
-            loading={actions.confirm.isPending}
-            onPress={() => void perform(() => actions.confirm.mutateAsync(run.id))}
-          />
-          <Button
-            variant="ghost"
-            title={t('courier.runs.decline')}
-            loading={actions.decline.isPending}
-            onPress={() => void decline()}
-          />
-        </>
+      {awaitingPayment ? (
+        <AppText variant="link" testID={`awaiting-payment-${run.pickup_code}`}>
+          {t('courier.runs.waitingPayment', {
+            time: run.delivery_payment_due_at ? formatTime(run.delivery_payment_due_at) : '',
+          })}
+        </AppText>
+      ) : null}
+      {early && paidByCard ? <AppText variant="muted">{t('courier.runs.paid')}</AppText> : null}
+      {cash && run.status !== 'delivered' ? (
+        <AppText variant="link">
+          {t('courier.runs.collectCash', { price: formatCents(run.delivery_fee_cents) })}
+        </AppText>
+      ) : null}
+      {early && !run.delivery_authorized_at ? (
+        <Button
+          testID={`release-run-${run.pickup_code}`}
+          variant="ghost"
+          title={t('courier.runs.release')}
+          loading={actions.decline.isPending}
+          onPress={() => void decline()}
+        />
       ) : null}
 
-      {run.status === 'placed' && run.courier_accepted_at ? (
-        <AppText variant="muted">{t('courier.runs.waitingRestaurant')}</AppText>
-      ) : null}
       {(run.status === 'accepted' || run.status === 'preparing') && run.estimated_ready_at ? (
         <AppText>
           {t('courier.runs.preparing', { time: formatTime(run.estimated_ready_at) })}
@@ -134,7 +140,7 @@ export function RunCard({ run }: { run: CourierRun }) {
         </View>
       ) : null}
 
-      {!isNew && run.status !== 'out_for_delivery' && merchant ? (
+      {run.status !== 'out_for_delivery' && merchant ? (
         <Button
           variant="secondary"
           title={t('courier.runs.toRestaurant')}
@@ -145,6 +151,11 @@ export function RunCard({ run }: { run: CourierRun }) {
       {run.status === 'out_for_delivery' ? (
         <>
           <AppText variant="link">{t('courier.runs.onTheWay')}</AppText>
+          {cash ? (
+            <AppText variant="link">
+              {t('courier.runs.cashCollected', { price: formatCents(run.delivery_fee_cents) })}
+            </AppText>
+          ) : null}
           <Button
             variant="secondary"
             title={t('courier.runs.toCustomer')}
@@ -172,7 +183,7 @@ export function RunCard({ run }: { run: CourierRun }) {
         </>
       ) : null}
 
-      {!isNew && run.delivery_phone ? (
+      {run.delivery_phone ? (
         <Button
           variant="ghost"
           title={t('courier.runs.call')}

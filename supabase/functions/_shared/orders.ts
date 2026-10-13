@@ -20,6 +20,9 @@ export type OrderRow = {
   delivery_payment_intent_id: string | null;
   delivery_checkout_session_id: string | null;
   courier_accepted_at: string | null;
+  courier_name: string | null;
+  meal_payment_method: 'card' | 'cash';
+  delivery_payment_method: 'card' | 'cash';
 };
 
 export async function fetchOrder(db: SupabaseClient, orderId: string): Promise<OrderRow | null> {

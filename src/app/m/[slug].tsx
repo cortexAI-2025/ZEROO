@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +15,9 @@ import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
 import type { MenuItem } from '@/features/menu/types';
 import { shortTime, WEEKDAYS } from '@/features/merchant/hours';
 import type { MerchantCategory, OpeningHour } from '@/features/merchant/types';
+import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
-import { spacing, useThemeColors } from '@/theme';
+import { radius, spacing, useThemeColors } from '@/theme';
 
 const isoWeekday = () => ((new Date().getDay() + 6) % 7) + 1;
 
@@ -73,6 +75,14 @@ export default function MerchantPageScreen() {
     <View style={[styles.flex, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title: merchant.name, headerShown: true }} />
       <ScrollView contentContainerStyle={styles.content}>
+        {merchant.photo_url ? (
+          <Image
+            source={{ uri: merchant.photo_url }}
+            style={styles.cover}
+            contentFit="cover"
+            accessibilityLabel={merchant.name}
+          />
+        ) : null}
         <AppText variant="title">{merchant.name}</AppText>
         <AppText variant="muted">
           {t(`merchant.categories.${merchant.category as MerchantCategory}`)} ·{' '}
@@ -152,6 +162,7 @@ export default function MerchantPageScreen() {
                   styles.item,
                   { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
                 ]}>
+                {item.image_url ? <Thumb url={item.image_url} size={72} label={item.name} /> : null}
                 <View style={styles.flex}>
                   <AppText style={!item.is_available && { color: colors.textMuted }}>
                     {item.name}
@@ -188,6 +199,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  cover: { width: '100%', aspectRatio: 16 / 9, borderRadius: radius.lg },
   hours: { gap: spacing.xs },
   row: { flexDirection: 'row', gap: spacing.md },
   day: { width: 90 },

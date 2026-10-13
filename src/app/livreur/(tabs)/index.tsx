@@ -8,8 +8,10 @@ import {
   useActiveRuns,
   useCourierActions,
   useCurrentCourier,
+  useMissions,
   useMyLinks,
 } from '@/features/courier/hooks';
+import { MissionCard } from '@/features/courier/MissionCard';
 import { RunCard } from '@/features/courier/RunCard';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { errorKey } from '@/lib/errors';
@@ -21,6 +23,7 @@ export default function CourierRunsScreen() {
   const { t } = useTranslation();
   const courier = useCurrentCourier();
   const runs = useActiveRuns(courier.id);
+  const missions = useMissions(courier.id);
   const links = useMyLinks(courier.id);
   const billing = useBilling({ role: 'courier', id: courier.id });
   const actions = useCourierActions();
@@ -75,6 +78,16 @@ export default function CourierRunsScreen() {
       </Card>
 
       <NotificationsPrompt audience="courier" />
+
+      {ready && courier.is_available && (missions.data?.length ?? 0) > 0 ? (
+        <>
+          <AppText variant="subtitle">{t('courier.runs.missionsTitle')}</AppText>
+          <AppText variant="muted">{t('courier.runs.missionsHint')}</AppText>
+          {missions.data?.map((mission) => (
+            <MissionCard key={mission.order_id} mission={mission} />
+          ))}
+        </>
+      ) : null}
 
       {runs.data ? (
         runs.data.length === 0 ? (

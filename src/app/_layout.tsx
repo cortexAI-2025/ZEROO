@@ -48,6 +48,8 @@ function RootNavigator() {
       <Stack.Screen name="confidentialite" options={{ headerShown: true, title: '' }} />
       <Stack.Protected guard={allow(signedIn && space === 'client')}>
         <Stack.Screen name="(client)" />
+        <Stack.Screen name="addresses" options={{ headerShown: true }} />
+        <Stack.Screen name="favorites" options={{ headerShown: true }} />
       </Stack.Protected>
       <Stack.Protected guard={allow(signedIn && space === 'merchant')}>
         <Stack.Screen name="pro" />

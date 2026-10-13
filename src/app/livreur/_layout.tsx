@@ -14,6 +14,7 @@ export default function CourierLayout() {
     <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
       <Stack.Protected guard={hasCourier}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="profil" />
       </Stack.Protected>
       <Stack.Protected guard={!hasCourier}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />

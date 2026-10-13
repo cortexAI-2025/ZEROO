@@ -69,3 +69,17 @@ export async function fetchMerchantPage(slug: string) {
 }
 
 export type MerchantPage = NonNullable<Awaited<ReturnType<typeof fetchMerchantPage>>>;
+
+/** Photos des restaurants listés (les fonctions de recherche ne les renvoient pas). */
+export async function fetchMerchantPhotos(merchantIds: string[]) {
+  const photos = new Map<string, string>();
+  if (merchantIds.length === 0) return photos;
+  const { data, error } = await supabase
+    .from('merchants')
+    .select('id, photo_url')
+    .in('id', merchantIds)
+    .not('photo_url', 'is', null);
+  if (error) throw error;
+  for (const row of data) if (row.photo_url) photos.set(row.id, row.photo_url);
+  return photos;
+}

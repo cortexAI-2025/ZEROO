@@ -6,6 +6,10 @@ export type PayOrderInput = {
   lines: CartLine[];
   note: string;
   rewardLineKey: string | null;
+  /** Retrait : espèces au comptoir si le restaurant l'accepte (défaut : carte). */
+  mealPayment?: 'card' | 'cash';
+  /** Livraison : course réglée par carte (quand un livreur accepte) ou en espèces au livreur. */
+  deliveryPayment?: 'card' | 'cash';
   /** Absent : retrait sur place. */
   delivery?: DeliveryDetails;
 };
@@ -24,6 +28,8 @@ export const orderPayload = (input: PayOrderInput, channel: 'native' | 'web') =>
   })),
   note: input.note.trim() || undefined,
   channel,
+  mealPayment: input.mealPayment ?? 'card',
+  deliveryPayment: input.deliveryPayment ?? 'card',
   delivery: input.delivery
     ? { ...input.delivery, instructions: input.delivery.instructions.trim() || undefined }
     : undefined,

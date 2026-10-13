@@ -1,0 +1,147 @@
+<title>ZeeRoo Démo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Concept : trois téléphones côte à côte (client, restaurant, livreur) qui partagent une seule commande. Vert ZeeRoo sur encre profonde, fond blanc cassé froid. */
+:root{
+  --ink:#0b1b1c; --ink-2:#34504c; --mute:#6b7f7b;
+  --green:#3aab1a; --green-d:#2a8412; --green-l:#e6f5df;
+  --paper:#f6f9f6; --card:#ffffff; --line:#dfe8e2;
+  --warn:#c26a00; --warn-l:#fff1dd; --bad:#c0392b; --bad-l:#fde9e6;
+  --display:'Outfit','Trebuchet MS',sans-serif; --body:'Figtree','Segoe UI',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.45 var(--body);padding-inline:16px;padding-block:20px 48px;margin:0}
+button{font:inherit;cursor:pointer;border:0;color:inherit;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.top{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;justify-content:space-between}
+.top img{height:56px;display:block}
+.top .tag{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.reset{background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px}
+.guide{max-width:1240px;margin:18px auto 0;background:var(--ink);color:#fff;border-radius:14px;padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.guide b{font:700 12px var(--body);letter-spacing:.1em;text-transform:uppercase;background:var(--green);color:var(--ink);padding:4px 9px;border-radius:6px}
+.guide span{flex:1;min-width:220px}
+.steps{max-width:1240px;margin:12px auto 0;display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.steps i{font-style:normal;padding:4px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line)}
+.steps i.on{background:var(--green-l);border-color:var(--green);color:var(--green-d);font-weight:700}
+.tabs{display:none;max-width:1240px;margin:18px auto 0;gap:6px}
+.tabs button{flex:1;padding:10px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-weight:700}
+.tabs button[aria-selected=true]{background:var(--green);color:var(--ink);border-color:var(--green)}
+.stage{max-width:1240px;margin:20px auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;justify-items:center}
+.col{width:100%;max-width:380px;min-width:0}
+.col>h2{font:700 13px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px;text-align:center}
+.phone{background:var(--card);border:8px solid var(--ink);border-radius:36px;height:760px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.bar{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.bar img{height:26px}
+.bar .t{font:800 17px var(--display);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .back{font-size:20px;line-height:1;padding:2px 8px 2px 0}
+.body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.foot{padding:12px 16px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.btn{background:var(--green);color:var(--ink);font-weight:700;padding:13px 16px;border-radius:12px;text-align:center;width:100%}
+.btn:hover{background:#44bd22}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.ghost{background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:8px 12px;width:auto;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.card{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--card)}
+.row{display:flex;align-items:center;gap:10px}
+.row>.f{flex:1;min-width:0}
+.mute{color:var(--mute);font-size:13px}
+.h{font:800 20px var(--display);margin:0}
+.sub{font:700 15px var(--display);margin:0}
+.price{font-weight:700;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:99px;border:1.5px solid var(--line);font-weight:600;font-size:14px;background:var(--card)}
+.chip[aria-pressed=true]{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
+.tile{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font:800 18px var(--display);color:#fff;flex:none}
+.badge{font:700 11px var(--body);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--green-l);color:var(--green-d);white-space:nowrap}
+.badge.w{background:var(--warn-l);color:var(--warn)}
+.badge.k{background:var(--ink);color:#fff}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:30px;height:30px;border-radius:50%;background:var(--paper);border:1px solid var(--line);font-weight:800}
+.qty span{min-width:16px;text-align:center;font-weight:700}
+.code{font:800 34px var(--display);letter-spacing:.3em;text-align:center;padding:8px 0 8px .3em;background:var(--paper);border-radius:12px}
+.timeline{display:flex;flex-direction:column;gap:6px}
+.timeline div{display:flex;gap:10px;align-items:center;color:var(--mute);font-size:14px}
+.timeline div::before{content:'';width:12px;height:12px;border-radius:50%;background:var(--line);flex:none}
+.timeline div.done{color:var(--ink);font-weight:600}
+.timeline div.done::before{background:var(--green)}
+.note{background:var(--warn-l);color:#6b3d00;border-radius:12px;padding:10px 12px;font-size:14px}
+.note.ok{background:var(--green-l);color:#1d5c0b}
+.note.bad{background:var(--bad-l);color:#7a2118}
+.empty{margin:auto;text-align:center;color:var(--mute);padding:20px}
+.empty .h{color:var(--ink-2);font-size:17px}
+input.t{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font:600 18px var(--display);letter-spacing:.2em;text-align:center}
+.sheet{position:absolute;inset:0;background:rgba(11,27,28,.55);display:flex;align-items:flex-end;z-index:5}
+.sheet>div{background:var(--card);width:100%;border-radius:22px 22px 0 0;padding:18px 16px 20px;display:flex;flex-direction:column;gap:10px}
+.dev{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dev button{font-size:12px;padding:6px 10px;border-radius:8px;border:1px dashed var(--mute);color:var(--ink-2)}
+.dev .lbl{font-size:12px;color:var(--mute);align-self:center}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-weight:600;z-index:20;max-width:92vw;text-align:center}
+
+.tabbar{display:flex;border-top:1px solid var(--line);background:var(--card);padding:6px 4px 10px}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font:600 11px var(--body);color:var(--mute);padding:6px 2px;border-radius:10px}
+.tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-selected=true]{color:var(--green-d)}
+.tabbar button[aria-selected=true] svg{stroke:var(--green-d)}
+.sw{width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.sw[aria-checked=true]{background:var(--green)}
+.sw[aria-checked=true]::after{left:21px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld>span{font:600 12px var(--body);color:var(--ink-2);letter-spacing:.03em}
+.fld input,.fld textarea,.in{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:500 15px var(--body);background:var(--card);color:var(--ink)}
+.fld textarea{resize:none;height:64px}
+.lr{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.lr:last-child{border-bottom:0}
+.lr .f{flex:1;min-width:0}
+.lr .chev{color:var(--mute);font-size:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--paper);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font:800 22px var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--mute)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:18px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-size:11px;color:var(--mute)}
+.bars i{display:block;width:100%;background:var(--line);border-radius:6px 6px 2px 2px;font-style:normal}
+.bars div.cur i{background:var(--green)}
+.bars em{font-style:normal;font-weight:700;color:var(--ink);font-size:11px}
+.stars{color:#e0a100;letter-spacing:2px}
+.starbtn{font-size:30px;line-height:1;color:var(--line);padding:2px}
+.starbtn.on{color:#e0a100}
+.av{width:64px;height:64px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font:800 24px var(--display);flex:none}
+.pill{font:700 11px var(--body);padding:3px 8px;border-radius:99px;background:var(--paper);border:1px solid var(--line);color:var(--ink-2)}
+.ok{color:var(--green-d)}
+.dist{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
+.dist .tr{flex:1;height:6px;border-radius:4px;background:var(--line);overflow:hidden}
+.dist .tr i{display:block;height:100%;background:var(--green)}
+.danger{color:var(--bad);font-weight:700}
+.sec{font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:6px 0 -4px}
+@media(max-width:1020px){
+  .tabs{display:flex}
+  .stage{grid-template-columns:minmax(0,1fr)}
+  .col{display:none;max-width:420px}
+  .col.show{display:block}
+}
+@media(prefers-reduced-motion:no-preference){.btn{transition:background .15s}}
+</style>
+
+<div class="top">
+  <img src="__LOGO__" alt="ZeeRoo">
+  <span class="tag">Démo cliquable · Le bon goût. Sans commission.</span>
+  <button class="reset" id="reset">Recommencer la démo</button>
+</div>
+<div class="guide"><b>Étape suivante</b><span id="hint"></span></div>
+<div class="steps" id="steps"></div>
+<div class="tabs" id="tabs" role="tablist">
+  <button role="tab" data-tab="client">Client</button>
+  <button role="tab" data-tab="resto">Restaurant</button>
+  <button role="tab" data-tab="livreur">Livreur</button>
+</div>
+<div class="stage">
+  <div class="col" data-col="client"><h2>Client · Nadia</h2><div class="phone" id="p-client"></div></div>
+  <div class="col" data-col="resto"><h2>Restaurant · Chez Samir</h2><div class="phone" id="p-resto"></div></div>
+  <div class="col" data-col="livreur"><h2>Livreur · Karim</h2><div class="phone" id="p-livreur"></div><div class="dev" id="dev"></div></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+

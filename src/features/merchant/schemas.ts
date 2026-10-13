@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { isValidSiret } from '@/features/courier/siret';
+
 import { MERCHANT_CATEGORIES } from './types';
 
 // Messages = clés i18n.
@@ -23,6 +25,27 @@ export const merchantSchema = z.object({
     },
     { error: 'merchant.errors.addressRequired' },
   ),
+  // Entreprise (facultatif à la création, affiché dans les mentions légales du commerce).
+  legalName: z.string().trim().max(120).optional(),
+  siret: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || isValidSiret(v), 'merchant.errors.siretInvalid')
+    .optional(),
+  vatNumber: z
+    .string()
+    .trim()
+    .refine(
+      (v) => v === '' || /^FR[0-9A-Z]{2}[0-9]{9}$/.test(v.replace(/\s/g, '').toUpperCase()),
+      'merchant.errors.vatInvalid',
+    )
+    .optional(),
+  contactEmail: z
+    .string()
+    .trim()
+    .email('merchant.errors.emailInvalid')
+    .or(z.literal(''))
+    .optional(),
 });
 
 export type MerchantFormValues = z.infer<typeof merchantSchema>;

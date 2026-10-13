@@ -10,7 +10,7 @@ const easProjectId = process.env.EAS_PROJECT_ID;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Zéroo',
+  name: 'ZeeRoo',
   slug: 'zeroo',
   version: '0.1.0',
   orientation: 'portrait',
@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: 'fr.zeroo.app',
     adaptiveIcon: {
-      backgroundColor: '#0D3B2A',
+      backgroundColor: '#3AAD17',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -40,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-localization',
-    ['expo-notifications', { sounds: ['./assets/sounds/new-order.wav'], color: '#1F7A35' }],
+    ['expo-notifications', { sounds: ['./assets/sounds/new-order.wav'], color: '#2A8010' }],
     'expo-apple-authentication',
     [
       '@stripe/stripe-react-native',
@@ -50,7 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Zéroo utilise votre position pour trouver les commerces proches de vous. Elle n’est pas enregistrée.',
+          'ZeeRoo utilise votre position pour trouver les commerces proches de vous. Elle n’est pas enregistrée.',
       },
     ],
     ...(googleIosUrlScheme

@@ -101,6 +101,16 @@ export default function ShopScreen() {
         )}
       </Card>
 
+      <Card>
+        <SwitchRow
+          testID="cash-pickup-switch"
+          label={t('merchant.shop.cashPickup')}
+          hint={t('merchant.shop.cashPickupHint')}
+          value={merchant.accepts_cash_pickup}
+          onValueChange={(value) => update.mutate({ accepts_cash_pickup: value })}
+        />
+      </Card>
+
       {update.error ? <AppText variant="error">{t(errorKey(update.error))}</AppText> : null}
 
       <View>

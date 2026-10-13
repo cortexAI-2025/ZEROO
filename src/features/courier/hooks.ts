@@ -4,25 +4,32 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { useRealtimeChanges } from '@/lib/realtime';
 
 import {
-  confirmRun,
+  acceptMission,
+  type CourierProfilePatch,
   declineRun,
   fetchActiveRuns,
   fetchDeliveredRuns,
   fetchEarnings,
+  fetchEarningsByDay,
+  fetchMissions,
   fetchMyCourier,
   fetchMyLinks,
   leaveMerchant,
   markDelivered,
   requestLink,
   setAvailability,
+  setCourierPhoto,
+  updateCourierProfile,
 } from './api';
 
 export const courierKeys = {
   all: ['courier'] as const,
   mine: (userId: string | undefined) => ['courier', 'mine', userId] as const,
+  missions: (courierId: string) => ['courier', courierId, 'missions'] as const,
   runs: (courierId: string) => ['courier', courierId, 'runs'] as const,
   delivered: (courierId: string) => ['courier', courierId, 'delivered'] as const,
   earnings: (courierId: string) => ['courier', courierId, 'earnings'] as const,
+  earningsByDay: (courierId: string) => ['courier', courierId, 'earnings-by-day'] as const,
   links: (courierId: string) => ['courier', courierId, 'links'] as const,
 };
 
@@ -66,6 +73,15 @@ export function useActiveRuns(courierId: string) {
   });
 }
 
+/** Missions à prendre : relues souvent, la première acceptation l'emporte. */
+export function useMissions(courierId: string) {
+  return useQuery({
+    queryKey: courierKeys.missions(courierId),
+    queryFn: fetchMissions,
+    refetchInterval: 10_000,
+  });
+}
+
 export function useDeliveredRuns(courierId: string) {
   return useQuery({
     queryKey: courierKeys.delivered(courierId),
@@ -91,7 +107,7 @@ export function useCourierActions() {
   const onSuccess = () => queryClient.invalidateQueries({ queryKey: courierKeys.all });
   return {
     setAvailability: useMutation({ mutationFn: setAvailability, onSuccess }),
-    confirm: useMutation({ mutationFn: confirmRun, onSuccess }),
+    accept: useMutation({ mutationFn: acceptMission, onSuccess }),
     decline: useMutation({ mutationFn: declineRun, onSuccess }),
     deliver: useMutation({
       mutationFn: ({ orderId, code }: { orderId: string; code: string }) =>
@@ -101,4 +117,27 @@ export function useCourierActions() {
     requestLink: useMutation({ mutationFn: requestLink, onSuccess }),
     leave: useMutation({ mutationFn: leaveMerchant, onSuccess }),
   };
+}
+
+export function useEarningsByDay(courierId: string) {
+  return useQuery({
+    queryKey: courierKeys.earningsByDay(courierId),
+    queryFn: () => fetchEarningsByDay(),
+  });
+}
+
+export function useUpdateCourierProfile(courierId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: CourierProfilePatch) => updateCourierProfile(courierId, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
+}
+
+export function useSetCourierPhoto(courierId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (url: string | null) => setCourierPhoto(courierId, url),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
 }

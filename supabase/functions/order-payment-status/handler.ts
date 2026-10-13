@@ -4,9 +4,9 @@ import { stripeClient } from '../_shared/stripe.ts';
 import { adminClient, requireUser } from '../_shared/supabase.ts';
 
 /**
- * Appelée par l'app juste après les feuilles de paiement : vérifie les autorisations chez
- * Stripe (repas, puis course pour une livraison) sans attendre le webhook. Les deux
- * chemins sont idempotents.
+ * Appelée par l'app juste après une feuille de paiement : vérifie chez Stripe le repas
+ * (autorisation) ou la course (paiement) sans attendre le webhook. Les deux chemins sont
+ * idempotents.
  */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
@@ -17,28 +17,37 @@ export const handler = handle(async (req) => {
 
   if (order.status === 'pending_payment') {
     const stripe = stripeClient();
-    const checks = [
-      {
-        intentId: order.stripe_payment_intent_id,
-        account: order.stripe_account_id,
-        authorize: 'mark_order_authorized',
-      },
-      {
-        intentId: order.delivery_payment_intent_id,
-        account: order.courier_stripe_account_id,
-        authorize: 'mark_delivery_authorized',
-      },
-    ];
-    for (const check of checks) {
-      if (!check.intentId || !check.account) continue;
-      const intent = await stripe.paymentIntents.retrieve(check.intentId, undefined, {
-        stripeAccount: check.account,
+    if (order.stripe_payment_intent_id && order.stripe_account_id) {
+      const intent = await stripe.paymentIntents.retrieve(order.stripe_payment_intent_id, undefined, {
+        stripeAccount: order.stripe_account_id,
       });
       if (intent.status === 'requires_capture') {
-        await db.rpc(check.authorize, { p_order_id: order.id, p_payment_intent_id: intent.id });
+        await db.rpc('mark_order_authorized', {
+          p_order_id: order.id,
+          p_payment_intent_id: intent.id,
+        });
       } else if (intent.status === 'canceled') {
         await db.rpc('mark_order_payment_failed', { p_order_id: order.id });
       }
+    }
+  }
+
+  // Course réglée par carte après l'acceptation d'un livreur.
+  if (
+    order.delivery_payment_intent_id &&
+    order.courier_stripe_account_id &&
+    order.delivery_payment_method === 'card'
+  ) {
+    const intent = await stripeClient().paymentIntents.retrieve(
+      order.delivery_payment_intent_id,
+      undefined,
+      { stripeAccount: order.courier_stripe_account_id },
+    );
+    if (intent.status === 'succeeded') {
+      await db.rpc('mark_delivery_authorized', {
+        p_order_id: order.id,
+        p_payment_intent_id: intent.id,
+      });
     }
   }
 

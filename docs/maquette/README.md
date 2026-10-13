@@ -1,16 +1,15 @@
-# Maquette cliquable Zéroo
+# Démo cliquable ZeeRoo
 
-**`zeroo-maquette.html`** : un seul fichier HTML autonome, à ouvrir dans n'importe quel navigateur (double-clic, aucune installation). Il présente les trois espaces côte à côte, dans des cadres de téléphone ; sur petit écran, des boutons Client / Restaurant / Livreur passent de l'un à l'autre.
+**`zeeroo-demo.html`** : un seul fichier HTML autonome, à ouvrir dans n'importe quel navigateur. Les trois téléphones (client, restaurant, livreur) partagent la même commande : ce qui est fait sur l'un apparaît aussitôt sur les autres. Sur petit écran, des onglets passent de l'un à l'autre. C'est la référence des écrans de l'application.
 
-| Espace | Parcours cliquable |
+| Espace | Ce que montre la démo |
 |---|---|
-| Client | Accueil et catégories → restaurant et carte → panier (retrait ou livraison) → paiement → suivi de commande (code de retrait 4821, « Je pars maintenant ») → fidélité (9 menus, le 10e offert) |
-| Restaurant | Commandes en temps réel (nouvelles → en cuisine → prêtes → remises), pause, carte (disponible / épuisé), abonnement (choix Start / Pro, mensuel / annuel, prix HT avec TTC) |
-| Livreur | Disponibilité, courses proposées → récupération → validation avec le code du client (4821), revenus, restaurants rattachés, abonnement (14,99 € HT par mois ou 149,99 € HT par an) |
+| Client | Restaurants (note, favoris), menu avec options, panier (retrait ou livraison, carte ou espèces), paiement du repas, puis de la livraison quand un livreur accepte, suivi et codes, avis (restaurant et livreur). Onglets Commandes (historique, facture, commander à nouveau) et Profil (fidélité, informations, adresses, paiement, favoris, notifications). |
+| Restaurant | Commandes en direct (accepter, refuser, prête, remise avec code), Menu (catégories, produits, options, ruptures), Activité (ventes, meilleurs produits, note et avis), Boutique (entreprise : raison sociale, SIRET, TVA ; horaires ; livraison ; livreurs ; paiements ; abonnement Start ou Pro avec l'option livraison). |
+| Livreur | Missions proposées à tous (le premier qui accepte la prend, 2 livraisons au plus), délai de paiement de 5 minutes, codes de retrait et de livraison, espèces. Revenus (7 jours, carte / espèces, 0 % de commission), historique avec notes, profil (note, entreprise, véhicule, documents, abonnement, restaurants). |
 
-Les restaurants, plats, prix, clients et adresses sont **fictifs**. Chaque ouverture du fichier repart de l'état initial. Sans connexion, la police Plus Jakarta Sans est remplacée par celle du système.
+Les données sont fictives et la démo repart de zéro à chaque ouverture. Des boutons « Simuler » montrent les cas limites : un autre livreur plus rapide, 2 livraisons déjà en cours, délai de paiement dépassé.
 
-## Modifier la maquette
+## Modifier la démo
 
-- Écrans : `src/Main.dc.html` (client), `src/Pro.dc.html` (restaurant), `src/Livreur.dc.html` (livreur). Chaque fichier contient le gabarit HTML (`{{…}}`, `<sc-if>`, `<sc-for>`) et la logique de l'écran (`class Component`).
-- Régénérer le fichier autonome : `python3 docs/maquette/build.py` (Python 3, sans dépendance). Les logos viennent de `assets/images/`.
+Sources dans `src/` : `head.html` (styles et squelette), `app1.js` (état, composants, client), `app2.js` (restaurant), `appc.js` (tableau de bord client), `app3.js` (livreur, actions, rendu). Puis : `python3 docs/maquette/build.py`.

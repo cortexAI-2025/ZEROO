@@ -7,6 +7,7 @@ import {
   type CourierLink,
   type CourierRun,
   type Earnings,
+  type Mission,
   RUN_ACTIVE_STATUSES,
 } from './types';
 
@@ -64,12 +65,20 @@ export async function fetchDeliveredRuns(courierId: string, limit = 30) {
   return data as unknown as CourierRun[];
 }
 
-export async function confirmRun(orderId: string) {
-  const { error } = await supabase.rpc('courier_confirm_order', { p_order_id: orderId });
+/** Missions proposées (commandes acceptées par le restaurant, sans livreur) : voir available_missions. */
+export async function fetchMissions() {
+  const { data, error } = await supabase.rpc('available_missions');
+  if (error) throw error;
+  return data as Mission[];
+}
+
+/** Le premier livreur qui accepte obtient la course ; les autres reçoivent mission_unavailable. */
+export async function acceptMission(orderId: string) {
+  const { error } = await supabase.rpc('courier_accept_mission', { p_order_id: orderId });
   if (error) throw error;
 }
 
-/** Décliner : les paiements du client sont libérés côté serveur (Stripe). */
+/** Renoncer à une mission non encore payée : elle retourne dans le pool (paiement ouvert annulé côté serveur). */
 export async function declineRun(orderId: string) {
   await callFunction('courier-decline', { orderId });
 }
@@ -107,5 +116,33 @@ export async function requestLink(merchantId: string) {
 
 export async function leaveMerchant(merchantId: string) {
   const { error } = await supabase.rpc('leave_merchant', { p_merchant_id: merchantId });
+  if (error) throw error;
+}
+
+export type CourierProfilePatch = {
+  display_name: string;
+  phone: string;
+  vehicle: Courier['vehicle'];
+  work_zone: string | null;
+};
+
+/** Le livreur modifie son nom, son téléphone, son véhicule et sa zone (le SIRET est figé). */
+export async function updateCourierProfile(courierId: string, patch: CourierProfilePatch) {
+  const { error } = await supabase.from('couriers').update(patch).eq('id', courierId);
+  if (error) throw error;
+}
+
+/** Gains des 7 derniers jours (aujourd'hui en dernier), séparés carte / espèces. */
+export async function fetchEarningsByDay(days = 7) {
+  const { data, error } = await supabase.rpc('courier_earnings_by_day', { p_days: days });
+  if (error) throw error;
+  return data;
+}
+
+export async function setCourierPhoto(courierId: string, photoUrl: string | null) {
+  const { error } = await supabase
+    .from('couriers')
+    .update({ photo_url: photoUrl })
+    .eq('id', courierId);
   if (error) throw error;
 }

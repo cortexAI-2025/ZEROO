@@ -17,7 +17,7 @@ run("Page d'accueil", async () => {
   if (!(await page.title()).includes('sans commission'))
     throw new Error('titre de page : ' + (await page.title()));
   await v(page.getByTestId('landing-model'))
-    .getByText('Zéroo ne vend aucun repas', { exact: false })
+    .getByText('ZeeRoo ne vend aucun repas', { exact: false })
     .waitFor();
   await v(page.getByTestId('landing-model'))
     .getByText('Le client paie le prix de la carte')
@@ -26,13 +26,13 @@ run("Page d'accueil", async () => {
   await v(page.getByTestId('landing-comparison')).getByText('0 %', { exact: true }).waitFor();
   step('accroche, modèle (service, prix de la carte, abonnement fixe), comparaison et tarifs HT (Start, Pro, Livreur)');
 
-  await v(page.getByText('Zéroo vend-il des repas', { exact: false })).click();
-  await v(page.getByText('Non. Zéroo est un service', { exact: false })).waitFor();
-  step('FAQ dépliable : « Zéroo vend-il des repas ? Non. Zéroo est un service… »');
+  await v(page.getByText('ZeeRoo vend-il des repas', { exact: false })).click();
+  await v(page.getByText('Non. ZeeRoo est un service', { exact: false })).waitFor();
+  step('FAQ dépliable : « ZeeRoo vend-il des repas ? Non. ZeeRoo est un service… »');
 
   await v(page.getByText('Mentions légales')).first().click();
   await v(
-    page.getByText('Zéroo ne vend aucun repas : les produits sont vendus par chaque restaurant', {
+    page.getByText('ZeeRoo ne vend aucun repas : les produits sont vendus par chaque restaurant', {
       exact: false,
     }),
   ).waitFor();

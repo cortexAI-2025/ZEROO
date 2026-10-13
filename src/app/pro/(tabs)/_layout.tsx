@@ -18,6 +18,10 @@ export default function MerchantTabsLayout() {
         options={{ title: t('merchant.tabs.menu'), tabBarIcon: tabIcon('restaurant-outline') }}
       />
       <Tabs.Screen
+        name="stats"
+        options={{ title: t('merchant.tabs.stats'), tabBarIcon: tabIcon('bar-chart-outline') }}
+      />
+      <Tabs.Screen
         name="shop"
         options={{ title: t('merchant.tabs.shop'), tabBarIcon: tabIcon('storefront-outline') }}
       />

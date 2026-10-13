@@ -48,9 +48,9 @@ values (
 insert into public.merchant_stripe_accounts (merchant_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)
 values ('30000000-0000-0000-0000-000000000001', 'acct_demo_chez_samir', true, true, true);
 
-insert into public.subscriptions (merchant_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used)
+insert into public.subscriptions (merchant_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used, plan)
 values ('30000000-0000-0000-0000-000000000001', 'cus_demo_chez_samir', 'sub_demo_chez_samir', 'trialing',
-        now() + interval '30 days', true);
+        now() + interval '30 days', true, 'pro');
 
 -- Ouvert tous les jours de 6 h à 2 h du matin, pour pouvoir tester à toute heure.
 insert into public.merchant_opening_hours (merchant_id, weekday, opens_at, closes_at)
@@ -98,12 +98,15 @@ values ('20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-0000000
 -- (compte Stripe et abonnement simulés, rattachement accepté, disponible).
 -- -----------------------------------------------------------------------------
 update public.merchants
-set delivery_enabled = true, delivery_fee_cents = 350, delivery_radius_m = 3000
+set delivery_enabled = true, delivery_fee_cents = 350, delivery_radius_m = 3000,
+    legal_name = 'Samir Food SAS', siret = '73282932000074', vat_number = 'FR32732829320',
+    contact_email = 'contact@chezsamir.test'
 where id = '30000000-0000-0000-0000-000000000001';
 
 insert into public.couriers (id, user_id, display_name, phone, legal_status, siret, vehicle, is_available)
 values ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'Karim L.',
         '06 12 34 56 78', 'auto_entrepreneur', '88212345600015', 'scooter', true);
+update public.couriers set work_zone = 'Paris centre' where id = '80000000-0000-0000-0000-000000000001';
 
 insert into public.courier_stripe_accounts (courier_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)
 values ('80000000-0000-0000-0000-000000000001', 'acct_demo_karim', true, true, true);

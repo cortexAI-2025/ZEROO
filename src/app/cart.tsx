@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Card, Chip, Screen, TextField } from '@/components/ui';
+import type { SavedAddress } from '@/features/account/api';
+import { useAddresses } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useDeliveryQuote, useMerchantDeliverySettings } from '@/features/cart/delivery';
 import {
@@ -49,6 +51,25 @@ export default function CartScreen() {
   } = useCart();
   const deliverySettings = useMerchantDeliverySettings(merchant?.id).data;
   const isDelivery = !!deliverySettings?.delivery_enabled && fulfillment === 'delivery';
+  // Adresses enregistrées : un appui remplit l'adresse et les instructions ; l'adresse par
+  // défaut est proposée d'office si aucune n'est encore choisie.
+  const saved = useAddresses();
+  const applySaved = (a: SavedAddress) => {
+    setDeliveryAddress({
+      addressLine: a.address_line,
+      postalCode: a.postal_code,
+      city: a.city,
+      latitude: a.latitude,
+      longitude: a.longitude,
+    });
+    if (a.instructions) setDeliveryInstructions(a.instructions);
+  };
+  const defaultSaved = saved.data?.find((a) => a.is_default);
+  useEffect(() => {
+    if (!deliveryAddress && defaultSaved) applySaved(defaultSaved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSaved?.id]);
+
   const quoteQuery = useDeliveryQuote(isDelivery ? merchant?.id : undefined, deliveryAddress);
   const quote = isDelivery ? quoteQuery.data : undefined;
   const card = useLoyaltyCard(merchant?.id);
@@ -58,6 +79,9 @@ export default function CartScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelledNotice, setCancelledNotice] = useState(false);
+  // Espèces : au comptoir pour un retrait (si le restaurant l'accepte), au livreur pour une course.
+  const [mealCash, setMealCash] = useState(false);
+  const [rideCash, setRideCash] = useState(false);
   const subtotal = cartTotalCents(lines);
   const discount = cartDiscountCents(lines, activeRewardKey);
   const total = subtotal - discount;
@@ -66,6 +90,8 @@ export default function CartScreen() {
     ? (quote?.fee_cents ?? deliverySettings?.delivery_fee_cents ?? 0)
     : 0;
   const grandTotal = total + deliveryFee;
+  const canPayCashAtCounter = !isDelivery && !!deliverySettings?.accepts_cash_pickup;
+  const cashMeal = canPayCashAtCounter && mealCash;
   const deliveryReady =
     !isDelivery ||
     (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone));
@@ -91,6 +117,8 @@ export default function CartScreen() {
         lines,
         note,
         rewardLineKey: activeRewardKey,
+        mealPayment: cashMeal ? 'cash' : 'card',
+        deliveryPayment: isDelivery && rideCash ? 'cash' : 'card',
         delivery:
           isDelivery && deliveryAddress
             ? {
@@ -209,7 +237,28 @@ export default function CartScreen() {
           </View>
           {isDelivery ? (
             <>
+              {(saved.data ?? []).length > 0 ? (
+                <View style={styles.chips}>
+                  {saved.data?.map((a) => (
+                    <Chip
+                      key={a.id}
+                      testID={`saved-address-${a.label}`}
+                      label={a.label}
+                      selected={
+                        deliveryAddress?.addressLine === a.address_line &&
+                        deliveryAddress.postalCode === a.postal_code
+                      }
+                      onPress={() => applySaved(a)}
+                    />
+                  ))}
+                </View>
+              ) : null}
               <AddressField
+                key={
+                  deliveryAddress
+                    ? `${deliveryAddress.addressLine}|${deliveryAddress.postalCode}`
+                    : 'none'
+                }
                 testID="delivery-address"
                 label={t('client.cart.deliveryAddress')}
                 hint={t('client.cart.deliveryAddressHint')}
@@ -250,6 +299,49 @@ export default function CartScreen() {
         </Card>
       ) : null}
 
+      {canPayCashAtCounter ? (
+        <Card testID="meal-payment">
+          <AppText variant="subtitle">{t('client.cart.payHow')}</AppText>
+          <View style={styles.chips}>
+            <Chip
+              testID="meal-payment-card"
+              label={t('client.cart.payOnline')}
+              selected={!cashMeal}
+              onPress={() => setMealCash(false)}
+            />
+            <Chip
+              testID="meal-payment-cash"
+              label={t('client.cart.payCash')}
+              selected={cashMeal}
+              onPress={() => setMealCash(true)}
+            />
+          </View>
+        </Card>
+      ) : null}
+
+      {isDelivery ? (
+        <Card testID="ride-payment">
+          <AppText variant="subtitle">{t('client.cart.rideHow')}</AppText>
+          <View style={styles.chips}>
+            <Chip
+              testID="ride-payment-card"
+              label={t('client.cart.rideCard')}
+              selected={!rideCash}
+              onPress={() => setRideCash(false)}
+            />
+            <Chip
+              testID="ride-payment-cash"
+              label={t('client.cart.rideCash')}
+              selected={rideCash}
+              onPress={() => setRideCash(true)}
+            />
+          </View>
+          <AppText variant="muted">
+            {rideCash ? t('client.cart.rideCashHint') : t('client.cart.rideCardHint')}
+          </AppText>
+        </Card>
+      ) : null}
+
       <TextField
         label={t('client.cart.note')}
         placeholder={t('client.cart.notePlaceholder')}
@@ -286,7 +378,11 @@ export default function CartScreen() {
         </AppText>
       </View>
       <AppText variant="muted">
-        {grandTotal === 0 ? t('client.loyalty.freeOrder') : t('client.cart.paymentInfo')}
+        {cashMeal
+          ? t('client.cart.cashInfo')
+          : total === 0
+            ? t('client.loyalty.freeOrder')
+            : t('client.cart.paymentInfo')}
       </AppText>
       {isDelivery ? <AppText variant="muted">{t('client.cart.twoPayments')}</AppText> : null}
       <AppText variant="muted">{t('client.cart.noFees')}</AppText>
@@ -299,9 +395,11 @@ export default function CartScreen() {
         <Button
           testID="place-order"
           title={
-            grandTotal === 0
-              ? t('client.cart.orderFree')
-              : t('client.cart.order', { price: formatCents(grandTotal) })
+            cashMeal
+              ? t('client.cart.orderCash')
+              : total === 0
+                ? t('client.cart.orderFree')
+                : t('client.cart.order', { price: formatCents(total) })
           }
           loading={busy}
           disabled={!deliveryReady}

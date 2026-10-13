@@ -14,7 +14,7 @@ export type MerchantCategory = (typeof MERCHANT_CATEGORIES)[number];
 
 /** Colonnes lues partout : la ligne + les colonnes calculées par Postgres. */
 export const MERCHANT_SELECT =
-  '*, is_open_now, is_paused_now, is_accepting_orders, is_payments_ready, is_subscription_active' as const;
+  '*, is_open_now, is_paused_now, is_accepting_orders, is_payments_ready, is_subscription_active, has_delivery_option' as const;
 
 /** Lien public du commerce, cible du QR code. */
 export const merchantPublicUrl = (slug: string) => `https://zeroo.fr/m/${slug}`;

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Zéroo",
+    "appName": "ZeeRoo",
     "continue": "Continuer",
     "cancel": "Annuler",
     "loading": "Chargement…",
@@ -25,6 +25,11 @@
     "plans": {
       "start": "Start",
       "pro": "Pro"
+    },
+    "planInfo": {
+      "start": "Retrait sur place (click & collect).",
+      "pro": "Retrait sur place et option livraison par vos livreurs.",
+      "courier": "Pour les livreurs indépendants."
     },
     "intervals": {
       "month": "Mensuel",
@@ -98,7 +103,7 @@
       "locationFailed": "Impossible d'obtenir votre position. Cherchez par ville ou code postal.",
       "nearbyTitle": "Autour de vous",
       "resultsTitle": "Résultats",
-      "noNearby": "Aucun commerce Zéroo dans un rayon de 10 km pour l'instant.",
+      "noNearby": "Aucun commerce ZeeRoo dans un rayon de 10 km pour l'instant.",
       "noResults": "Aucun commerce trouvé.",
       "locating": "Localisation…"
     },
@@ -160,9 +165,19 @@
         "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
       },
       "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
-      "twoPayments": "Deux paiements : le repas au restaurant, la course au livreur. Aucun frais Zéroo.",
+      "twoPayments": "Deux paiements : le repas maintenant (au restaurant), la livraison plus tard, quand un livreur accepte. Aucun frais ZeeRoo.",
       "deliveryAddress": "Adresse de livraison",
-      "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve."
+      "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve.",
+      "payHow": "Paiement de la commande",
+      "payOnline": "En ligne (carte, Apple Pay, Google Pay)",
+      "payCash": "Espèces au comptoir",
+      "cashInfo": "Vous réglez en espèces au restaurant en récupérant votre commande. Rien n'est débité en ligne.",
+      "orderCash": "Commander (paiement au comptoir)",
+      "rideHow": "Paiement de la course",
+      "rideCard": "Par carte",
+      "rideCash": "En espèces au livreur",
+      "rideCardHint": "Vous réglez la course en un geste dès qu'un livreur accepte votre livraison.",
+      "rideCashHint": "Prévoyez l'appoint : vous remettez la course au livreur en main propre."
     },
     "orders": {
       "title": "Mes commandes",
@@ -195,12 +210,13 @@
         "pending_payment": "Confirmation du paiement en cours…",
         "out_for_delivery": "{{courier}} est en route avec votre commande.",
         "delivered": "Commande livrée. Bon appétit !",
-        "placedDelivery": "En attente de confirmation du restaurant et du livreur…",
-        "acceptedDelivery": "Acceptée : {{courier}} livrera votre commande."
+        "placedDelivery": "En attente de confirmation du restaurant…",
+        "acceptedDelivery": "Acceptée : {{courier}} livrera votre commande.",
+        "acceptedDeliveryNoCourier": "Acceptée : le restaurant prépare votre commande, un livreur va la prendre."
       },
       "reason": "Motif : {{reason}}",
       "items": "Détail",
-      "orderAgain": "Revoir le menu",
+      "orderAgain": "Commander à nouveau",
       "placedAt": "Passée le {{date}} à {{time}}",
       "cancel": "Annuler ma commande",
       "cancelConfirmTitle": "Annuler la commande ?",
@@ -212,7 +228,18 @@
       "deliveryTo": "Livraison : {{address}}",
       "courier": "Votre livreur : {{name}}",
       "deliveryFee": "Livraison",
-      "totalPaid": "Total payé"
+      "totalPaid": "Total payé",
+      "searchingCourier": "Recherche d'un livreur…",
+      "rideCash": "Course en espèces : prévoyez {{price}} pour le livreur.",
+      "ridePaid": "Course réglée.",
+      "payRideTitle": "{{name}} prend votre livraison",
+      "payRideBefore": "Réglez la course avant {{time}}, sinon elle sera proposée à un autre livreur.",
+      "payRideHint": "Réglez la course pour la confirmer.",
+      "payRide": "Régler la course · {{price}}",
+      "reorderNothing": "Ces produits ne sont plus disponibles : consultez le menu du restaurant.",
+      "reorderSkipped_one": "{{count}} produit n'est plus disponible et n'a pas été ajouté.",
+      "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés.",
+      "yourCourier": "votre livreur"
     },
     "loyalty": {
       "title": "Mes cartes de fidélité",
@@ -248,6 +275,37 @@
       "announced": "Le commerçant sait que vous arrivez vers {{time}}.",
       "locationDenied": "Sans accès à votre position, le trajet ne peut pas être calculé. Vous pouvez l'autoriser dans les réglages.",
       "failed": "Impossible d'envoyer votre départ. Réessayez dans un instant."
+    },
+    "favorites": {
+      "title": "Mes favoris",
+      "add": "Ajouter {{name}} aux favoris",
+      "remove": "Retirer {{name}} des favoris",
+      "empty": "Aucun favori pour le moment. Touchez le cœur d'un restaurant pour le retrouver ici.",
+      "count_one": "{{count}} restaurant",
+      "count_other": "{{count}} restaurants"
+    },
+    "account": {
+      "profile": "Mes informations",
+      "name": "Prénom et nom",
+      "phone": "Téléphone",
+      "saved": "Informations enregistrées."
+    },
+    "addresses": {
+      "title": "Mes adresses",
+      "none": "Aucune adresse enregistrée",
+      "add": "Ajouter une adresse",
+      "address": "Adresse",
+      "instructions": "Instructions pour le livreur (digicode, étage…)",
+      "save": "Enregistrer l'adresse",
+      "default": "Par défaut",
+      "makeDefault": "Choisir par défaut",
+      "deleteTitle": "Supprimer cette adresse ?",
+      "deleteBody": "Vous pourrez l'ajouter à nouveau plus tard.",
+      "labels": {
+        "home": "Maison",
+        "work": "Travail",
+        "other": "Autre"
+      }
     }
   },
   "merchant": {
@@ -255,7 +313,8 @@
       "orders": "Commandes",
       "menu": "Menu",
       "shop": "Boutique",
-      "account": "Compte"
+      "account": "Compte",
+      "stats": "Activité"
     },
     "categories": {
       "snack": "Snack",
@@ -264,7 +323,7 @@
       "boulangerie": "Boulangerie",
       "autre": "Autre"
     },
-    "noMerchantTitle": "Bienvenue sur Zéroo Pro",
+    "noMerchantTitle": "Bienvenue sur ZeeRoo Pro",
     "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 19,99 € HT par mois (23,99 € TTC).",
     "createMerchant": "Créer mon commerce",
     "form": {
@@ -279,12 +338,21 @@
       "addressNoResult": "Aucune adresse trouvée",
       "addressUnavailable": "Recherche d'adresse indisponible, réessayez.",
       "prepTime": "Délai de préparation habituel",
-      "create": "Créer mon commerce"
+      "create": "Créer mon commerce",
+      "company": "Entreprise",
+      "companyHint": "Facultatif : ces informations apparaissent dans les mentions légales de votre page.",
+      "legalName": "Raison sociale",
+      "siret": "SIRET",
+      "vatNumber": "N° de TVA intracommunautaire",
+      "contactEmail": "E-mail de contact"
     },
     "errors": {
       "nameRequired": "Indiquez le nom du commerce",
       "phoneInvalid": "Numéro de téléphone invalide",
-      "addressRequired": "Choisissez une adresse dans la liste"
+      "addressRequired": "Choisissez une adresse dans la liste",
+      "siretInvalid": "SIRET invalide : 14 chiffres, vérifiez la saisie.",
+      "vatInvalid": "Numéro de TVA invalide (format FR + 11 caractères).",
+      "emailInvalid": "Adresse e-mail invalide."
     },
     "status": {
       "open": "Ouvert",
@@ -414,7 +482,9 @@
       "hours": "Horaires d'ouverture",
       "qr": "QR code à afficher",
       "history": "Historique des commandes",
-      "delivery": "Livraison"
+      "delivery": "Livraison",
+      "cashPickup": "Espèces au comptoir (retrait)",
+      "cashPickupHint": "Vos clients peuvent commander à emporter et payer en espèces en venant chercher leur commande. La commande part directement, sans paiement en ligne."
     },
     "hours": {
       "title": "Horaires d'ouverture",
@@ -439,20 +509,20 @@
       "title": "Votre QR code",
       "body": "Imprimez-le et affichez-le en caisse et en vitrine : vos clients commandent directement chez vous, sans commission.",
       "cta": "Commandez en ligne, récupérez sans attendre",
-      "shareMessage": "Commandez chez {{name}} sur Zéroo : {{url}}",
+      "shareMessage": "Commandez chez {{name}} sur ZeeRoo : {{url}}",
       "print": "Imprimer"
     },
     "billing": {
       "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission Zéroo.",
+      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission ZeeRoo.",
       "paymentsSetup": "Configurer mes paiements",
       "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
       "paymentsContinue": "Compléter mon dossier Stripe",
       "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
-      "subscriptionTitle": "Abonnement Zéroo",
-      "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
+      "subscriptionTitle": "Abonnement ZeeRoo",
+      "subscriptionNone": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
@@ -479,7 +549,7 @@
       "radius": "Zone de livraison",
       "radiusHint": "Distance maximale autour de votre restaurant.",
       "couriers": "Vos livreurs",
-      "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app Zéroo.",
+      "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app ZeeRoo.",
       "noCourierWarning": "Aucun livreur accepté : la livraison n'est pas encore proposée à vos clients.",
       "requests": "Demandes de livreurs",
       "approve": "Accepter",
@@ -489,7 +559,24 @@
       "removeConfirmBody": "Il ne recevra plus vos courses. Il pourra vous renvoyer une demande.",
       "available": "Disponible",
       "unavailable": "Indisponible",
-      "courierLine": "{{vehicle}} · {{phone}}"
+      "courierLine": "{{vehicle}} · {{phone}}",
+      "proTitle": "Option livraison : formule Pro",
+      "proBody": "Votre formule Start comprend le retrait sur place. Passez à la formule Pro (29,99 € HT par mois) pour proposer la livraison par vos livreurs.",
+      "proAction": "Voir mon abonnement"
+    },
+    "stats": {
+      "title": "Activité",
+      "today": "Aujourd'hui",
+      "week": "7 derniers jours",
+      "orders_one": "{{count}} commande",
+      "orders_other": "{{count}} commandes",
+      "basket": "Panier moyen",
+      "basketHint": "Sur 7 jours",
+      "chart": "Ventes par jour",
+      "noCommission": "0 % de commission : tout est versé sur votre compte.",
+      "topItems": "Meilleures ventes (30 jours)",
+      "noSales": "Pas encore de ventes sur la période.",
+      "rating": "Note et avis"
     }
   },
   "account": {
@@ -507,7 +594,7 @@
     "invalidTransition": "Cette commande a déjà changé de statut. La liste a été actualisée.",
     "prepMinutesRequired": "Indiquez un délai de préparation.",
     "orderNotFound": "Commande introuvable.",
-    "merchantOwnerCannotDelete": "Ce compte gère un commerce. Pour le supprimer, contactez le support Zéroo afin de clôturer d'abord votre commerce et votre abonnement.",
+    "merchantOwnerCannotDelete": "Ce compte gère un commerce. Pour le supprimer, contactez le support ZeeRoo afin de clôturer d'abord votre commerce et votre abonnement.",
     "merchantNotAccepting": "Ce commerce ne prend pas de commandes pour le moment (fermé ou en pause).",
     "itemUnavailable": "Un produit de votre panier n'est plus disponible. Retirez-le puis réessayez.",
     "invalidOptions": "Les options d'un produit ne sont plus valides. Retirez-le puis ajoutez-le à nouveau.",
@@ -525,7 +612,6 @@
     "noCourierAvailable": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait.",
     "invalidDeliveryAddress": "Adresse de livraison incomplète : choisissez-la dans la liste.",
     "invalidDeliveryPhone": "Indiquez un numéro de téléphone valide pour le livreur.",
-    "courierNotConfirmed": "Le livreur n'a pas encore confirmé la course.",
     "invalidDeliveryCode": "Code de livraison incorrect. Demandez au client son code à 4 chiffres.",
     "courierExists": "Ce compte a déjà un profil livreur.",
     "invalidSiret": "Numéro SIRET invalide (14 chiffres).",
@@ -539,7 +625,23 @@
     "courierNotFound": "Livreur introuvable.",
     "courierHasActiveDelivery": "Terminez votre course en cours avant de supprimer votre compte.",
     "courierSubscriptionActive": "Résiliez d'abord votre abonnement livreur (onglet Compte, « Gérer mon abonnement »).",
-    "invalidPlan": "Cette formule d'abonnement n'est pas disponible."
+    "invalidPlan": "Cette formule d'abonnement n'est pas disponible.",
+    "missionUnavailable": "Cette mission n'est plus disponible : un autre livreur l'a prise.",
+    "missionLocked": "Cette mission est déjà payée ou en cours : elle ne peut plus être abandonnée.",
+    "courierAtCapacity": "Vous avez déjà 2 livraisons en cours.",
+    "courierUnavailable": "Passez en « disponible » (paiements et abonnement actifs) pour accepter des missions.",
+    "courierNotAssigned": "Aucun livreur n'a encore pris cette livraison.",
+    "deliveryNotPaid": "Le client n'a pas encore réglé la course : attendez son paiement avant de remettre la commande.",
+    "deliveryNotPayable": "La course ne peut pas être réglée pour le moment.",
+    "cashNotAllowedForDelivery": "Le repas d'une livraison se règle en ligne ; seule la course peut se payer en espèces.",
+    "cashNotAccepted": "Ce restaurant n'accepte pas les espèces.",
+    "orderNotFinished": "Vous pourrez noter la commande une fois récupérée ou livrée.",
+    "reviewExists": "Vous avez déjà noté cette commande.",
+    "reviewEmpty": "Choisissez au moins une note.",
+    "reviewNoCourier": "Cette commande n'a pas de livreur à noter.",
+    "tooManyAddresses": "Vous avez déjà 10 adresses enregistrées : supprimez-en une d'abord.",
+    "addressNotFound": "Adresse introuvable.",
+    "deliveryRequiresPro": "La livraison est incluse dans la formule Pro. Changez de formule pour l'activer."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",
@@ -552,12 +654,12 @@
     "courierBody": "Activez les notifications pour être prévenu de chaque nouvelle course, même téléphone verrouillé."
   },
   "landing": {
-    "metaTitle": "Zéroo · À emporter au prix de la carte, sans commission",
-    "metaDescription": "Zéroo relie les restaurants, snacks et sandwicheries à leurs clients : commande et paiement en ligne, retrait sans attente. Le client paie le prix de la carte, le restaurant un abonnement fixe, sans commission.",
+    "metaTitle": "ZeeRoo · À emporter au prix de la carte, sans commission",
+    "metaDescription": "ZeeRoo relie les restaurants, snacks et sandwicheries à leurs clients : commande et paiement en ligne, retrait sans attente. Le client paie le prix de la carte, le restaurant un abonnement fixe, sans commission.",
     "signIn": "Se connecter",
     "hero": {
       "title": "À emporter, au prix de la carte. Sans commission.",
-      "subtitle": "Zéroo est un service qui relie les restaurants, snacks et sandwicheries à leurs clients. Vous commandez et payez depuis votre téléphone, le restaurant prépare au bon moment, vous récupérez sans attendre.",
+      "subtitle": "ZeeRoo est un service qui relie les restaurants, snacks et sandwicheries à leurs clients. Vous commandez et payez depuis votre téléphone, le restaurant prépare au bon moment, vous récupérez sans attendre.",
       "ctaCustomer": "Commander",
       "ctaRestaurant": "Inscrire mon restaurant",
       "badges": {
@@ -572,7 +674,7 @@
       "items": {
         "sellers": {
           "title": "Les repas sont vendus par les restaurants",
-          "body": "Zéroo ne vend aucun repas. Chaque restaurant fixe ses prix, et le paiement du client lui est versé directement."
+          "body": "ZeeRoo ne vend aucun repas. Chaque restaurant fixe ses prix, et le paiement du client lui est versé directement."
         },
         "price": {
           "title": "Le client paie le prix de la carte",
@@ -580,7 +682,7 @@
         },
         "subscription": {
           "title": "Le restaurant paie un abonnement fixe",
-          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
+          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser ZeeRoo, quel que soit le nombre de commandes. Aucune commission."
         }
       }
     },
@@ -655,7 +757,7 @@
       "title": "Ce que coûte une commande",
       "headers": {
         "label": "",
-        "zeroo": "Zéroo",
+        "zeroo": "ZeeRoo",
         "others": "Plateforme à commission"
       },
       "rows": {
@@ -680,7 +782,7 @@
           "others": "variable, selon les ventes"
         }
       },
-      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 19,99 € HT (23,99 € TTC).",
+      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec ZeeRoo Start : 19,99 € HT (23,99 € TTC).",
       "note": "Montants indicatifs : les taux varient selon les plateformes et les contrats."
     },
     "pricing": {
@@ -695,6 +797,11 @@
         "pro": "Pro",
         "courier": "Livreur"
       },
+      "planInfo": {
+        "start": "Retrait sur place",
+        "pro": "Retrait + option livraison",
+        "courier": "Pour les livreurs indépendants"
+      },
       "features": {
         "unlimited": "Commandes illimitées",
         "commission": "0 % de commission",
@@ -703,14 +810,14 @@
         "noCommitment": "Sans engagement, résiliable à tout moment"
       },
       "cta": "Essayer gratuitement 30 jours",
-      "customers": "Pour les clients, Zéroo est gratuit."
+      "customers": "Pour les clients, ZeeRoo est gratuit."
     },
     "faq": {
       "title": "Questions fréquentes",
       "items": {
         "sell": {
-          "q": "Zéroo vend-il des repas ?",
-          "a": "Non. Zéroo est un service. Les repas sont vendus par les restaurants, à leurs prix, et le paiement leur est versé directement."
+          "q": "ZeeRoo vend-il des repas ?",
+          "a": "Non. ZeeRoo est un service. Les repas sont vendus par les restaurants, à leurs prix, et le paiement leur est versé directement."
         },
         "fees": {
           "q": "Le client paie-t-il des frais ?",
@@ -718,11 +825,11 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement fixe, sans commission : Start à 19,99 € HT par mois (23,99 € TTC) ou Pro multisite à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start (retrait) à 19,99 € HT par mois (23,99 € TTC) ou Pro, avec l'option livraison, à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
-          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. Zéroo n'encaisse jamais l'argent des commandes."
+          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. ZeeRoo n'encaisse jamais l'argent des commandes."
         },
         "trial": {
           "q": "Comment fonctionne l'essai gratuit ?",
@@ -738,10 +845,10 @@
       "title": "Prêt à commander, ou à recevoir vos premières commandes ?"
     },
     "footer": {
-      "tagline": "Zéroo · la vente à emporter sans commission.",
+      "tagline": "ZeeRoo · la vente à emporter sans commission.",
       "legal": "Mentions légales",
       "privacy": "Confidentialité",
-      "copyright": "© {{year}} Zéroo"
+      "copyright": "© {{year}} ZeeRoo"
     }
   },
   "legal": {
@@ -752,11 +859,11 @@
       "sections": {
         "editor": {
           "title": "Éditeur et exploitant",
-          "body": "Zéroo est édité et exploité commercialement par aiworkpay, société par actions simplifiée unipersonnelle (SASU) au capital de 10 000 €, dont le siège est situé 60 rue François 1er, 75008 Paris, France, immatriculée sous le numéro 941 861 775 RCS Paris.\nDirecteur de la publication : Ahmed AKAFOU.\nContact : contact@zeroo.fr."
+          "body": "ZeeRoo est édité et exploité commercialement par aiworkpay, société par actions simplifiée unipersonnelle (SASU) au capital de 10 000 €, dont le siège est situé 60 rue François 1er, 75008 Paris, France, immatriculée sous le numéro 941 861 775 RCS Paris.\nDirecteur de la publication : Ahmed AKAFOU.\nContact : contact@zeroo.fr."
         },
         "service": {
           "title": "Nature du service",
-          "body": "Zéroo est un service de commande à emporter mis à disposition des restaurants, contre un abonnement, et des clients, gratuitement. Zéroo ne vend aucun repas : les produits sont vendus par chaque restaurant, à ses prix, et le paiement lui est versé directement."
+          "body": "ZeeRoo est un service de commande à emporter mis à disposition des restaurants, contre un abonnement, et des clients, gratuitement. ZeeRoo ne vend aucun repas : les produits sont vendus par chaque restaurant, à ses prix, et le paiement lui est versé directement."
         },
         "hosting": {
           "title": "Hébergement",
@@ -764,7 +871,7 @@
         },
         "ip": {
           "title": "Propriété intellectuelle",
-          "body": "Les contenus de Zéroo (textes, marque, logo, interface) sont protégés. Les menus, photos et descriptions publiés par les restaurants restent leur propriété et leur responsabilité."
+          "body": "Les contenus de ZeeRoo (textes, marque, logo, interface) sont protégés. Les menus, photos et descriptions publiés par les restaurants restent leur propriété et leur responsabilité."
         }
       }
     },
@@ -777,7 +884,7 @@
         },
         "data": {
           "title": "Données traitées",
-          "body": "Compte : adresse e-mail, mot de passe (stocké chiffré), prénom et téléphone facultatifs.\nCommandes : produits, montants, horaires, note pour le restaurant ; votre prénom est communiqué au restaurant concerné.\nFidélité : nombre de menus achetés et menus offerts, par restaurant.\nPosition : utilisée ponctuellement pour la recherche à proximité et pour « Je pars maintenant », uniquement après votre action. Elle n'est jamais enregistrée : seule l'heure d'arrivée estimée l'est.\nNotifications : identifiant de votre appareil, si vous les activez.\nPaiement : traité par Stripe. Zéroo n'a jamais accès à votre numéro de carte.\nRestaurants : informations du commerce, compte de paiement Stripe et abonnement."
+          "body": "Compte : adresse e-mail, mot de passe (stocké chiffré), prénom et téléphone facultatifs.\nCommandes : produits, montants, horaires, note pour le restaurant ; votre prénom est communiqué au restaurant concerné.\nFidélité : nombre de menus achetés et menus offerts, par restaurant.\nPosition : utilisée ponctuellement pour la recherche à proximité et pour « Je pars maintenant », uniquement après votre action. Elle n'est jamais enregistrée : seule l'heure d'arrivée estimée l'est.\nNotifications : identifiant de votre appareil, si vous les activez.\nPaiement : traité par Stripe. ZeeRoo n'a jamais accès à votre numéro de carte.\nRestaurants : informations du commerce, compte de paiement Stripe et abonnement."
         },
         "purposes": {
           "title": "Finalités et bases légales",
@@ -815,7 +922,7 @@
       "account": "Compte"
     },
     "onboarding": {
-      "title": "Devenir livreur Zéroo",
+      "title": "Devenir livreur ZeeRoo",
       "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 14,99 € HT par mois (17,99 € TTC), 30 jours d'essai.",
       "name": "Nom affiché",
       "nameHint": "Le client ne voit que votre prénom.",
@@ -845,14 +952,13 @@
     "runs": {
       "title": "Mes courses",
       "available": "Je suis disponible",
-      "availableHint": "Vous recevez les courses des restaurants qui vous ont accepté.",
+      "availableHint": "Vous recevez les missions des restaurants qui vous ont accepté.",
       "setupTitle": "Avant votre première course",
       "setupPayments": "Configurer vos paiements Stripe",
       "setupSubscription": "Démarrer votre abonnement (30 jours d'essai)",
       "setupMerchant": "Être accepté par au moins un restaurant",
       "setupGo": "Compléter",
-      "empty": "Aucune course en cours. Restez disponible : les nouvelles courses s'affichent ici.",
-      "new": "Nouvelle course",
+      "empty": "Aucune course en cours. Les missions disponibles s'affichent au-dessus : le premier qui accepte la prend.",
       "fee": "Course : {{price}}",
       "pickupAt": "Retrait : {{name}}, {{address}}",
       "deliverTo": "Livraison : {{address}}",
@@ -864,17 +970,36 @@
       "call": "Appeler le client",
       "toRestaurant": "Itinéraire vers le restaurant",
       "toCustomer": "Itinéraire vers le client",
-      "confirm": "Confirmer la course",
-      "decline": "Décliner",
-      "declineConfirmTitle": "Décliner cette course ?",
-      "declineConfirmBody": "La commande sera annulée et le client ne sera pas débité.",
-      "waitingRestaurant": "Course confirmée. En attente de l'acceptation du restaurant.",
+      "decline": "Abandonner",
+      "declineConfirmTitle": "Abandonner cette mission ?",
+      "declineConfirmBody": "Elle sera proposée aux autres livreurs et ne vous sera plus reproposée.",
       "preparing": "Le restaurant prépare la commande, prête vers {{time}}.",
       "ready": "Commande prête : rendez-vous au restaurant.",
       "pickupCode": "Code de retrait à montrer au restaurant",
       "onTheWay": "En route vers le client.",
       "deliveryCode": "Code de livraison donné par le client",
-      "markDelivered": "Valider la livraison"
+      "markDelivered": "Valider la livraison",
+      "missionsTitle": "Missions disponibles",
+      "missionsHint": "Le premier qui accepte obtient la course. Vous pouvez en avoir 2 en même temps.",
+      "missionsEmpty": "Aucune mission pour le moment.",
+      "missionTo": "{{name}} → {{city}}",
+      "missionPickup": "Retrait : {{name}}, {{address}}",
+      "missionReady": "Prête vers {{time}}",
+      "missionPreparing": "En préparation",
+      "missionReadyNow": "Prête",
+      "payCard": "Paiement par carte (en ligne)",
+      "payCash": "Paiement en espèces",
+      "accept": "Accepter la mission",
+      "acceptedToast": "Mission acceptée.",
+      "waitingPayment": "En attente du règlement du client (avant {{time}}), sinon la mission repart dans le pool.",
+      "paid": "Course payée par carte.",
+      "collectCash": "À encaisser en espèces à la livraison : {{price}}.",
+      "cashCollected": "Encaissez {{price}} en espèces puis validez avec le code.",
+      "release": "Abandonner la mission",
+      "releaseConfirmTitle": "Abandonner cette mission ?",
+      "releaseConfirmBody": "Elle sera proposée aux autres livreurs et ne vous sera plus reproposée.",
+      "atCapacity": "Vous avez déjà 2 livraisons en cours.",
+      "waitingRestaurantPrep": "Le restaurant prépare la commande."
     },
     "restaurants": {
       "title": "Mes restaurants",
@@ -901,23 +1026,32 @@
       "month": "Ce mois-ci",
       "runs_one": "{{count}} course",
       "runs_other": "{{count}} courses",
-      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission Zéroo. Stripe la verse sur votre compte bancaire.",
+      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission ZeeRoo. Stripe la verse sur votre compte bancaire.",
       "history": "Dernières courses",
-      "empty": "Aucune course livrée pour le moment."
+      "empty": "Aucune course livrée pour le moment.",
+      "chart": "Gains des 7 derniers jours",
+      "split": "Carte ou espèces (7 jours)",
+      "card": "Carte",
+      "cash": "Espèces",
+      "splitHint": "Les paiements par carte arrivent sur votre compte Stripe ; les espèces vous sont remises par le client.",
+      "noCommission": "0 % de commission : chaque course vous est payée en totalité."
     },
     "account": {
       "profile": "Mon profil livreur",
-      "siret": "SIRET {{siret}}"
+      "siret": "SIRET {{siret}}",
+      "company": "Mon entreprise",
+      "ratings": "Mes notes",
+      "reviews": "Avis récents"
     },
     "billing": {
       "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission Zéroo. Stripe vérifie votre identité et votre SIRET.",
+      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission ZeeRoo. Stripe vérifie votre identité et votre SIRET.",
       "paymentsSetup": "Configurer mes paiements",
       "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
       "paymentsContinue": "Compléter mon dossier Stripe",
       "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
-      "subscriptionTitle": "Abonnement Zéroo Livreur",
+      "subscriptionTitle": "Abonnement ZeeRoo Livreur",
       "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
       "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
@@ -934,6 +1068,39 @@
       "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
       "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Compte.",
       "backToShop": "Retour à mon compte"
+    },
+    "profile": {
+      "editTitle": "Mon profil",
+      "edit": "Modifier mon profil",
+      "zone": "Zone de travail",
+      "zonePlaceholder": "Ex. : Paris centre",
+      "locked": "Statut ({{status}}) et SIRET ({{siret}}) vérifiés par Stripe : contactez-nous pour les modifier."
     }
+  },
+  "reviews": {
+    "title": "Comment c'était ?",
+    "courierLabel": "{{name}}, votre livreur",
+    "rateMerchant": "Noter {{name}}",
+    "rateCourier": "Noter {{name}}",
+    "comment": "Un commentaire (facultatif)",
+    "send": "Envoyer mon avis",
+    "thanks": "Merci pour votre avis !",
+    "none": "Pas encore d'avis.",
+    "starsLabel": "{{value}} sur 5",
+    "starsChoice_one": "{{count}} étoile",
+    "starsChoice_other": "{{count}} étoiles",
+    "count_one": "{{count}} avis",
+    "count_other": "{{count}} avis"
+  },
+  "photos": {
+    "add": "Ajouter une photo",
+    "change": "Changer la photo",
+    "remove": "Retirer la photo",
+    "hint": "JPEG, PNG ou WebP. La photo est réduite automatiquement.",
+    "webOnly": "L'ajout de photos depuis l'application arrive bientôt : utilisez la version web (zeroo.fr) en attendant.",
+    "item": "Photo du produit",
+    "itemAfterSave": "Enregistrez le produit pour pouvoir ajouter sa photo.",
+    "merchant": "Photo du restaurant (devanture, salle ou plat phare)",
+    "courier": "Photo de profil (visible par le client pendant la livraison)"
   }
 }
