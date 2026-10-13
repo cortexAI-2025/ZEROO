@@ -106,6 +106,7 @@ export type Database = {
       };
       couriers: {
         Row: {
+          photo_url: string | null;
           work_zone: string | null;
           created_at: string;
           display_name: string;
@@ -121,6 +122,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          photo_url?: string | null;
           work_zone?: string | null;
           created_at?: string;
           display_name: string;
@@ -135,6 +137,7 @@ export type Database = {
           vehicle?: Database['public']['Enums']['courier_vehicle'];
         };
         Update: {
+          photo_url?: string | null;
           work_zone?: string | null;
           created_at?: string;
           display_name?: string;
@@ -583,6 +586,7 @@ export type Database = {
       };
       merchants: {
         Row: {
+          photo_url: string | null;
           legal_name: string | null;
           siret: string | null;
           vat_number: string | null;
@@ -626,6 +630,7 @@ export type Database = {
           | 'is_payments_ready'
           | 'is_subscription_active';
         Insert: {
+          photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;
           vat_number?: string | null;
@@ -656,6 +661,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;
           vat_number?: string | null;
@@ -1443,6 +1449,7 @@ export type Database = {
           user_id: string;
           vehicle: Database['public']['Enums']['courier_vehicle'];
           work_zone: string | null;
+          photo_url: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -1908,6 +1915,16 @@ export type Database = {
           slug: string;
         }[];
       };
+      order_courier_profile: {
+        Args: { p_order_id: string };
+        Returns: {
+          average: number | null;
+          display_name: string;
+          photo_url: string | null;
+          reviews_count: number;
+          vehicle: Database['public']['Enums']['courier_vehicle'];
+        }[];
+      };
       purge_delivery_details: { Args: { p_days?: number }; Returns: number };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_courier: { Args: { p_courier_id: string }; Returns: undefined };
@@ -1956,6 +1973,7 @@ export type Database = {
           user_id: string;
           vehicle: Database['public']['Enums']['courier_vehicle'];
           work_zone: string | null;
+          photo_url: string | null;
         };
         SetofOptions: {
           from: '*';

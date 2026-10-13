@@ -9,6 +9,7 @@ import { useCurrentMerchant } from '@/features/merchant/hooks';
 import { insertCategory, nextPosition, swapPositions, updateItem } from '@/features/menu/api';
 import { useMenu, useMenuMutation } from '@/features/menu/hooks';
 import type { MenuCategory, MenuItem } from '@/features/menu/types';
+import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
 import { spacing, useThemeColors } from '@/theme';
 
@@ -125,6 +126,7 @@ export default function MenuScreen() {
                     : undefined
                 }
               />
+              <Thumb url={item.image_url} size={48} label={item.name} />
               <Pressable
                 style={styles.flex}
                 accessibilityRole="button"

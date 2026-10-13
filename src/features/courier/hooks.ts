@@ -18,6 +18,7 @@ import {
   markDelivered,
   requestLink,
   setAvailability,
+  setCourierPhoto,
   updateCourierProfile,
 } from './api';
 
@@ -129,6 +130,14 @@ export function useUpdateCourierProfile(courierId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (patch: CourierProfilePatch) => updateCourierProfile(courierId, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
+}
+
+export function useSetCourierPhoto(courierId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (url: string | null) => setCourierPhoto(courierId, url),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
   });
 }

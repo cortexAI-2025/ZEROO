@@ -10,6 +10,7 @@ import { directionsUrl } from '@/features/discover/location';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { cancelMyOrder } from '@/features/orders/api';
 import { payDelivery } from '@/features/payments/pay';
+import { CourierBadge } from '@/features/orders/CourierBadge';
 import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
 import { rebuildLines } from '@/features/orders/reorder';
@@ -238,7 +239,7 @@ export default function OrderScreen() {
             <AppText>{t('client.order.deliveryTo', { address: deliveryAddress })}</AppText>
           ) : null}
           {courier ? (
-            <AppText variant="muted">{t('client.order.courier', { name: courier })}</AppText>
+            <CourierBadge orderId={order.id} courierName={courier} />
           ) : orderActive && order.status !== 'placed' ? (
             <AppText variant="muted">{t('client.order.searchingCourier')}</AppText>
           ) : null}

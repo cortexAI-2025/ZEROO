@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -6,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Badge, Card, Stars } from '@/components/ui';
 import type { MerchantCategory } from '@/features/merchant/types';
 import type { MerchantRating } from '@/features/reviews/api';
-import { spacing, useThemeColors } from '@/theme';
+import { radius, spacing, useThemeColors } from '@/theme';
 
 import type { MerchantSummary } from './api';
 import { formatDistance } from './location';
@@ -14,12 +15,13 @@ import { formatDistance } from './location';
 type Props = {
   merchant: MerchantSummary;
   rating?: MerchantRating;
+  photoUrl?: string;
   /** Favori du client connecté ; absent : pas de bouton favori (visiteur). */
   favorite?: boolean;
   onToggleFavorite?: () => void;
 };
 
-export function MerchantCard({ merchant, rating, favorite, onToggleFavorite }: Props) {
+export function MerchantCard({ merchant, rating, photoUrl, favorite, onToggleFavorite }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const status = merchant.is_accepting_orders ? 'open' : merchant.is_open ? 'paused' : 'closed';
@@ -30,6 +32,14 @@ export function MerchantCard({ merchant, rating, favorite, onToggleFavorite }: P
       onPress={() => router.push({ pathname: '/m/[slug]', params: { slug: merchant.slug } })}
       style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
       <Card>
+        {photoUrl ? (
+          <Image
+            source={{ uri: photoUrl }}
+            style={styles.cover}
+            contentFit="cover"
+            accessibilityLabel={merchant.name}
+          />
+        ) : null}
         <View style={styles.row}>
           <AppText variant="subtitle" style={styles.flex}>
             {merchant.name}
@@ -80,4 +90,5 @@ export function MerchantCard({ merchant, rating, favorite, onToggleFavorite }: P
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   flex: { flex: 1 },
+  cover: { width: '100%', aspectRatio: 21 / 9, borderRadius: radius.md },
 });

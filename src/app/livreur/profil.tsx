@@ -4,8 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Chip, Screen, TextField } from '@/components/ui';
-import { useCurrentCourier, useUpdateCourierProfile } from '@/features/courier/hooks';
+import {
+  useCurrentCourier,
+  useSetCourierPhoto,
+  useUpdateCourierProfile,
+} from '@/features/courier/hooks';
 import { VEHICLES } from '@/features/courier/types';
+import { photoPaths } from '@/features/photos/api';
+import { PhotoField } from '@/features/photos/PhotoField';
 import { errorKey } from '@/lib/errors';
 import { spacing } from '@/theme';
 
@@ -16,6 +22,7 @@ export default function CourierProfileScreen() {
   const { t } = useTranslation();
   const courier = useCurrentCourier();
   const update = useUpdateCourierProfile(courier.id);
+  const setPhoto = useSetCourierPhoto(courier.id);
   const [name, setName] = useState(courier.display_name);
   const [phone, setPhone] = useState(courier.phone);
   const [vehicle, setVehicle] = useState(courier.vehicle);
@@ -43,6 +50,14 @@ export default function CourierProfileScreen() {
   return (
     <Screen scroll>
       <Stack.Screen options={{ title: t('courier.profile.editTitle') }} />
+      <PhotoField
+        testID="courier-photo"
+        label={t('photos.courier')}
+        url={courier.photo_url}
+        path={photoPaths.courier(courier.id)}
+        shape="round"
+        onSaved={(url) => setPhoto.mutateAsync(url)}
+      />
       <TextField
         label={t('courier.onboarding.name')}
         value={name}

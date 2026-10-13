@@ -7,6 +7,8 @@ import { AppText, Button, Chip, QueryState, Screen, SwitchRow, TextField } from 
 import { useCurrentMerchant } from '@/features/merchant/hooks';
 import { deleteItem, insertItem, nextPosition, updateItem } from '@/features/menu/api';
 import { useMenu, useMenuMutation } from '@/features/menu/hooks';
+import { photoPaths } from '@/features/photos/api';
+import { PhotoField } from '@/features/photos/PhotoField';
 import { OptionGroupsEditor } from '@/features/menu/OptionGroupsEditor';
 import type { MenuCategory, MenuItem } from '@/features/menu/types';
 import { confirmAsync } from '@/lib/confirm';
@@ -69,6 +71,9 @@ function ItemForm({
   const remove = useMenuMutation(merchant.id, async () => {
     if (itemId) await deleteItem(itemId);
   });
+  const savePhoto = useMenuMutation(merchant.id, async (url: string | null) => {
+    if (itemId) await updateItem(itemId, { image_url: url });
+  });
 
   const onSave = () => {
     setSubmitted(true);
@@ -101,6 +106,17 @@ function ItemForm({
           title: t(item ? 'merchant.menu.item.editTitle' : 'merchant.menu.item.newTitle'),
         }}
       />
+      {item ? (
+        <PhotoField
+          testID="item-photo"
+          label={t('photos.item')}
+          url={item.image_url}
+          path={photoPaths.item(merchant.id, item.id)}
+          onSaved={(url) => savePhoto.mutateAsync(url)}
+        />
+      ) : (
+        <AppText variant="muted">{t('photos.itemAfterSave')}</AppText>
+      )}
       <TextField
         label={t('merchant.menu.item.name')}
         value={name}

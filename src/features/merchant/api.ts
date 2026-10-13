@@ -40,6 +40,7 @@ export async function createMerchant(values: MerchantFormValues) {
 export type MerchantPatch = Pick<
   TablesUpdate<'merchants'>,
   | 'legal_name'
+  | 'photo_url'
   | 'siret'
   | 'vat_number'
   | 'contact_email'

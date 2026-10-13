@@ -7,7 +7,11 @@ import { useFavoriteIds, useFavoriteMerchants, useToggleFavorite } from '@/featu
 import { useAuth } from '@/features/auth/AuthProvider';
 import { CartBar } from '@/features/cart/CartBar';
 import type { MerchantSummary } from '@/features/discover/api';
-import { useMerchantSearch, useNearbyMerchants } from '@/features/discover/hooks';
+import {
+  useMerchantPhotos,
+  useMerchantSearch,
+  useNearbyMerchants,
+} from '@/features/discover/hooks';
 import { type Coordinates, getCurrentCoordinates } from '@/features/discover/location';
 import { MerchantCard } from '@/features/discover/MerchantCard';
 import { useMerchantRatings } from '@/features/reviews/hooks';
@@ -33,7 +37,9 @@ export default function ExploreScreen() {
   const favorites = useFavoriteMerchants();
   const toggleFavorite = useToggleFavorite();
   const listed = [...(favorites.data ?? []), ...(active.data ?? [])];
-  const ratings = useMerchantRatings([...new Set(listed.map((m) => m.id))]);
+  const listedIds = [...new Set(listed.map((m) => m.id))];
+  const ratings = useMerchantRatings(listedIds);
+  const photos = useMerchantPhotos(listedIds);
   const card = (merchant: MerchantSummary) => {
     const favorite = favoriteIds.data?.has(merchant.id) ?? false;
     return (
@@ -41,6 +47,7 @@ export default function ExploreScreen() {
         key={merchant.id}
         merchant={merchant}
         rating={ratings.data?.get(merchant.id)}
+        photoUrl={photos.data?.get(merchant.id)}
         favorite={favorite}
         onToggleFavorite={
           signedIn

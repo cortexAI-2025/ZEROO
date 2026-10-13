@@ -8,6 +8,7 @@ import { AccountScreen } from '@/features/auth/AccountScreen';
 import { useBillingActions } from '@/features/billing/billing';
 import { BillingCards } from '@/features/billing/BillingCards';
 import { useCurrentCourier } from '@/features/courier/hooks';
+import { Thumb } from '@/features/photos/Thumb';
 import { useCourierRating, useCourierReviews } from '@/features/reviews/hooks';
 import { ReviewList } from '@/features/reviews/ReviewList';
 import { spacing } from '@/theme';
@@ -49,7 +50,10 @@ export default function CourierAccountScreen() {
       ) : null}
       <Card testID="courier-profile">
         <AppText variant="subtitle">{t('courier.account.profile')}</AppText>
-        <AppText>{courier.display_name}</AppText>
+        <View style={styles.line}>
+          <Thumb url={courier.photo_url} size={64} round icon="person-outline" />
+          <AppText variant="subtitle">{courier.display_name}</AppText>
+        </View>
         {average !== null ? (
           <View style={styles.line}>
             <Stars value={average} size={18} />

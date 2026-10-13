@@ -238,7 +238,8 @@
       "payRide": "Régler la course · {{price}}",
       "reorderNothing": "Ces produits ne sont plus disponibles : consultez le menu du restaurant.",
       "reorderSkipped_one": "{{count}} produit n'est plus disponible et n'a pas été ajouté.",
-      "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés."
+      "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés.",
+      "yourCourier": "votre livreur"
     },
     "loyalty": {
       "title": "Mes cartes de fidélité",
@@ -1090,5 +1091,16 @@
     "starsChoice_other": "{{count}} étoiles",
     "count_one": "{{count}} avis",
     "count_other": "{{count}} avis"
+  },
+  "photos": {
+    "add": "Ajouter une photo",
+    "change": "Changer la photo",
+    "remove": "Retirer la photo",
+    "hint": "JPEG, PNG ou WebP. La photo est réduite automatiquement.",
+    "webOnly": "L'ajout de photos depuis l'application arrive bientôt : utilisez la version web (zeroo.fr) en attendant.",
+    "item": "Photo du produit",
+    "itemAfterSave": "Enregistrez le produit pour pouvoir ajouter sa photo.",
+    "merchant": "Photo du restaurant (devanture, salle ou plat phare)",
+    "courier": "Photo de profil (visible par le client pendant la livraison)"
   }
 }

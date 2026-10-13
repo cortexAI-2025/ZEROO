@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AppText, QueryState, Screen } from '@/components/ui';
 import { useFavoriteMerchants, useToggleFavorite } from '@/features/account/hooks';
+import { useMerchantPhotos } from '@/features/discover/hooks';
 import { MerchantCard } from '@/features/discover/MerchantCard';
 import { useMerchantRatings } from '@/features/reviews/hooks';
 
@@ -11,7 +12,9 @@ export default function FavoritesScreen() {
   const { t } = useTranslation();
   const favorites = useFavoriteMerchants();
   const toggle = useToggleFavorite();
-  const ratings = useMerchantRatings((favorites.data ?? []).map((m) => m.id));
+  const ids = (favorites.data ?? []).map((m) => m.id);
+  const ratings = useMerchantRatings(ids);
+  const photos = useMerchantPhotos(ids);
 
   return (
     <Screen scroll>
@@ -26,6 +29,7 @@ export default function FavoritesScreen() {
             key={merchant.id}
             merchant={merchant}
             rating={ratings.data?.get(merchant.id)}
+            photoUrl={photos.data?.get(merchant.id)}
             favorite
             onToggleFavorite={() => toggle.mutate({ merchantId: merchant.id, favorite: false })}
           />

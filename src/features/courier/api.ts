@@ -138,3 +138,11 @@ export async function fetchEarningsByDay(days = 7) {
   if (error) throw error;
   return data;
 }
+
+export async function setCourierPhoto(courierId: string, photoUrl: string | null) {
+  const { error } = await supabase
+    .from('couriers')
+    .update({ photo_url: photoUrl })
+    .eq('id', courierId);
+  if (error) throw error;
+}
