@@ -29,7 +29,7 @@ export default function CourierRunsScreen() {
   const actions = useCourierActions();
   useRefreshOnFocus(billing.refetch);
 
-  const paymentsReady = !!billing.data?.account?.charges_enabled;
+  const paymentsReady = !!courier.payment_link;
   const subscribed = ['trialing', 'active'].includes(billing.data?.subscription?.status ?? '');
   const hasMerchant = (links.data ?? []).some((l) => l.status === 'approved');
   const ready = paymentsReady && subscribed && hasMerchant;

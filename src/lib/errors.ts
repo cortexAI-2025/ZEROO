@@ -56,6 +56,10 @@ const businessErrors = {
   too_many_addresses: 'errors.tooManyAddresses',
   address_not_found: 'errors.addressNotFound',
   delivery_requires_pro: 'errors.deliveryRequiresPro',
+  courier_payment_link_required: 'errors.courierPaymentLinkRequired',
+  merchant_no_payment_link: 'errors.merchantNoPaymentLink',
+  payment_not_expected: 'errors.paymentNotExpected',
+  invalid_payment_kind: 'errors.invalidPaymentKind',
 } as const;
 
 export type ErrorKey =

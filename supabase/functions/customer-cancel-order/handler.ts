@@ -1,9 +1,8 @@
 import { HttpError, handle, json, readJson } from '../_shared/http.ts';
-import { fetchOrder, releaseOrderPayments } from '../_shared/orders.ts';
-import { stripeClient } from '../_shared/stripe.ts';
+import { fetchOrder } from '../_shared/orders.ts';
 import { adminClient, requireUser, unwrap } from '../_shared/supabase.ts';
 
-/** Le client annule sa commande tant que le commerçant ne l'a pas acceptée : aucun débit (repas ni course). */
+/** Le client annule sa commande tant que le commerçant ne l'a pas acceptée (rien n'est encore payé). */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
   const { orderId } = await readJson<{ orderId: string }>(req);
@@ -13,7 +12,6 @@ export const handler = handle(async (req) => {
   if (!['pending_payment', 'placed'].includes(order.status))
     throw new HttpError(409, 'invalid_transition');
 
-  await releaseOrderPayments(stripeClient(), order);
   unwrap(
     await db.rpc('apply_order_transition', {
       p_order_id: order.id,

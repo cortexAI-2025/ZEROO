@@ -127,13 +127,13 @@ select is(
   'le client annule tant que le commerçant n''a pas accepté'
 );
 
--- Conditions d'encaissement : compte Stripe actif et abonnement en règle.
+-- Conditions d'encaissement : lien de paiement (ou espèces) et abonnement en règle.
 update public.subscriptions set status = 'past_due' where merchant_id = '30000000-0000-0000-0000-000000000001';
 select ok(not public.is_accepting_orders(m), 'abonnement impayé : plus de commandes') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
 update public.subscriptions set status = 'active' where merchant_id = '30000000-0000-0000-0000-000000000001';
-update public.merchant_stripe_accounts set charges_enabled = false where merchant_id = '30000000-0000-0000-0000-000000000001';
-select ok(not public.is_accepting_orders(m), 'paiements Stripe non activés : plus de commandes') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
-update public.merchant_stripe_accounts set charges_enabled = true where merchant_id = '30000000-0000-0000-0000-000000000001';
+update public.merchants set payment_link = null, accepts_cash_pickup = false where id = '30000000-0000-0000-0000-000000000001';
+select ok(not public.is_accepting_orders(m), 'ni lien de paiement ni espèces : plus de commandes') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
+update public.merchants set payment_link = 'https://pay.sumup.com/b2c/chez-samir-demo' where id = '30000000-0000-0000-0000-000000000001';
 select ok(public.is_accepting_orders(m), 'abonnement actif et paiements activés : commandes possibles') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
 
 -- Expiration automatique.

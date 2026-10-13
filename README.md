@@ -6,7 +6,7 @@ Click-and-collect et livraison **sans commission** pour restaurants, snacks et s
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Démo cliquable (client, restaurant, livreur) : [docs/maquette/zeeroo-demo.html](docs/maquette/zeeroo-demo.html), voir [docs/maquette/README.md](docs/maquette/README.md)
-- Stack : Expo SDK 57 (React Native, TypeScript, Expo Router) · Supabase (Postgres, Auth, RLS, Realtime) · Stripe Connect / Billing (à venir)
+- Stack : Expo SDK 57 (React Native, TypeScript, Expo Router) · Supabase (Postgres, Auth, RLS, Realtime) · Stripe Billing (abonnements) (à venir)
 
 ## Avancement
 
@@ -15,7 +15,7 @@ Click-and-collect et livraison **sans commission** pour restaurants, snacks et s
 | a | Setup Expo + Supabase, authentification, choix d'espace, suppression de compte | ✅ |
 | b | Espace commerçant : commerce, menu, horaires, pause, commandes en temps réel, QR code | ✅ |
 | c | Espace client : recherche, fiche et menu, panier avec options, commande, suivi en direct | ✅ |
-| d | Paiement Stripe (Connect, sans commission) et abonnement commerçant | ✅ (à brancher sur ton compte Stripe) |
+| d | Paiement direct par lien de paiement des pros (carte, Apple Pay, Google Pay) et abonnement Stripe | ✅ (à brancher sur ton compte Stripe) |
 | e | Fidélité : 9 menus formules achetés = le 10e offert | ✅ |
 | f | Notifications push, « Je pars maintenant » et temps de trajet | ✅ (à brancher sur Expo et Google) |
 | g | Livraison par livreur indépendant : espace livreur, double paiement repas + course, abonnement livreur | ✅ (à brancher sur ton compte Stripe) |
@@ -157,14 +157,14 @@ Ces règles sont couvertes par 23 tests pgTAP.
 ## Étape (d) : paiements
 
 ### Fonctionnement
-- **Le client paie le commerçant directement.** C'est une charge directe Stripe Connect sur le compte du commerçant, sans commission ZeeRoo : seuls les frais Stripe s'appliquent, à la charge du commerçant.
-- **Débit seulement si le commerçant accepte.** À la commande, la carte est seulement autorisée. Elle est débitée quand le commerçant accepte. S'il refuse, si le client annule, ou sans réponse sous 10 minutes, l'autorisation est annulée : aucun débit, aucun frais.
-- **Mobile** : feuille de paiement Stripe dans l'app (carte, Apple Pay, Google Pay).
-- **Web** (client arrivé par le QR code) : page Stripe Checkout.
-- **Commerçant** :
-  - « Configurer mes paiements » (Boutique) ouvre l'inscription Stripe ;
+- **Le client paie chaque professionnel directement**, par carte, Apple Pay ou Google Pay via **le lien de paiement du restaurant ou du livreur** (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), ou en espèces. L'argent arrive sur leur compte bancaire ; ZeeRoo n'encaisse rien et **Stripe ne sert qu'aux abonnements** (compte d'AiWorkPay).
+- **Rien n'est payé à la commande.** Une fois la commande acceptée, le client ouvre le lien du restaurant, paie, puis appuie sur « J'ai payé » ; le restaurant confirme « Paiement reçu ». En livraison, même principe avec le livreur qui prend la mission.
+- **Restaurant / livreur** :
+  - « Lien de paiement » (Boutique / Compte) : coller l'adresse de leur page de paiement ;
   - l'abonnement, 30 jours d'essai puis Start ou Pro (mensuel ou annuel, voir « Grille tarifaire »), se souscrit et se gère depuis la version web (`/pro`), pour respecter les règles d'Apple et Google ;
-  - sans paiements activés et abonnement en règle, le commerce affiche « Configuration à terminer » et ne reçoit pas de commandes.
+  - sans lien de paiement (ou espèces au comptoir) et abonnement en règle, le commerce affiche « Configuration à terminer » et ne reçoit pas de commandes ; un livreur sans lien ne peut pas se rendre disponible.
+
+Détails : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), §3.6.
 
 ### Grille tarifaire
 
@@ -182,24 +182,19 @@ Le catalogue d'affichage est dans `src/features/billing/plans.ts` ; les prix fac
 ### Configurer Stripe (mode test d'abord)
 Dans le dashboard du **compte Stripe dédié à ZeeRoo** :
 
-1. **Connect** → activer Connect.
-   - Renseigner le profil de la plateforme : nom « ZeeRoo », icône, couleur. C'est ce qu'affiche l'inscription des commerçants.
-   - Les comptes créés laissent Stripe gérer la tarification : la plateforme ne paie aucun frais Connect, et chaque commerçant a son propre tableau de bord Stripe.
+Stripe ne sert qu'aux abonnements (pas de Connect).
+
+1. **Profil** : nom « ZeeRoo », icône, couleur (pages d'abonnement).
 2. **Catalogue de produits** → trois produits (« ZeeRoo Restaurant Start », « ZeeRoo Restaurant Pro », « ZeeRoo Livreur »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). Copier les six identifiants `price_…` dans les variables `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_MONTH`, `_COURIER_YEAR` (voir la grille ci-dessous).
    - **Catalogue de produits → Taux de taxe** : créer « TVA 20 % », France, **exclusif** (ajouté au prix HT). Copier `txr_…` dans `STRIPE_TAX_RATE_ID`.
    - Les factures affichent alors, par exemple pour Start mensuel, 19,99 € HT + 4,00 € de TVA = 23,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
    - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de ZeeRoo : raison sociale, adresse, SIREN et numéro de TVA.
 3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation.
-4. **Développeurs → Webhooks**, deux points de terminaison vers `https://<projet>.supabase.co/functions/v1/stripe-webhook` :
-
-   | Point de terminaison | Événements | Secret à copier dans |
-   |---|---|---|
-   | « Votre compte » | `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` | `STRIPE_WEBHOOK_SECRET` |
-   | « Comptes connectés » | `payment_intent.amount_capturable_updated`, `payment_intent.canceled`, `checkout.session.completed`, `checkout.session.expired`, `account.updated` | `STRIPE_CONNECT_WEBHOOK_SECRET` |
+4. **Développeurs → Webhooks**, un point de terminaison « Votre compte » vers `https://<projet>.supabase.co/functions/v1/stripe-webhook`, événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` ; copier son secret dans `STRIPE_WEBHOOK_SECRET`.
 5. **Secrets serveur.** Ne colle jamais les clés dans le code ni dans un chat :
    ```bash
    npx supabase secrets set STRIPE_SECRET_KEY=sk_test_… STRIPE_WEBHOOK_SECRET=whsec_… \
-     STRIPE_CONNECT_WEBHOOK_SECRET=whsec_… STRIPE_TAX_RATE_ID=txr_… \
+     STRIPE_TAX_RATE_ID=txr_… \
      STRIPE_PRICE_START_MONTH=price_… STRIPE_PRICE_START_YEAR=price_… \
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
      STRIPE_PRICE_COURIER_MONTH=price_… STRIPE_PRICE_COURIER_YEAR=price_… \
@@ -210,15 +205,12 @@ Dans le dashboard du **compte Stripe dédié à ZeeRoo** :
    select vault.create_secret('https://<projet>.supabase.co/functions/v1', 'functions_url');
    select vault.create_secret('<valeur de CRON_SECRET>', 'cron_secret');
    ```
-7. **App** : mettre `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_…` dans `.env.local`.
-   - Pour Apple Pay, créer le Merchant ID `merchant.fr.zeroo` (Apple Developer) et ajouter son certificat dans Stripe (Paramètres → Apple Pay).
-
-En local, `stripe listen --forward-to localhost:54321/functions/v1/stripe-webhook --forward-connect-to localhost:54321/functions/v1/stripe-webhook` relaie les webhooks. Le secret `whsec_…` affiché vaut pour les deux variables.
-
-Cartes de test : `4242 4242 4242 4242` (accepté), `4000 0000 0000 9995` (refusé), date future, CVC quelconque.
+En local, `stripe listen --forward-to localhost:54321/functions/v1/stripe-webhook` relaie les webhooks d'abonnement.
 
 ### Tester sans compte Stripe
-`e2e/payments.e2e.js` teste toutes les fonctions de paiement contre **stripe-mock**, le serveur de test officiel de Stripe :
+> À mettre à jour : `e2e/payments.e2e.js` et les étapes Connect de `e2e/delivery.e2e.js` décrivent encore l'ancien paiement par Stripe Connect.
+
+`e2e/payments.e2e.js` teste les fonctions contre **stripe-mock**, le serveur de test officiel de Stripe :
 - création de commande et du paiement ;
 - webhooks signés, signature invalide, doublon ;
 - acceptation avec capture, refus et annulation sans débit ;

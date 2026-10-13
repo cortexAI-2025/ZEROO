@@ -13,6 +13,7 @@ import {
   useUpdateMerchant,
 } from '@/features/merchant/hooks';
 import { useMenu } from '@/features/menu/hooks';
+import { PaymentLinkCard } from '@/features/payments/PaymentLinkCard';
 import { formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -53,6 +54,11 @@ export default function ShopScreen() {
     <Screen scroll>
       <AppText variant="title">{t('merchant.shop.title')}</AppText>
 
+      <PaymentLinkCard
+        role="merchant"
+        link={merchant.payment_link}
+        onSave={(link) => update.mutateAsync({ payment_link: link })}
+      />
       <BillingCards target={{ role: 'merchant', id: merchant.id }} />
 
       <Card>

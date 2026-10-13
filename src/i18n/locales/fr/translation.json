@@ -138,7 +138,7 @@
       "total": "Total",
       "note": "Une précision pour le commerçant ? (facultatif)",
       "notePlaceholder": "Ex. sans oignons",
-      "order": "Payer · {{price}}",
+      "order": "Commander · {{price}}",
       "signInToOrder": "Se connecter pour commander",
       "replaceTitle": "Nouveau panier ?",
       "replaceBody": "Votre panier contient des produits de {{name}}. Le vider pour commander ici ?",
@@ -146,8 +146,7 @@
       "pickupInfo": "À récupérer chez {{name}}, {{address}}",
       "continueShopping": "Continuer mes achats",
       "cartAt": "Panier en cours chez {{name}}",
-      "paymentInfo": "Votre carte est seulement autorisée : vous n'êtes débité que si le commerçant accepte la commande.",
-      "paymentCancelled": "Paiement annulé : aucun montant n'a été débité. Votre panier est conservé.",
+      "paymentInfo": "Rien n'est payé maintenant : vous paierez le restaurant par carte, via son lien de paiement, dès qu'il aura accepté votre commande.",
       "subtotal": "Sous-total",
       "orderFree": "Commander mon menu offert",
       "noFees": "Prix de la carte, sans frais de service.",
@@ -165,18 +164,18 @@
         "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
       },
       "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
-      "twoPayments": "Deux paiements : le repas maintenant (au restaurant), la livraison plus tard, quand un livreur accepte. Aucun frais ZeeRoo.",
+      "twoPayments": "Deux paiements directs : le repas au restaurant (après acceptation), la livraison au livreur (quand il prend la mission). Aucun frais ZeeRoo.",
       "deliveryAddress": "Adresse de livraison",
       "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve.",
       "payHow": "Paiement de la commande",
-      "payOnline": "En ligne (carte, Apple Pay, Google Pay)",
+      "payOnline": "Carte, Apple Pay ou Google Pay",
       "payCash": "Espèces au comptoir",
-      "cashInfo": "Vous réglez en espèces au restaurant en récupérant votre commande. Rien n'est débité en ligne.",
+      "cashInfo": "Vous réglez en espèces au restaurant en récupérant votre commande.",
       "orderCash": "Commander (paiement au comptoir)",
       "rideHow": "Paiement de la course",
-      "rideCard": "Par carte",
+      "rideCard": "Carte, Apple Pay ou Google Pay",
       "rideCash": "En espèces au livreur",
-      "rideCardHint": "Vous réglez la course en un geste dès qu'un livreur accepte votre livraison.",
+      "rideCardHint": "Vous paierez le livreur via son lien de paiement dès qu'il aura pris votre livraison.",
       "rideCashHint": "Prévoyez l'appoint : vous remettez la course au livreur en main propre."
     },
     "orders": {
@@ -306,6 +305,23 @@
         "work": "Travail",
         "other": "Autre"
       }
+    },
+    "payment": {
+      "afterAcceptance": "Vous paierez {{name}} par carte dès que le restaurant aura accepté votre commande.",
+      "title": {
+        "meal": "Payer {{name}} · {{price}}",
+        "delivery": "Payer votre livreur {{name}} · {{price}}"
+      },
+      "howTo": "Carte, Apple Pay ou Google Pay, sur la page de paiement de {{name}}. Saisissez {{price}} et la référence {{reference}}, puis revenez ici.",
+      "open": "Payer {{price}}",
+      "declare": "J'ai payé",
+      "declared": "Merci ! {{name}} confirme la réception de votre paiement.",
+      "noLink": "{{name}} n'a pas encore de lien de paiement : réglez en espèces sur place.",
+      "received": "Paiement reçu",
+      "receivedBy": {
+        "meal": "{{name}} a bien reçu vos {{price}}.",
+        "delivery": "{{name}} a bien reçu vos {{price}} pour la livraison."
+      }
     }
   },
   "merchant": {
@@ -410,7 +426,7 @@
         "delivered": "Livrée"
       },
       "historyEmpty": "Aucune commande terminée pour l'instant.",
-      "setupBanner": "Terminez la configuration des paiements et de l'abonnement (onglet Boutique) pour recevoir des commandes.",
+      "setupBanner": "Renseignez votre lien de paiement (ou acceptez les espèces) et démarrez votre abonnement (onglet Boutique) pour recevoir des commandes.",
       "rewardLine": "🎁 Offert (fidélité)",
       "discount": "Menu offert",
       "eta": "{{icon}} Arrivée prévue vers {{time}} (dans {{count}} min)",
@@ -421,7 +437,15 @@
       "courierConfirmed": "{{name}} a confirmé la course.",
       "acceptBlocked": "Vous pourrez accepter dès que le livreur aura confirmé.",
       "courierCode": "Code de retrait présenté par le livreur",
-      "handOverCourier": "Remettre au livreur"
+      "handOverCourier": "Remettre au livreur",
+      "payment": {
+        "afterAccept": "Repas {{price}} : le client vous paiera par carte via votre lien dès que vous aurez accepté.",
+        "waiting": "Repas {{price}} : en attente du paiement du client (votre lien de paiement).",
+        "declared": "Le client indique avoir payé {{price}} : vérifiez la réception puis confirmez.",
+        "confirm": "Paiement reçu",
+        "received": "Repas payé · {{price}}",
+        "cash": "Repas {{price}} : à encaisser en espèces au comptoir."
+      }
     },
     "menu": {
       "title": "Menu",
@@ -513,13 +537,6 @@
       "print": "Imprimer"
     },
     "billing": {
-      "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission ZeeRoo.",
-      "paymentsSetup": "Configurer mes paiements",
-      "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
-      "paymentsContinue": "Compléter mon dossier Stripe",
-      "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
-      "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement ZeeRoo",
       "subscriptionNone": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
       "subscriptionNoneUsedTrial": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
@@ -534,8 +551,8 @@
       "inactive": "Abonnement inactif : vous ne recevez plus de commandes.",
       "webOnly": "L'abonnement se gère depuis app.zeroo.online/pro, sur ordinateur ou dans le navigateur de votre téléphone.",
       "returnTitle": "Retour de Stripe",
-      "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
-      "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Boutique.",
+      "returnDone": "C'est enregistré. L'état de votre abonnement se met à jour en quelques instants.",
+      "returnRefresh": "Le lien a expiré. Recommencez depuis l'onglet Boutique.",
       "backToShop": "Retour à ma boutique"
     },
     "delivery": {
@@ -617,7 +634,7 @@
     "invalidSiret": "Numéro SIRET invalide (14 chiffres).",
     "siretTaken": "Ce SIRET est déjà utilisé par un autre livreur.",
     "courierProfileRequired": "Créez d'abord votre profil livreur.",
-    "courierPaymentsNotReady": "Configurez d'abord vos paiements Stripe (onglet Compte).",
+    "courierPaymentsNotReady": "Renseignez d'abord votre lien de paiement (onglet Compte).",
     "courierSubscriptionInactive": "Votre abonnement livreur n'est pas actif (onglet Compte).",
     "courierNoMerchant": "Aucun restaurant ne vous a encore accepté (onglet Restaurants).",
     "linkRejected": "Ce restaurant a refusé votre demande.",
@@ -641,7 +658,11 @@
     "reviewNoCourier": "Cette commande n'a pas de livreur à noter.",
     "tooManyAddresses": "Vous avez déjà 10 adresses enregistrées : supprimez-en une d'abord.",
     "addressNotFound": "Adresse introuvable.",
-    "deliveryRequiresPro": "La livraison est incluse dans la formule Pro. Changez de formule pour l'activer."
+    "deliveryRequiresPro": "La livraison est incluse dans la formule Pro. Changez de formule pour l'activer.",
+    "courierPaymentLinkRequired": "Renseignez d'abord votre lien de paiement (onglet Compte) : c'est par lui que les clients vous paient.",
+    "merchantNoPaymentLink": "Ce restaurant n'accepte pas encore la carte : choisissez le paiement en espèces au comptoir.",
+    "paymentNotExpected": "Ce paiement n'est pas attendu pour le moment.",
+    "invalidPaymentKind": "Type de paiement inconnu."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",
@@ -732,7 +753,7 @@
         },
         "payouts": {
           "title": "Votre argent, directement",
-          "body": "Les paiements de vos clients sont versés sur votre compte bancaire par Stripe, le prestataire de paiement."
+          "body": "Vos clients vous paient directement, par carte, Apple Pay ou Google Pay via votre propre lien de paiement (SumUp, PayPal, Stripe…), ou en espèces. ZeeRoo n'encaisse rien."
         }
       }
     },
@@ -825,7 +846,7 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement fixe, sans commission : Start (retrait) à 19,99 € HT par mois (23,99 € TTC) ou Pro, avec l'option livraison, à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start (retrait) à 19,99 € HT par mois (23,99 € TTC) ou Pro, avec l'option livraison, à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Vos clients vous paient directement : seuls les frais de votre propre fournisseur de paiement s'appliquent, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
@@ -892,7 +913,7 @@
         },
         "recipients": {
           "title": "Destinataires",
-          "body": "Le restaurant auprès duquel vous commandez ; Stripe (paiements) ; Supabase (hébergement des données) ; Google (calcul du temps de trajet, à partir de votre position transmise ponctuellement) ; Expo (envoi des notifications)."
+          "body": "Le restaurant et, en livraison, le livreur auprès desquels vous commandez ; leur prestataire de paiement (SumUp, PayPal, Stripe…) quand vous ouvrez leur lien de paiement ; Stripe (abonnements des professionnels) ; Supabase (hébergement des données) ; Google (calcul du temps de trajet, à partir de votre position transmise ponctuellement) ; Expo (envoi des notifications)."
         },
         "retention": {
           "title": "Durées de conservation",
@@ -942,7 +963,7 @@
         "foot": "À pied"
       },
       "submit": "Créer mon profil livreur",
-      "verification": "Stripe vérifiera votre identité et votre immatriculation quand vous configurerez vos paiements."
+      "verification": "Pour être payé, vous renseignerez votre lien de paiement (SumUp, PayPal, Stripe…) dans l'onglet Compte."
     },
     "validation": {
       "nameRequired": "Indiquez votre nom (2 caractères minimum).",
@@ -954,7 +975,7 @@
       "available": "Je suis disponible",
       "availableHint": "Vous recevez les missions des restaurants qui vous ont accepté.",
       "setupTitle": "Avant votre première course",
-      "setupPayments": "Configurer vos paiements Stripe",
+      "setupPayments": "Renseigner votre lien de paiement",
       "setupSubscription": "Démarrer votre abonnement (30 jours d'essai)",
       "setupMerchant": "Être accepté par au moins un restaurant",
       "setupGo": "Compléter",
@@ -987,19 +1008,21 @@
       "missionReady": "Prête vers {{time}}",
       "missionPreparing": "En préparation",
       "missionReadyNow": "Prête",
-      "payCard": "Paiement par carte (en ligne)",
+      "payCard": "Paiement par carte (votre lien)",
       "payCash": "Paiement en espèces",
       "accept": "Accepter la mission",
       "acceptedToast": "Mission acceptée.",
-      "waitingPayment": "En attente du règlement du client (avant {{time}}), sinon la mission repart dans le pool.",
-      "paid": "Course payée par carte.",
+      "waitingPayment": "Le client doit vous payer {{price}} via votre lien de paiement.",
+      "paid": "Livraison payée",
       "collectCash": "À encaisser en espèces à la livraison : {{price}}.",
       "cashCollected": "Encaissez {{price}} en espèces puis validez avec le code.",
       "release": "Abandonner la mission",
       "releaseConfirmTitle": "Abandonner cette mission ?",
       "releaseConfirmBody": "Elle sera proposée aux autres livreurs et ne vous sera plus reproposée.",
       "atCapacity": "Vous avez déjà 2 livraisons en cours.",
-      "waitingRestaurantPrep": "Le restaurant prépare la commande."
+      "waitingRestaurantPrep": "Le restaurant prépare la commande.",
+      "paymentDeclared": "Le client indique avoir payé {{price}} : vérifiez la réception puis confirmez.",
+      "confirmPayment": "Paiement reçu"
     },
     "restaurants": {
       "title": "Mes restaurants",
@@ -1026,14 +1049,14 @@
       "month": "Ce mois-ci",
       "runs_one": "{{count}} course",
       "runs_other": "{{count}} courses",
-      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission ZeeRoo. Stripe la verse sur votre compte bancaire.",
+      "info": "Le client paie chaque course directement, via votre lien de paiement ou en espèces, sans commission ZeeRoo.",
       "history": "Dernières courses",
       "empty": "Aucune course livrée pour le moment.",
       "chart": "Gains des 7 derniers jours",
       "split": "Carte ou espèces (7 jours)",
       "card": "Carte",
       "cash": "Espèces",
-      "splitHint": "Les paiements par carte arrivent sur votre compte Stripe ; les espèces vous sont remises par le client.",
+      "splitHint": "Les paiements par carte arrivent par votre propre fournisseur (votre lien de paiement) ; les espèces vous sont remises par le client.",
       "noCommission": "0 % de commission : chaque course vous est payée en totalité."
     },
     "account": {
@@ -1044,13 +1067,6 @@
       "reviews": "Avis récents"
     },
     "billing": {
-      "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission ZeeRoo. Stripe vérifie votre identité et votre SIRET.",
-      "paymentsSetup": "Configurer mes paiements",
-      "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
-      "paymentsContinue": "Compléter mon dossier Stripe",
-      "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
-      "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement ZeeRoo Livreur",
       "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
       "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
@@ -1065,8 +1081,8 @@
       "inactive": "Abonnement inactif : vous ne recevez plus de courses.",
       "webOnly": "L'abonnement se gère depuis app.zeroo.online, sur ordinateur ou dans le navigateur de votre téléphone.",
       "returnTitle": "Retour de Stripe",
-      "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
-      "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Compte.",
+      "returnDone": "C'est enregistré. L'état de votre abonnement se met à jour en quelques instants.",
+      "returnRefresh": "Le lien a expiré. Recommencez depuis l'onglet Compte.",
       "backToShop": "Retour à mon compte"
     },
     "profile": {
@@ -1074,7 +1090,7 @@
       "edit": "Modifier mon profil",
       "zone": "Zone de travail",
       "zonePlaceholder": "Ex. : Paris centre",
-      "locked": "Statut ({{status}}) et SIRET ({{siret}}) vérifiés par Stripe : contactez-nous pour les modifier."
+      "locked": "Statut ({{status}}) et SIRET ({{siret}}) : contactez-nous pour les modifier."
     }
   },
   "reviews": {
@@ -1102,5 +1118,20 @@
     "itemAfterSave": "Enregistrez le produit pour pouvoir ajouter sa photo.",
     "merchant": "Photo du restaurant (devanture, salle ou plat phare)",
     "courier": "Photo de profil (visible par le client pendant la livraison)"
+  },
+  "payments": {
+    "link": {
+      "title": "Lien de paiement",
+      "active": "Lien actif",
+      "intro": {
+        "merchant": "Vos clients vous paient directement par carte, Apple Pay ou Google Pay sur la page de paiement de votre fournisseur (SumUp, PayPal, Stripe Payment Link, Lydia Pro…). L'argent arrive sur votre compte bancaire ; ZeeRoo n'encaisse rien.",
+        "courier": "Les clients vous paient la livraison par carte, Apple Pay ou Google Pay sur la page de paiement de votre fournisseur (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), versée sur votre compte bancaire. ZeeRoo n'encaisse rien."
+      },
+      "label": "Adresse de votre page de paiement",
+      "invalid": "Collez l'adresse complète de votre page de paiement (commençant par https://).",
+      "saved": "Lien de paiement enregistré.",
+      "test": "Ouvrir ma page de paiement",
+      "hint": "Choisissez une page où le client saisit lui-même le montant. Vous confirmez chaque paiement reçu dans l'appli."
+    }
   }
 }

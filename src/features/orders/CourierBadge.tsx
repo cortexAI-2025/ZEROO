@@ -13,15 +13,19 @@ async function fetchOrderCourier(orderId: string) {
   return data[0] ?? null;
 }
 
+/** Fiche du livreur de la commande (relue si la mission change de livreur). */
+export function useOrderCourier(orderId: string, courierName: string | null) {
+  return useQuery({
+    queryKey: ['order-courier', orderId, courierName],
+    queryFn: () => fetchOrderCourier(orderId),
+    enabled: !!courierName,
+  });
+}
+
 /** Le livreur de la commande, comme sur une appli de VTC : photo, prénom, véhicule et note. */
 export function CourierBadge({ orderId, courierName }: { orderId: string; courierName: string }) {
   const { t } = useTranslation();
-  // La clé inclut le nom : si la mission change de livreur, la fiche est relue.
-  const query = useQuery({
-    queryKey: ['order-courier', orderId, courierName],
-    queryFn: () => fetchOrderCourier(orderId),
-  });
-  const courier = query.data;
+  const courier = useOrderCourier(orderId, courierName).data;
   const average = courier?.average == null ? null : Number(courier.average);
   return (
     <View style={styles.row} testID="courier-badge">

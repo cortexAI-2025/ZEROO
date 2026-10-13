@@ -15,8 +15,9 @@ import type { CourierRun } from './types';
 
 /**
  * Une mission acceptée, de la prise en charge à la livraison :
- *   course par carte → attendre le règlement du client (sinon la mission repart dans le pool) ;
- *   prête → retrait au restaurant avec le code de retrait (course payée, ou espèces) ;
+ *   livraison par carte → le client paie via le lien de paiement du livreur, puis le livreur
+ *   confirme la réception (« Paiement reçu ») ;
+ *   prête → retrait au restaurant avec le code de retrait ;
  *   en livraison → itinéraire, appel du client, encaissement éventuel en espèces et
  *   validation avec son code de livraison.
  */
@@ -28,9 +29,9 @@ export function RunCard({ run }: { run: CourierRun }) {
   const [error, setError] = useState<string | null>(null);
   const merchant = run.merchants;
   const early = ['accepted', 'preparing', 'ready'].includes(run.status);
-  const paidByCard = run.delivery_payment_method === 'card' && !!run.delivery_authorized_at;
+  const paid = !!run.delivery_paid_at;
   const awaitingPayment =
-    early && run.delivery_payment_method === 'card' && !run.delivery_authorized_at;
+    run.delivery_payment_method === 'card' && !paid && run.status !== 'delivered';
   const cash = run.delivery_payment_method === 'cash';
   const itemsCount = run.order_items.reduce((sum, item) => sum + item.quantity, 0);
   const deliveryAddress = [
@@ -102,19 +103,30 @@ export function RunCard({ run }: { run: CourierRun }) {
       </AppText>
 
       {awaitingPayment ? (
-        <AppText variant="link" testID={`awaiting-payment-${run.pickup_code}`}>
-          {t('courier.runs.waitingPayment', {
-            time: run.delivery_payment_due_at ? formatTime(run.delivery_payment_due_at) : '',
-          })}
-        </AppText>
+        <View style={styles.payment} testID={`awaiting-payment-${run.pickup_code}`}>
+          <AppText variant="link">
+            {run.delivery_payment_declared_at
+              ? t('courier.runs.paymentDeclared', { price: formatCents(run.delivery_fee_cents) })
+              : t('courier.runs.waitingPayment', { price: formatCents(run.delivery_fee_cents) })}
+          </AppText>
+          <Button
+            testID={`confirm-ride-payment-${run.pickup_code}`}
+            variant="secondary"
+            title={t('courier.runs.confirmPayment')}
+            loading={actions.confirmPayment.isPending}
+            onPress={() => void perform(() => actions.confirmPayment.mutateAsync(run.id))}
+          />
+        </View>
       ) : null}
-      {early && paidByCard ? <AppText variant="muted">{t('courier.runs.paid')}</AppText> : null}
+      {paid && run.delivery_payment_method === 'card' ? (
+        <Badge label={t('courier.runs.paid')} tone="success" />
+      ) : null}
       {cash && run.status !== 'delivered' ? (
         <AppText variant="link">
           {t('courier.runs.collectCash', { price: formatCents(run.delivery_fee_cents) })}
         </AppText>
       ) : null}
-      {early && !run.delivery_authorized_at ? (
+      {early && !paid ? (
         <Button
           testID={`release-run-${run.pickup_code}`}
           variant="ghost"
@@ -197,6 +209,7 @@ export function RunCard({ run }: { run: CourierRun }) {
 }
 
 const styles = StyleSheet.create({
+  payment: { gap: spacing.xs },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

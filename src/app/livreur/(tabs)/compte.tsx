@@ -7,7 +7,8 @@ import { AppText, Button, Card, Meter, Stars } from '@/components/ui';
 import { AccountScreen } from '@/features/auth/AccountScreen';
 import { useBillingActions } from '@/features/billing/billing';
 import { BillingCards } from '@/features/billing/BillingCards';
-import { useCurrentCourier } from '@/features/courier/hooks';
+import { useCurrentCourier, useSetCourierPaymentLink } from '@/features/courier/hooks';
+import { PaymentLinkCard } from '@/features/payments/PaymentLinkCard';
 import { Thumb } from '@/features/photos/Thumb';
 import { useCourierRating, useCourierReviews } from '@/features/reviews/hooks';
 import { ReviewList } from '@/features/reviews/ReviewList';
@@ -20,6 +21,7 @@ import { spacing } from '@/theme';
 export default function CourierAccountScreen() {
   const { t } = useTranslation();
   const courier = useCurrentCourier();
+  const setPaymentLink = useSetCourierPaymentLink(courier.id);
   const rating = useCourierRating(courier.id).data;
   const average = rating?.average ?? null;
   const reviews = useCourierReviews(courier.id);
@@ -98,6 +100,11 @@ export default function CourierAccountScreen() {
           <ReviewList reviews={reviews.data ?? []} starsOf={(r) => r.courier_stars} />
         </Card>
       ) : null}
+      <PaymentLinkCard
+        role="courier"
+        link={courier.payment_link}
+        onSave={(link) => setPaymentLink.mutateAsync(link)}
+      />
       <BillingCards target={target} />
     </AccountScreen>
   );
