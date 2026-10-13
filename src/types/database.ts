@@ -1689,6 +1689,7 @@ export type Database = {
         };
         Returns: boolean;
       };
+      is_pro_verified: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_subscription_active: {
         Args: {
           m: Omit<

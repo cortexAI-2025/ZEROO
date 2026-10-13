@@ -465,6 +465,15 @@ Migration `20261013140000_payment_links.sql`.
 - **Disponibilité** : un restaurant reçoit des commandes avec un lien de paiement ou les espèces au comptoir (`is_payments_ready`) ; un livreur doit avoir un lien de paiement et un abonnement actif (`is_courier_active`, `courier_payment_link_required`).
 - Limite assumée : ZeeRoo ne peut pas vérifier les paiements faits hors de l'app ; c'est le professionnel qui confirme. Les anciennes colonnes Stripe des commandes restent en base, inutilisées.
 
+### 3.7 Inscription : Google / Apple pour les clients, vérification des professionnels (13 octobre 2026)
+
+Migration `20261013150000_pro_verification.sql`.
+
+- **Clients** : Google et Apple sont mis en avant sur les écrans de connexion et d'inscription (un geste, pas de mot de passe) ; l'e-mail + mot de passe reste possible en dessous. Le compte est créé à la première connexion. Sur le web (`app.zeroo.online`), Google et Apple passent par la redirection OAuth de Supabase (`signInWithOAuth`, retour sur `/auth-callback`) ; sur mobile, par les modules natifs (jeton d'identité → `signInWithIdToken`). `EXPO_PUBLIC_OAUTH_PROVIDERS` liste les fournisseurs activés côté web.
+- **Professionnels** (commerçant, livreur) : même choix de connexion (Google, Apple ou e-mail), puis **e-mail confirmé et téléphone mobile vérifié par code SMS** avant de créer le commerce ou le profil livreur. Le téléphone est rattaché au compte Supabase Auth (`updateUser({ phone })` puis `verifyOtp(type 'phone_change')` → `auth.users.phone_confirmed_at`). Avec Google ou Apple, l'e-mail est déjà confirmé.
+- **Côté serveur** : `is_pro_verified()` et un trigger `require_verified_pro` sur l'insertion dans `merchants` et `couriers` (erreur `pro_verification_required`). Les écritures sans utilisateur (données de démo, service) ne sont pas concernées. Le numéro vérifié est recopié dans `profiles.phone` (+33…).
+- **Configuration Supabase** : fournisseurs Google et Apple (Authentication → Providers) et un fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Coût des SMS à la charge d'AiWorkPay (quelques centimes par code).
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

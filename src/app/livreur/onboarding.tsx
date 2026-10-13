@@ -8,6 +8,8 @@ import { StyleSheet, View } from 'react-native';
 import { FormTextField } from '@/components/form/FormTextField';
 import { AppText, Button, Chip, Screen } from '@/components/ui';
 import { signOut } from '@/features/auth/api';
+import { toNationalFr } from '@/features/auth/phone';
+import { ProVerificationScreen, useProVerification } from '@/features/auth/ProVerification';
 import { createCourier } from '@/features/courier/api';
 import { courierKeys } from '@/features/courier/hooks';
 import {
@@ -20,8 +22,26 @@ import { useSpace } from '@/features/space/SpaceProvider';
 import { errorKey } from '@/lib/errors';
 import { spacing } from '@/theme';
 
-/** Inscription du livreur : nom, téléphone, statut, SIRET et véhicule. */
+/** Inscription du livreur : compte vérifié (e-mail + téléphone), puis profil. */
 export default function CourierOnboardingScreen() {
+  const { t } = useTranslation();
+  const { setSpace } = useSpace();
+  const verification = useProVerification();
+
+  // E-mail confirmé et téléphone vérifié avant de créer le profil (règle appliquée en base).
+  if (!verification.verified) {
+    return (
+      <ProVerificationScreen
+        exitLabel={t('space.switchToClient')}
+        onExit={() => setSpace('client')}
+      />
+    );
+  }
+  return <CourierProfileForm verifiedPhone={verification.phone} />;
+}
+
+/** Profil du livreur : nom, téléphone, statut, SIRET et véhicule. */
+function CourierProfileForm({ verifiedPhone }: { verifiedPhone: string | null }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { setSpace } = useSpace();
@@ -34,7 +54,8 @@ export default function CourierOnboardingScreen() {
     resolver: zodResolver(courierSchema),
     defaultValues: {
       displayName: '',
-      phone: '',
+      // Numéro déjà vérifié par SMS : pré-rempli.
+      phone: toNationalFr(verifiedPhone),
       legalStatus: 'auto_entrepreneur',
       siret: '',
       vehicle: 'bike',

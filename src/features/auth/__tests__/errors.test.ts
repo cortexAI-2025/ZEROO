@@ -12,6 +12,18 @@ describe('authErrorKey', () => {
     );
   });
 
+  it('traduit les erreurs de vérification par SMS', () => {
+    expect(
+      authErrorKey(new AuthApiError('Token has expired or is invalid', 403, 'otp_expired')),
+    ).toBe('auth.errors.otpInvalid');
+    expect(authErrorKey(new AuthApiError('Phone exists', 422, 'phone_exists'))).toBe(
+      'auth.errors.phoneTaken',
+    );
+    expect(
+      authErrorKey(new AuthApiError('Unsupported phone provider', 400, 'phone_provider_disabled')),
+    ).toBe('auth.errors.smsUnavailable');
+  });
+
   it('retombe sur un message générique', () => {
     expect(authErrorKey(new Error('réseau'))).toBe('common.genericError');
     expect(authErrorKey(new AuthApiError('?', 500, 'unexpected_failure'))).toBe(

@@ -38,6 +38,9 @@ export default function SignInScreen() {
         <AppText variant="muted">{t('auth.tagline')}</AppText>
       </View>
 
+      {/* Clients : Google ou Apple d'abord, l'e-mail reste possible en dessous. */}
+      <SocialButtons intro={t('auth.signInIntro')} />
+
       <FormTextField
         control={control}
         name="email"
@@ -67,8 +70,6 @@ export default function SignInScreen() {
       <Link href="/forgot-password">
         <AppText variant="link">{t('auth.forgotPassword')}</AppText>
       </Link>
-
-      <SocialButtons />
 
       <Link href="/sign-up">
         <AppText variant="link">{t('auth.noAccount')}</AppText>

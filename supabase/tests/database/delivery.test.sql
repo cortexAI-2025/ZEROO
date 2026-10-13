@@ -16,6 +16,9 @@ from generate_series(1, 7) d, (values ('00:00'::time, '12:00'::time), ('12:00'::
 insert into auth.users (id, email) values
   ('70000000-0000-0000-0000-000000000002', 'nouveau-livreur@test.fr'),
   ('70000000-0000-0000-0000-000000000003', 'autre-livreur@test.fr');
+-- Professionnels : e-mail et téléphone vérifiés (voir pro_verification.test.sql).
+update auth.users set email_confirmed_at = now(), phone = '3362000000' || right(id::text, 1), phone_confirmed_at = now()
+where id in ('70000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000003');
 
 create function pg_temp.as_user(p_id uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_id, 'role', 'authenticated')::text, true);

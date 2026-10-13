@@ -4,6 +4,7 @@
 --   commercant@zeroo.test : propriétaire du snack « Chez Samir »
 --   client@zeroo.test     : client
 --   livreur@zeroo.test    : livreur indépendant rattaché à « Chez Samir »
+-- Le commerçant et le livreur ont un téléphone vérifié (obligatoire pour les professionnels).
 
 -- -----------------------------------------------------------------------------
 -- Comptes
@@ -11,18 +12,18 @@
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-  confirmation_token, recovery_token, email_change_token_new, email_change
+  confirmation_token, recovery_token, email_change_token_new, email_change, phone, phone_confirmed_at
 )
 values
   ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'commercant@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Samir"}', now(), now(), '', '', '', ''),
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Samir"}', now(), now(), '', '', '', '', '33612345601', now()),
   ('00000000-0000-0000-0000-000000000000', '20000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'client@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Nadia"}', now(), now(), '', '', '', ''),
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Nadia"}', now(), now(), '', '', '', '', null, null),
   ('00000000-0000-0000-0000-000000000000', '70000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'livreur@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Karim"}', now(), now(), '', '', '', '');
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Karim"}', now(), now(), '', '', '', '', '33612345603', now());
 
 insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
 select gen_random_uuid(), id, id::text, 'email',
