@@ -117,7 +117,7 @@ Parcours manuel (une tablette ou un navigateur côté caisse suffit) :
    - saisissez les horaires (`11:30`, `18h`, et un créneau peut finir après minuit), puis « Copier le lundi sur toute la semaine » ;
    - activez « Visible des clients ». Cette option est bloquée tant qu'il n'y a ni produit disponible ni horaire ;
    - testez une pause de 15 min, puis « Reprendre les commandes ».
-4. **QR code** (Boutique → QR code) : il pointe vers `https://zeroo.fr/m/<slug>`. On peut le partager, ou l'imprimer depuis le web.
+4. **QR code** (Boutique → QR code) : il pointe vers `https://zeroo.online/m/<slug>` (le site redirige vers l'app web). On peut le partager, ou l'imprimer depuis le web.
 5. **Commandes en direct** (onglet Commandes) : laissez l'écran ouvert, puis lancez `npm run dev:order` dans un terminal.
    - La commande apparaît sans rechargement, avec une sonnerie. Sur le web, cliquez d'abord « Activer la sonnerie ».
    - Choisissez un délai puis « Accepter » → « Lancer la préparation » → « Commande prête ».
@@ -203,7 +203,7 @@ Dans le dashboard du **compte Stripe dédié à ZeeRoo** :
      STRIPE_PRICE_START_MONTH=price_… STRIPE_PRICE_START_YEAR=price_… \
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
      STRIPE_PRICE_COURIER_MONTH=price_… STRIPE_PRICE_COURIER_YEAR=price_… \
-     APP_WEB_URL=https://zeroo.fr CRON_SECRET=$(openssl rand -hex 32)
+     APP_WEB_URL=https://app.zeroo.online CRON_SECRET=$(openssl rand -hex 32)
    ```
 6. **Expiration automatique**, chaque minute via pg_cron. Dans l'éditeur SQL Supabase, en remettant la même valeur que `CRON_SECRET` :
    ```sql
@@ -334,7 +334,7 @@ Il ne peut se rendre disponible qu'avec un compte Stripe actif, un abonnement en
 - `e2e/delivery.e2e.js` : serveur, double paiement contre stripe-mock, webhooks, notifications du livreur et du client, nouveau livreur ;
 - `e2e/delivery-app.e2e.js` : trois navigateurs (nouvelle livreuse, restaurant, cliente), du profil livreur à la livraison.
 
-## Page d'accueil zeroo.fr
+## Page d'accueil de l'app web
 
 La racine de l'app web (`src/app/index.tsx`) affiche la page d'accueil aux visiteurs (`src/features/landing/LandingPage.tsx`). Les utilisateurs connectés sont redirigés vers leur espace, et dans l'app mobile on va directement à la connexion.
 
@@ -350,9 +350,10 @@ La racine de l'app web (`src/app/index.tsx`) affiche la page d'accueil aux visit
 
 Le référencement passe par `<Head>` (titre, description, Open Graph). L'écran « À proximité » des clients est désormais à l'adresse `/explore`.
 
-## Site vitrine zeroo.fr
+## Domaines
 
-Le site public **zeroo.fr** (nom de domaine à confirmer) n'existe pas encore. En attendant, l'app web sert elle-même de page d'accueil (voir plus haut).
+- **zeroo.online** : site vitrine (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages), avec la démo interactive. Les liens commerçant `zeroo.online/m/<slug>` (QR codes) y sont redirigés vers l'app web.
+- **app.zeroo.online** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements). À héberger et à déclarer dans le DNS (IONOS).
 
 Ce dépôt-ci ne contient que l'application.
 

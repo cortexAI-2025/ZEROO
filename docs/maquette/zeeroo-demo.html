@@ -1,6 +1,7 @@
 <title>ZeeRoo Démo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<script>if(/[?&]embed\b/.test(location.search))document.documentElement.classList.add('embed')</script>
 <style>
 /* Concept : trois téléphones côte à côte (client, restaurant, livreur) qui partagent une seule commande. Vert ZeeRoo sur encre profonde, fond blanc cassé froid. */
 :root{
@@ -17,6 +18,7 @@ button{font:inherit;cursor:pointer;border:0;color:inherit;background:none}
 button:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
 .top{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;justify-content:space-between}
 .top img{height:56px;display:block}
+.embed .top img,.embed .top .tag{display:none}
 .top .tag{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .reset{background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px}
 .guide{max-width:1240px;margin:18px auto 0;background:var(--ink);color:#fff;border-radius:14px;padding:14px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
