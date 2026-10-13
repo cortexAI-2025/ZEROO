@@ -19,6 +19,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      # typecheck + lint + prettier (src) + jest
-      - run: npm run check
+      - id: install
+        run: npm ci
+      # Mêmes vérifications que `npm run check`, en étapes séparées et avec des annotations
+      # sur la PR (erreurs TypeScript, ESLint, fichiers mal formatés, tests en échec).
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
+      - name: Prettier
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          files=$(npx prettier --list-different src || true)
+          for f in $files; do echo "::error file=$f::Fichier non formaté (npx prettier --write $f)"; done
+          test -z "$files"
+      - name: Tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx jest --ci --reporters=default --reporters=github-actions
