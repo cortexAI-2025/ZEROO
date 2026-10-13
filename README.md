@@ -345,7 +345,7 @@ Le référencement passe par `<Head>` (titre, description, Open Graph). L'écran
 ## Domaines
 
 - **zeroo.online** : site vitrine (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages), avec la démo interactive. Les liens commerçant `zeroo.online/m/<slug>` (QR codes) y sont redirigés vers l'app web.
-- **app.zeroo.online** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements). À héberger et à déclarer dans le DNS (IONOS).
+- **app.zeroo.online** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements), hébergée sur **Vercel** (projet `zeroo`, relié à ce dépôt : chaque push sur `main` est déployé). `vercel.json` : `npm run build:web` → `dist/`, toutes les routes renvoient vers `index.html` (application monopage). Variables à définir dans Vercel : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (et les identifiants Google si utilisés).
 
 Ce dépôt-ci ne contient que l'application.
 
