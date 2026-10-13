@@ -40,7 +40,7 @@ function RootNavigator() {
   // redirige vers le premier écran autorisé de cette liste.
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* Racine : page d'accueil zeroo.fr pour les visiteurs (web), sinon aiguillage
+      {/* Racine : page d'accueil de l'app web pour les visiteurs (web), sinon aiguillage
           vers l'espace de l'utilisateur. Toujours accessible : c'est aussi l'écran vers
           lequel Expo Router se replie quand une garde se ferme. */}
       <Stack.Screen name="index" />

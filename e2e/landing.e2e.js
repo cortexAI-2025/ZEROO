@@ -1,4 +1,4 @@
-// Page d'accueil zeroo.fr : contenu, pages légales, appels à l'action, redirections.
+// Page d'accueil de l'app web : contenu, pages légales, appels à l'action, redirections.
 const { BASE, launch, run, step, visible } = require('./helpers');
 
 run("Page d'accueil", async () => {
@@ -75,7 +75,7 @@ run("Page d'accueil", async () => {
   await v(mobile.getByText('Commander à emporter')).waitFor();
   if (!mobile.url().endsWith('/explore'))
     throw new Error('redirection attendue vers /explore : ' + mobile.url());
-  step('utilisateur connecté sur zeroo.fr → redirigé vers son espace (/explore)');
+  step('utilisateur connecté sur l'app web → redirigé vers son espace (/explore)');
 
   await browser.close();
 });
