@@ -29,6 +29,10 @@ export function merchantToFormValues(m: Merchant): MerchantFormValues {
       latitude: m.latitude,
       longitude: m.longitude,
     },
+    legalName: m.legal_name ?? '',
+    siret: m.siret ?? '',
+    vatNumber: m.vat_number ?? '',
+    contactEmail: m.contact_email ?? '',
   };
 }
 
@@ -50,6 +54,10 @@ export function MerchantForm({ initialValues, submitLabel, onSubmit }: Props) {
       description: '',
       phone: '',
       defaultPrepMinutes: 15,
+      legalName: '',
+      siret: '',
+      vatNumber: '',
+      contactEmail: '',
     },
   });
 
@@ -131,6 +139,31 @@ export function MerchantForm({ initialValues, submitLabel, onSubmit }: Props) {
             ))}
           </View>
         )}
+      />
+
+      <AppText variant="subtitle">{t('merchant.form.company')}</AppText>
+      <AppText variant="muted">{t('merchant.form.companyHint')}</AppText>
+      <FormTextField control={control} name="legalName" label={t('merchant.form.legalName')} />
+      <FormTextField
+        control={control}
+        name="siret"
+        label={t('merchant.form.siret')}
+        keyboardType="number-pad"
+        testID="merchant-siret"
+      />
+      <FormTextField
+        control={control}
+        name="vatNumber"
+        label={t('merchant.form.vatNumber')}
+        autoCapitalize="characters"
+      />
+      <FormTextField
+        control={control}
+        name="contactEmail"
+        label={t('merchant.form.contactEmail')}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
       />
 
       {error ? <AppText variant="error">{error}</AppText> : null}

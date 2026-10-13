@@ -48,9 +48,9 @@ values (
 insert into public.merchant_stripe_accounts (merchant_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)
 values ('30000000-0000-0000-0000-000000000001', 'acct_demo_chez_samir', true, true, true);
 
-insert into public.subscriptions (merchant_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used)
+insert into public.subscriptions (merchant_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used, plan)
 values ('30000000-0000-0000-0000-000000000001', 'cus_demo_chez_samir', 'sub_demo_chez_samir', 'trialing',
-        now() + interval '30 days', true);
+        now() + interval '30 days', true, 'pro');
 
 -- Ouvert tous les jours de 6 h à 2 h du matin, pour pouvoir tester à toute heure.
 insert into public.merchant_opening_hours (merchant_id, weekday, opens_at, closes_at)

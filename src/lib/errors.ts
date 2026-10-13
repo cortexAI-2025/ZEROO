@@ -49,6 +49,13 @@ const businessErrors = {
   courier_not_found: 'errors.courierNotFound',
   courier_has_active_delivery: 'errors.courierHasActiveDelivery',
   courier_subscription_active: 'errors.courierSubscriptionActive',
+  order_not_finished: 'errors.orderNotFinished',
+  review_exists: 'errors.reviewExists',
+  review_empty: 'errors.reviewEmpty',
+  review_no_courier: 'errors.reviewNoCourier',
+  too_many_addresses: 'errors.tooManyAddresses',
+  address_not_found: 'errors.addressNotFound',
+  delivery_requires_pro: 'errors.deliveryRequiresPro',
 } as const;
 
 export type ErrorKey =

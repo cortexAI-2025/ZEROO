@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
@@ -48,12 +49,24 @@ export default function DeliverySettingsScreen() {
 
   return (
     <Screen scroll>
+      {!merchant.has_delivery_option && !merchant.delivery_enabled ? (
+        <Card testID="delivery-requires-pro">
+          <AppText variant="subtitle">{t('merchant.delivery.proTitle')}</AppText>
+          <AppText variant="muted">{t('merchant.delivery.proBody')}</AppText>
+          <Button
+            variant="secondary"
+            title={t('merchant.delivery.proAction')}
+            onPress={() => router.push('/pro/account')}
+          />
+        </Card>
+      ) : null}
       <Card>
         <SwitchRow
           testID="delivery-switch"
           label={t('merchant.delivery.enabled')}
           hint={t('merchant.delivery.enabledHint')}
           value={merchant.delivery_enabled}
+          disabled={!merchant.has_delivery_option && !merchant.delivery_enabled}
           onValueChange={(value) => update.mutate({ delivery_enabled: value })}
         />
         {merchant.delivery_enabled && approved.length === 0 && !couriers.isPending ? (

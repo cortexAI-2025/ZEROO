@@ -5,10 +5,12 @@ import { useRealtimeChanges } from '@/lib/realtime';
 
 import {
   acceptMission,
+  type CourierProfilePatch,
   declineRun,
   fetchActiveRuns,
   fetchDeliveredRuns,
   fetchEarnings,
+  fetchEarningsByDay,
   fetchMissions,
   fetchMyCourier,
   fetchMyLinks,
@@ -16,6 +18,7 @@ import {
   markDelivered,
   requestLink,
   setAvailability,
+  updateCourierProfile,
 } from './api';
 
 export const courierKeys = {
@@ -25,6 +28,7 @@ export const courierKeys = {
   runs: (courierId: string) => ['courier', courierId, 'runs'] as const,
   delivered: (courierId: string) => ['courier', courierId, 'delivered'] as const,
   earnings: (courierId: string) => ['courier', courierId, 'earnings'] as const,
+  earningsByDay: (courierId: string) => ['courier', courierId, 'earnings-by-day'] as const,
   links: (courierId: string) => ['courier', courierId, 'links'] as const,
 };
 
@@ -112,4 +116,19 @@ export function useCourierActions() {
     requestLink: useMutation({ mutationFn: requestLink, onSuccess }),
     leave: useMutation({ mutationFn: leaveMerchant, onSuccess }),
   };
+}
+
+export function useEarningsByDay(courierId: string) {
+  return useQuery({
+    queryKey: courierKeys.earningsByDay(courierId),
+    queryFn: () => fetchEarningsByDay(),
+  });
+}
+
+export function useUpdateCourierProfile(courierId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: CourierProfilePatch) => updateCourierProfile(courierId, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
 }

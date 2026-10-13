@@ -2,10 +2,10 @@
 
 > Le bon goût. Sans commission.
 
-Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **ZeeRoo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 19,99 € HT/mois ou Pro multisite 29,99 € HT/mois, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
+Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **ZeeRoo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 19,99 € HT/mois ou Pro 29,99 € HT/mois avec l'option livraison, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Maquette cliquable (client, restaurant, livreur) : [docs/maquette/zeroo-maquette.html](docs/maquette/zeroo-maquette.html), voir [docs/maquette/README.md](docs/maquette/README.md)
+- Démo cliquable (client, restaurant, livreur) : [docs/maquette/zeeroo-demo.html](docs/maquette/zeeroo-demo.html), voir [docs/maquette/README.md](docs/maquette/README.md)
 - Stack : Expo SDK 57 (React Native, TypeScript, Expo Router) · Supabase (Postgres, Auth, RLS, Realtime) · Stripe Connect / Billing (à venir)
 
 ## Avancement
@@ -173,7 +173,7 @@ Prix HT, TVA 20 % en plus. Seuls les abonnements passent par Stripe : les restau
 | Profil | Mensuel HT (TTC) | Annuel HT (TTC) |
 |---|---|---|
 | Restaurant Start | 19,99 € (23,99 €) | 199,99 € (239,99 €) |
-| Restaurant Pro multisite | 29,99 € (35,99 €) | 299,99 € (359,99 €) |
+| Restaurant Pro (retrait + livraison) | 29,99 € (35,99 €) | 299,99 € (359,99 €) |
 | Livreur, formule unique | 14,99 € (17,99 €) | 149,99 € (179,99 €) |
 | Client | Gratuit | Gratuit |
 

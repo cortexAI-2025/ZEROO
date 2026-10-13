@@ -1,5 +1,5 @@
 begin;
-select plan(31);
+select plan(36);
 
 -- Contexte (seed) : Samir (10…01) possède « Chez Samir » (30…01) ; Nadia (20…01) est cliente ;
 -- Karim (utilisateur 70…01, livreur 80…01) est rattaché.
@@ -143,6 +143,28 @@ set local role authenticated;
 select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
 select is((select count(*)::int from public.customer_addresses) + (select count(*)::int from public.customer_favorites),
   0, 'adresses et favoris privés');
+reset role;
+
+-- ---------------------------------------------------------------------------------------
+-- Option livraison (formule Pro)
+-- ---------------------------------------------------------------------------------------
+select ok((select public.has_delivery_option(m) from public.merchants m where id = '30000000-0000-0000-0000-000000000001'),
+  'Chez Samir a la formule Pro');
+update public.subscriptions set plan = 'start' where merchant_id = '30000000-0000-0000-0000-000000000001';
+select is((select delivery_enabled from public.merchants where id = '30000000-0000-0000-0000-000000000001'), false,
+  'retour à Start : la livraison s''arrête');
+select is((select reason from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.87, 2.34)),
+  'delivery_unavailable', 'plus de devis de livraison');
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
+select throws_ok($$ update public.merchants set delivery_enabled = true where id = '30000000-0000-0000-0000-000000000001' $$,
+  'P0001', 'delivery_requires_pro', 'la livraison demande la formule Pro');
+reset role;
+update public.subscriptions set plan = 'pro' where merchant_id = '30000000-0000-0000-0000-000000000001';
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
+select lives_ok($$ update public.merchants set delivery_enabled = true where id = '30000000-0000-0000-0000-000000000001' $$,
+  'avec Pro, la livraison se réactive');
 reset role;
 
 select * from finish();

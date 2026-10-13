@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Card, Chip, Screen, TextField } from '@/components/ui';
+import type { SavedAddress } from '@/features/account/api';
+import { useAddresses } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useDeliveryQuote, useMerchantDeliverySettings } from '@/features/cart/delivery';
 import {
@@ -49,6 +51,25 @@ export default function CartScreen() {
   } = useCart();
   const deliverySettings = useMerchantDeliverySettings(merchant?.id).data;
   const isDelivery = !!deliverySettings?.delivery_enabled && fulfillment === 'delivery';
+  // Adresses enregistrées : un appui remplit l'adresse et les instructions ; l'adresse par
+  // défaut est proposée d'office si aucune n'est encore choisie.
+  const saved = useAddresses();
+  const applySaved = (a: SavedAddress) => {
+    setDeliveryAddress({
+      addressLine: a.address_line,
+      postalCode: a.postal_code,
+      city: a.city,
+      latitude: a.latitude,
+      longitude: a.longitude,
+    });
+    if (a.instructions) setDeliveryInstructions(a.instructions);
+  };
+  const defaultSaved = saved.data?.find((a) => a.is_default);
+  useEffect(() => {
+    if (!deliveryAddress && defaultSaved) applySaved(defaultSaved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSaved?.id]);
+
   const quoteQuery = useDeliveryQuote(isDelivery ? merchant?.id : undefined, deliveryAddress);
   const quote = isDelivery ? quoteQuery.data : undefined;
   const card = useLoyaltyCard(merchant?.id);
@@ -216,7 +237,28 @@ export default function CartScreen() {
           </View>
           {isDelivery ? (
             <>
+              {(saved.data ?? []).length > 0 ? (
+                <View style={styles.chips}>
+                  {saved.data?.map((a) => (
+                    <Chip
+                      key={a.id}
+                      testID={`saved-address-${a.label}`}
+                      label={a.label}
+                      selected={
+                        deliveryAddress?.addressLine === a.address_line &&
+                        deliveryAddress.postalCode === a.postal_code
+                      }
+                      onPress={() => applySaved(a)}
+                    />
+                  ))}
+                </View>
+              ) : null}
               <AddressField
+                key={
+                  deliveryAddress
+                    ? `${deliveryAddress.addressLine}|${deliveryAddress.postalCode}`
+                    : 'none'
+                }
                 testID="delivery-address"
                 label={t('client.cart.deliveryAddress')}
                 hint={t('client.cart.deliveryAddressHint')}

@@ -302,3 +302,93 @@ revoke execute on function public.merchant_sales_by_day, public.merchant_top_ite
   public.courier_earnings_by_day from public, anon;
 grant execute on function public.merchant_sales_by_day, public.merchant_top_items,
   public.courier_earnings_by_day to authenticated;
+
+-- 6. Option livraison --------------------------------------------------------------------
+-- Formule Start : retrait seulement. Formule Pro : retrait et livraison par des livreurs.
+-- La formule est enregistrée par le webhook Stripe (prix souscrit).
+alter table public.subscriptions
+  add column plan text not null default 'start' check (plan in ('start', 'pro'));
+
+create or replace function public.has_delivery_option(m public.merchants)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.subscriptions s
+    where s.merchant_id = m.id and s.plan = 'pro' and s.status in ('trialing', 'active')
+  );
+$$;
+
+grant execute on function public.has_delivery_option(public.merchants) to anon, authenticated;
+
+-- Activer la livraison demande la formule Pro.
+create or replace function public.check_delivery_option()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.delivery_enabled and not old.delivery_enabled and not public.has_delivery_option(new) then
+    raise exception 'delivery_requires_pro' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger merchants_check_delivery_option
+  before update of delivery_enabled on public.merchants
+  for each row execute function public.check_delivery_option();
+
+-- Retour à la formule Start : la livraison s'arrête.
+create or replace function public.disable_delivery_without_pro()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.plan <> 'pro' then
+    update public.merchants set delivery_enabled = false
+    where id = new.merchant_id and delivery_enabled;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger subscriptions_disable_delivery
+  after insert or update of plan on public.subscriptions
+  for each row execute function public.disable_delivery_without_pro();
+
+-- Le devis de livraison vérifie aussi la formule (abonnement expiré ou changé).
+create or replace function public.merchant_delivery_quote(p_merchant_id uuid, p_latitude double precision, p_longitude double precision)
+returns table (available boolean, reason text, fee_cents int, distance_m int)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_merchant public.merchants;
+  v_distance int;
+begin
+  select * into v_merchant from public.merchants where id = p_merchant_id and is_published;
+  if v_merchant.id is null or not v_merchant.delivery_enabled or not public.has_delivery_option(v_merchant) then
+    return query select false, 'delivery_unavailable'::text, null::int, null::int;
+    return;
+  end if;
+  v_distance := round(extensions.st_distance(
+    v_merchant.location,
+    extensions.st_setsrid(extensions.st_makepoint(p_longitude, p_latitude), 4326)::extensions.geography
+  ))::int;
+  if v_distance > v_merchant.delivery_radius_m then
+    return query select false, 'delivery_out_of_range'::text, v_merchant.delivery_fee_cents, v_distance;
+  elsif not exists (select 1 from public.available_couriers(p_merchant_id)) then
+    return query select false, 'no_courier_available'::text, v_merchant.delivery_fee_cents, v_distance;
+  else
+    return query select true, null::text, v_merchant.delivery_fee_cents, v_distance;
+  end if;
+end;
+$$;

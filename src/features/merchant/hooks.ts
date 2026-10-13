@@ -5,7 +5,9 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import {
   fetchMyMerchant,
   fetchOpeningHours,
+  fetchSalesByDay,
   fetchTodaySummary,
+  fetchTopItems,
   type MerchantPatch,
   saveOpeningHours,
   updateMerchant,
@@ -16,6 +18,8 @@ export const merchantKeys = {
   mine: (ownerId: string | undefined) => ['merchant', 'mine', ownerId] as const,
   hours: (merchantId: string) => ['merchant', merchantId, 'hours'] as const,
   today: (merchantId: string) => ['merchant', merchantId, 'today'] as const,
+  sales: (merchantId: string) => ['merchant', merchantId, 'sales'] as const,
+  topItems: (merchantId: string) => ['merchant', merchantId, 'top-items'] as const,
 };
 
 /** Le commerce de l'utilisateur connecté (null s'il n'en a pas encore). */
@@ -71,5 +75,19 @@ export function useTodaySummary(merchantId: string) {
   return useQuery({
     queryKey: merchantKeys.today(merchantId),
     queryFn: () => fetchTodaySummary(merchantId),
+  });
+}
+
+export function useSalesByDay(merchantId: string) {
+  return useQuery({
+    queryKey: merchantKeys.sales(merchantId),
+    queryFn: () => fetchSalesByDay(merchantId),
+  });
+}
+
+export function useTopItems(merchantId: string) {
+  return useQuery({
+    queryKey: merchantKeys.topItems(merchantId),
+    queryFn: () => fetchTopItems(merchantId),
   });
 }

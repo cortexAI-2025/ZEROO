@@ -314,6 +314,9 @@ export function LandingPage() {
                 <AppText variant="subtitle" style={styles.center}>
                   {t(`landing.pricing.plans.${plan}`)}
                 </AppText>
+                <AppText variant="muted" style={styles.center}>
+                  {t(`landing.pricing.planInfo.${plan}`)}
+                </AppText>
                 <View style={styles.priceRow}>
                   <AppText style={[styles.price, { color: colors.link }]}>{month.ht}</AppText>
                   <AppText variant="muted">{t('landing.pricing.perMonth')}</AppText>

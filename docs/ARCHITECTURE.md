@@ -9,7 +9,7 @@
 | Pays de lancement | **France** : prix TTC en euros, fuseau `Europe/Paris`, Stripe disponible. |
 | Fidélité | **9 menus payés et récupérés chez un commerçant = 1 menu offert**, en comptant chaque menu, même s'ils sont achetés dans une seule commande (validé). Le commerçant indique quels produits sont des « menus » éligibles. Voir §3.1. |
 | Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
-| Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro multisite 29,99 € HT/mois (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
+| Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro 29,99 € HT/mois avec l'option livraison (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
 | Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
 | Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. ZeeRoo n'encaisse jamais d'argent. Voir §3.4. |
 | Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
@@ -439,6 +439,16 @@ Expiration : sans réponse du restaurant après 10 minutes, la commande passe en
 - L'adresse, les coordonnées, le téléphone et les instructions de livraison sont nécessaires à la course. Ce sont les seules coordonnées client stockées.
 - Elles sont **effacées 7 jours après** la fin de la commande (`purge_delivery_details`, tâche d'expiration) ; la ville est conservée.
 - La position du livreur n'est pas suivie.
+
+### 3.5 Tableaux de bord, avis et option livraison
+
+Migration `20261013120000_dashboards.sql`, écrans calqués sur la démo `docs/maquette/zeeroo-demo.html`.
+
+- **Formules restaurant** : Start (19,99 € HT/mois) = retrait sur place ; Pro (29,99 € HT/mois) = retrait **et option livraison**. `subscriptions.plan` est écrit par le webhook Stripe (prix souscrit). Activer la livraison exige Pro (`delivery_requires_pro`) ; un retour à Start coupe la livraison, et `merchant_delivery_quote` revérifie la formule.
+- **Avis** (`order_reviews`) : après une commande retirée ou livrée, le client note le restaurant et, pour une livraison, le livreur (1 à 5 étoiles, un commentaire), une seule fois, via `submit_order_review`. Notes publiques des restaurants : `merchant_ratings` (sans commentaires) ; note du livreur : `courier_rating_summary`. Le restaurant et le livreur lisent les avis qui les concernent (RLS).
+- **Entreprise du restaurant** : raison sociale, SIRET (clé de Luhn), n° de TVA, e-mail de contact, publics comme les mentions légales. **Livreur** : zone de travail ; nom, téléphone et véhicule modifiables, SIRET et statut figés.
+- **Client** : adresses enregistrées (`customer_addresses`, 10 au plus, une par défaut, proposées dans le panier), restaurants favoris (`customer_favorites`), « Commander à nouveau » qui remet dans le panier les produits encore à la carte.
+- **Statistiques** : `merchant_sales_by_day` et `merchant_top_items` (onglet Activité du restaurant), `courier_earnings_by_day` (gains par jour, carte / espèces).
 
 ### 3.2 Row Level Security (résumé)
 

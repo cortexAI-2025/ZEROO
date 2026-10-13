@@ -26,6 +26,11 @@
       "start": "Start",
       "pro": "Pro"
     },
+    "planInfo": {
+      "start": "Retrait sur place (click & collect).",
+      "pro": "Retrait sur place et option livraison par vos livreurs.",
+      "courier": "Pour les livreurs indépendants."
+    },
     "intervals": {
       "month": "Mensuel",
       "year": "Annuel"
@@ -211,7 +216,7 @@
       },
       "reason": "Motif : {{reason}}",
       "items": "Détail",
-      "orderAgain": "Revoir le menu",
+      "orderAgain": "Commander à nouveau",
       "placedAt": "Passée le {{date}} à {{time}}",
       "cancel": "Annuler ma commande",
       "cancelConfirmTitle": "Annuler la commande ?",
@@ -230,7 +235,10 @@
       "payRideTitle": "{{name}} prend votre livraison",
       "payRideBefore": "Réglez la course avant {{time}}, sinon elle sera proposée à un autre livreur.",
       "payRideHint": "Réglez la course pour la confirmer.",
-      "payRide": "Régler la course · {{price}}"
+      "payRide": "Régler la course · {{price}}",
+      "reorderNothing": "Ces produits ne sont plus disponibles : consultez le menu du restaurant.",
+      "reorderSkipped_one": "{{count}} produit n'est plus disponible et n'a pas été ajouté.",
+      "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés."
     },
     "loyalty": {
       "title": "Mes cartes de fidélité",
@@ -266,6 +274,37 @@
       "announced": "Le commerçant sait que vous arrivez vers {{time}}.",
       "locationDenied": "Sans accès à votre position, le trajet ne peut pas être calculé. Vous pouvez l'autoriser dans les réglages.",
       "failed": "Impossible d'envoyer votre départ. Réessayez dans un instant."
+    },
+    "favorites": {
+      "title": "Mes favoris",
+      "add": "Ajouter {{name}} aux favoris",
+      "remove": "Retirer {{name}} des favoris",
+      "empty": "Aucun favori pour le moment. Touchez le cœur d'un restaurant pour le retrouver ici.",
+      "count_one": "{{count}} restaurant",
+      "count_other": "{{count}} restaurants"
+    },
+    "account": {
+      "profile": "Mes informations",
+      "name": "Prénom et nom",
+      "phone": "Téléphone",
+      "saved": "Informations enregistrées."
+    },
+    "addresses": {
+      "title": "Mes adresses",
+      "none": "Aucune adresse enregistrée",
+      "add": "Ajouter une adresse",
+      "address": "Adresse",
+      "instructions": "Instructions pour le livreur (digicode, étage…)",
+      "save": "Enregistrer l'adresse",
+      "default": "Par défaut",
+      "makeDefault": "Choisir par défaut",
+      "deleteTitle": "Supprimer cette adresse ?",
+      "deleteBody": "Vous pourrez l'ajouter à nouveau plus tard.",
+      "labels": {
+        "home": "Maison",
+        "work": "Travail",
+        "other": "Autre"
+      }
     }
   },
   "merchant": {
@@ -273,7 +312,8 @@
       "orders": "Commandes",
       "menu": "Menu",
       "shop": "Boutique",
-      "account": "Compte"
+      "account": "Compte",
+      "stats": "Activité"
     },
     "categories": {
       "snack": "Snack",
@@ -297,12 +337,21 @@
       "addressNoResult": "Aucune adresse trouvée",
       "addressUnavailable": "Recherche d'adresse indisponible, réessayez.",
       "prepTime": "Délai de préparation habituel",
-      "create": "Créer mon commerce"
+      "create": "Créer mon commerce",
+      "company": "Entreprise",
+      "companyHint": "Facultatif : ces informations apparaissent dans les mentions légales de votre page.",
+      "legalName": "Raison sociale",
+      "siret": "SIRET",
+      "vatNumber": "N° de TVA intracommunautaire",
+      "contactEmail": "E-mail de contact"
     },
     "errors": {
       "nameRequired": "Indiquez le nom du commerce",
       "phoneInvalid": "Numéro de téléphone invalide",
-      "addressRequired": "Choisissez une adresse dans la liste"
+      "addressRequired": "Choisissez une adresse dans la liste",
+      "siretInvalid": "SIRET invalide : 14 chiffres, vérifiez la saisie.",
+      "vatInvalid": "Numéro de TVA invalide (format FR + 11 caractères).",
+      "emailInvalid": "Adresse e-mail invalide."
     },
     "status": {
       "open": "Ouvert",
@@ -471,8 +520,8 @@
       "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
       "subscriptionTitle": "Abonnement ZeeRoo",
-      "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
+      "subscriptionNone": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
@@ -509,7 +558,24 @@
       "removeConfirmBody": "Il ne recevra plus vos courses. Il pourra vous renvoyer une demande.",
       "available": "Disponible",
       "unavailable": "Indisponible",
-      "courierLine": "{{vehicle}} · {{phone}}"
+      "courierLine": "{{vehicle}} · {{phone}}",
+      "proTitle": "Option livraison : formule Pro",
+      "proBody": "Votre formule Start comprend le retrait sur place. Passez à la formule Pro (29,99 € HT par mois) pour proposer la livraison par vos livreurs.",
+      "proAction": "Voir mon abonnement"
+    },
+    "stats": {
+      "title": "Activité",
+      "today": "Aujourd'hui",
+      "week": "7 derniers jours",
+      "orders_one": "{{count}} commande",
+      "orders_other": "{{count}} commandes",
+      "basket": "Panier moyen",
+      "basketHint": "Sur 7 jours",
+      "chart": "Ventes par jour",
+      "noCommission": "0 % de commission : tout est versé sur votre compte.",
+      "topItems": "Meilleures ventes (30 jours)",
+      "noSales": "Pas encore de ventes sur la période.",
+      "rating": "Note et avis"
     }
   },
   "account": {
@@ -567,7 +633,14 @@
     "deliveryNotPaid": "Le client n'a pas encore réglé la course : attendez son paiement avant de remettre la commande.",
     "deliveryNotPayable": "La course ne peut pas être réglée pour le moment.",
     "cashNotAllowedForDelivery": "Le repas d'une livraison se règle en ligne ; seule la course peut se payer en espèces.",
-    "cashNotAccepted": "Ce restaurant n'accepte pas les espèces."
+    "cashNotAccepted": "Ce restaurant n'accepte pas les espèces.",
+    "orderNotFinished": "Vous pourrez noter la commande une fois récupérée ou livrée.",
+    "reviewExists": "Vous avez déjà noté cette commande.",
+    "reviewEmpty": "Choisissez au moins une note.",
+    "reviewNoCourier": "Cette commande n'a pas de livreur à noter.",
+    "tooManyAddresses": "Vous avez déjà 10 adresses enregistrées : supprimez-en une d'abord.",
+    "addressNotFound": "Adresse introuvable.",
+    "deliveryRequiresPro": "La livraison est incluse dans la formule Pro. Changez de formule pour l'activer."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",
@@ -723,6 +796,11 @@
         "pro": "Pro",
         "courier": "Livreur"
       },
+      "planInfo": {
+        "start": "Retrait sur place",
+        "pro": "Retrait + option livraison",
+        "courier": "Pour les livreurs indépendants"
+      },
       "features": {
         "unlimited": "Commandes illimitées",
         "commission": "0 % de commission",
@@ -746,7 +824,7 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement fixe, sans commission : Start à 19,99 € HT par mois (23,99 € TTC) ou Pro multisite à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start (retrait) à 19,99 € HT par mois (23,99 € TTC) ou Pro, avec l'option livraison, à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Les frais bancaires des paiements par carte (Stripe) restent à sa charge, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
@@ -949,11 +1027,20 @@
       "runs_other": "{{count}} courses",
       "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission ZeeRoo. Stripe la verse sur votre compte bancaire.",
       "history": "Dernières courses",
-      "empty": "Aucune course livrée pour le moment."
+      "empty": "Aucune course livrée pour le moment.",
+      "chart": "Gains des 7 derniers jours",
+      "split": "Carte ou espèces (7 jours)",
+      "card": "Carte",
+      "cash": "Espèces",
+      "splitHint": "Les paiements par carte arrivent sur votre compte Stripe ; les espèces vous sont remises par le client.",
+      "noCommission": "0 % de commission : chaque course vous est payée en totalité."
     },
     "account": {
       "profile": "Mon profil livreur",
-      "siret": "SIRET {{siret}}"
+      "siret": "SIRET {{siret}}",
+      "company": "Mon entreprise",
+      "ratings": "Mes notes",
+      "reviews": "Avis récents"
     },
     "billing": {
       "paymentsTitle": "Paiements",
@@ -980,6 +1067,28 @@
       "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
       "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Compte.",
       "backToShop": "Retour à mon compte"
+    },
+    "profile": {
+      "editTitle": "Mon profil",
+      "edit": "Modifier mon profil",
+      "zone": "Zone de travail",
+      "zonePlaceholder": "Ex. : Paris centre",
+      "locked": "Statut ({{status}}) et SIRET ({{siret}}) vérifiés par Stripe : contactez-nous pour les modifier."
     }
+  },
+  "reviews": {
+    "title": "Comment c'était ?",
+    "courierLabel": "{{name}}, votre livreur",
+    "rateMerchant": "Noter {{name}}",
+    "rateCourier": "Noter {{name}}",
+    "comment": "Un commentaire (facultatif)",
+    "send": "Envoyer mon avis",
+    "thanks": "Merci pour votre avis !",
+    "none": "Pas encore d'avis.",
+    "starsLabel": "{{value}} sur 5",
+    "starsChoice_one": "{{count}} étoile",
+    "starsChoice_other": "{{count}} étoiles",
+    "count_one": "{{count}} avis",
+    "count_other": "{{count}} avis"
   }
 }

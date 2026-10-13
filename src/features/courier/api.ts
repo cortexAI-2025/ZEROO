@@ -118,3 +118,23 @@ export async function leaveMerchant(merchantId: string) {
   const { error } = await supabase.rpc('leave_merchant', { p_merchant_id: merchantId });
   if (error) throw error;
 }
+
+export type CourierProfilePatch = {
+  display_name: string;
+  phone: string;
+  vehicle: Courier['vehicle'];
+  work_zone: string | null;
+};
+
+/** Le livreur modifie son nom, son téléphone, son véhicule et sa zone (le SIRET est figé). */
+export async function updateCourierProfile(courierId: string, patch: CourierProfilePatch) {
+  const { error } = await supabase.from('couriers').update(patch).eq('id', courierId);
+  if (error) throw error;
+}
+
+/** Gains des 7 derniers jours (aujourd'hui en dernier), séparés carte / espèces. */
+export async function fetchEarningsByDay(days = 7) {
+  const { data, error } = await supabase.rpc('courier_earnings_by_day', { p_days: days });
+  if (error) throw error;
+  return data;
+}

@@ -3,10 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Screen, TextField } from '@/components/ui';
+import { useFavoriteIds, useFavoriteMerchants, useToggleFavorite } from '@/features/account/hooks';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { CartBar } from '@/features/cart/CartBar';
+import type { MerchantSummary } from '@/features/discover/api';
 import { useMerchantSearch, useNearbyMerchants } from '@/features/discover/hooks';
 import { type Coordinates, getCurrentCoordinates } from '@/features/discover/location';
 import { MerchantCard } from '@/features/discover/MerchantCard';
+import { useMerchantRatings } from '@/features/reviews/hooks';
 import { errorKey } from '@/lib/errors';
 import { spacing } from '@/theme';
 
@@ -22,6 +26,30 @@ export default function ExploreScreen() {
   const search = useMerchantSearch(query);
   const nearby = useNearbyMerchants(searching ? null : coords);
   const active = searching ? search : nearby;
+
+  // Favoris et notes : seulement pour un client connecté (les notes sont publiques).
+  const signedIn = !!useAuth().session;
+  const favoriteIds = useFavoriteIds();
+  const favorites = useFavoriteMerchants();
+  const toggleFavorite = useToggleFavorite();
+  const listed = [...(favorites.data ?? []), ...(active.data ?? [])];
+  const ratings = useMerchantRatings([...new Set(listed.map((m) => m.id))]);
+  const card = (merchant: MerchantSummary) => {
+    const favorite = favoriteIds.data?.has(merchant.id) ?? false;
+    return (
+      <MerchantCard
+        key={merchant.id}
+        merchant={merchant}
+        rating={ratings.data?.get(merchant.id)}
+        favorite={favorite}
+        onToggleFavorite={
+          signedIn
+            ? () => toggleFavorite.mutate({ merchantId: merchant.id, favorite: !favorite })
+            : undefined
+        }
+      />
+    );
+  };
 
   // La position n'est demandée qu'après ce clic (consentement explicite, RGPD).
   const locate = async () => {
@@ -51,6 +79,13 @@ export default function ExploreScreen() {
           autoCorrect={false}
           returnKeyType="search"
         />
+        {!searching && (favorites.data ?? []).length > 0 ? (
+          <>
+            <AppText variant="subtitle">{t('client.favorites.title')}</AppText>
+            {favorites.data?.map(card)}
+          </>
+        ) : null}
+
         {!coords && !searching ? (
           <View style={styles.locate}>
             <Button
@@ -81,9 +116,7 @@ export default function ExploreScreen() {
                 {searching ? t('client.explore.noResults') : t('client.explore.noNearby')}
               </AppText>
             ) : null}
-            {active.data?.map((merchant) => (
-              <MerchantCard key={merchant.id} merchant={merchant} />
-            ))}
+            {active.data?.map(card)}
           </>
         ) : null}
       </Screen>

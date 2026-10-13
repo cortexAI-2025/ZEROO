@@ -134,6 +134,9 @@ export function BillingCards({ target }: { target: BillingTarget }) {
                 ))}
               </View>
             ) : null}
+            {target.role === 'merchant' ? (
+              <AppText variant="muted">{t(`billing.planInfo.${planChoice}`)}</AppText>
+            ) : null}
             <View style={styles.chips} testID="interval-choice">
               {(['month', 'year'] as const).map((id) => (
                 <Chip

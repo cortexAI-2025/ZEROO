@@ -106,6 +106,7 @@ export type Database = {
       };
       couriers: {
         Row: {
+          work_zone: string | null;
           created_at: string;
           display_name: string;
           id: string;
@@ -120,6 +121,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          work_zone?: string | null;
           created_at?: string;
           display_name: string;
           id?: string;
@@ -133,6 +135,7 @@ export type Database = {
           vehicle?: Database['public']['Enums']['courier_vehicle'];
         };
         Update: {
+          work_zone?: string | null;
           created_at?: string;
           display_name?: string;
           id?: string;
@@ -150,6 +153,91 @@ export type Database = {
             foreignKeyName: 'couriers_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      customer_addresses: {
+        Row: {
+          address_line: string;
+          city: string;
+          created_at: string;
+          id: string;
+          instructions: string | null;
+          is_default: boolean;
+          label: string;
+          latitude: number;
+          longitude: number;
+          postal_code: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          address_line: string;
+          city: string;
+          created_at?: string;
+          id?: string;
+          instructions?: string | null;
+          is_default?: boolean;
+          label: string;
+          latitude: number;
+          longitude: number;
+          postal_code: string;
+          user_id: string;
+        };
+        Update: {
+          address_line?: string;
+          city?: string;
+          created_at?: string;
+          id?: string;
+          instructions?: string | null;
+          is_default?: boolean;
+          label?: string;
+          latitude?: number;
+          longitude?: number;
+          postal_code?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'customer_addresses_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      customer_favorites: {
+        Row: {
+          created_at: string;
+          merchant_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          merchant_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          merchant_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'customer_favorites_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customer_favorites_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
@@ -495,6 +583,10 @@ export type Database = {
       };
       merchants: {
         Row: {
+          legal_name: string | null;
+          siret: string | null;
+          vat_number: string | null;
+          contact_email: string | null;
           address_line: string;
           category: string;
           city: string;
@@ -524,14 +616,20 @@ export type Database = {
           is_paused_now: boolean | null;
           is_payments_ready: boolean | null;
           is_subscription_active: boolean | null;
+          has_delivery_option: boolean | null;
         };
         ComputedFields:
+          | 'has_delivery_option'
           | 'is_accepting_orders'
           | 'is_open_now'
           | 'is_paused_now'
           | 'is_payments_ready'
           | 'is_subscription_active';
         Insert: {
+          legal_name?: string | null;
+          siret?: string | null;
+          vat_number?: string | null;
+          contact_email?: string | null;
           address_line: string;
           category: string;
           city: string;
@@ -558,6 +656,10 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          legal_name?: string | null;
+          siret?: string | null;
+          vat_number?: string | null;
+          contact_email?: string | null;
           address_line?: string;
           category?: string;
           city?: string;
@@ -643,6 +745,69 @@ export type Database = {
             foreignKeyName: 'order_items_order_id_fkey';
             columns: ['order_id'];
             isOneToOne: false;
+            referencedRelation: 'orders';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      order_reviews: {
+        Row: {
+          comment: string | null;
+          courier_id: string | null;
+          courier_stars: number | null;
+          created_at: string;
+          customer_id: string | null;
+          merchant_id: string;
+          merchant_stars: number | null;
+          order_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          comment?: string | null;
+          courier_id?: string | null;
+          courier_stars?: number | null;
+          created_at?: string;
+          customer_id?: string | null;
+          merchant_id: string;
+          merchant_stars?: number | null;
+          order_id: string;
+        };
+        Update: {
+          comment?: string | null;
+          courier_id?: string | null;
+          courier_stars?: number | null;
+          created_at?: string;
+          customer_id?: string | null;
+          merchant_id?: string;
+          merchant_stars?: number | null;
+          order_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'order_reviews_courier_id_fkey';
+            columns: ['courier_id'];
+            isOneToOne: false;
+            referencedRelation: 'couriers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'order_reviews_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'order_reviews_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'order_reviews_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: true;
             referencedRelation: 'orders';
             referencedColumns: ['id'];
           },
@@ -933,6 +1098,7 @@ export type Database = {
           cancel_at_period_end: boolean;
           current_period_end: string | null;
           merchant_id: string;
+          plan: string;
           status: Database['public']['Enums']['subscription_status'];
           stripe_customer_id: string;
           stripe_subscription_id: string | null;
@@ -945,6 +1111,7 @@ export type Database = {
           cancel_at_period_end?: boolean;
           current_period_end?: string | null;
           merchant_id: string;
+          plan?: string;
           status?: Database['public']['Enums']['subscription_status'];
           stripe_customer_id: string;
           stripe_subscription_id?: string | null;
@@ -956,6 +1123,7 @@ export type Database = {
           cancel_at_period_end?: boolean;
           current_period_end?: string | null;
           merchant_id?: string;
+          plan?: string;
           status?: Database['public']['Enums']['subscription_status'];
           stripe_customer_id?: string;
           stripe_subscription_id?: string | null;
@@ -1161,6 +1329,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      courier_earnings_by_day: {
+        Args: { p_days?: number };
+        Returns: { card_cents: number; cash_cents: number; day: string; runs_count: number }[];
+      };
       courier_earnings_summary: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1238,6 +1410,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      courier_rating_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          average: number | null;
+          reviews_count: number;
+          stars_1: number;
+          stars_2: number;
+          stars_3: number;
+          stars_4: number;
+          stars_5: number;
+        }[];
+      };
       create_courier: {
         Args: {
           p_display_name: string;
@@ -1258,6 +1442,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           vehicle: Database['public']['Enums']['courier_vehicle'];
+          work_zone: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -1451,6 +1636,15 @@ export type Database = {
         Returns: boolean;
       };
       is_payments_ready: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      has_delivery_option: {
         Args: {
           m: Omit<
             Database['public']['Tables']['merchants']['Row'],
@@ -1680,6 +1874,14 @@ export type Database = {
           reason: string;
         }[];
       };
+      merchant_ratings: {
+        Args: { p_merchant_ids: string[] };
+        Returns: { average: number; merchant_id: string; reviews_count: number }[];
+      };
+      merchant_sales_by_day: {
+        Args: { p_days?: number; p_merchant_id: string };
+        Returns: { day: string; orders_count: number; revenue_cents: number }[];
+      };
       merchant_today_summary: {
         Args: { p_merchant_id: string };
         Returns: {
@@ -1687,6 +1889,10 @@ export type Database = {
           pending_count: number;
           revenue_cents: number;
         }[];
+      };
+      merchant_top_items: {
+        Args: { p_days?: number; p_merchant_id: string };
+        Returns: { name: string; quantity: number; revenue_cents: number }[];
       };
       nearby_merchants: {
         Args: { p_latitude: number; p_limit?: number; p_longitude: number; p_radius_m?: number };
@@ -1749,6 +1955,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           vehicle: Database['public']['Enums']['courier_vehicle'];
+          work_zone: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -1829,6 +2036,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_default_address: { Args: { p_address_id: string }; Returns: undefined };
       set_opening_hours: {
         Args: { p_merchant_id: string; p_slots: Json };
         Returns: {
@@ -1914,6 +2122,30 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'orders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      submit_order_review: {
+        Args: {
+          p_comment?: string;
+          p_courier_stars?: number;
+          p_merchant_stars?: number;
+          p_order_id: string;
+        };
+        Returns: {
+          comment: string | null;
+          courier_id: string | null;
+          courier_stars: number | null;
+          created_at: string;
+          customer_id: string | null;
+          merchant_id: string;
+          merchant_stars: number | null;
+          order_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'order_reviews';
           isOneToOne: true;
           isSetofReturn: false;
         };

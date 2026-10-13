@@ -33,6 +33,20 @@ async function verify(stripe: Stripe, payload: string, signature: string): Promi
   throw new HttpError(400, 'invalid_signature');
 }
 
+/**
+ * Formule du restaurant : Pro (retrait + livraison) si le prix souscrit est un prix Pro, sinon
+ * Start. Sans identifiants de prix configurés, on se fie à la formule choisie au paiement.
+ */
+function merchantPlan(subscription: Stripe.Subscription): 'start' | 'pro' {
+  const proPrices = [
+    Deno.env.get('STRIPE_PRICE_PRO_MONTH'),
+    Deno.env.get('STRIPE_PRICE_PRO_YEAR'),
+  ].filter((id): id is string => !!id);
+  const priceId = subscription.items.data[0]?.price?.id;
+  if (proPrices.length > 0) return priceId && proPrices.includes(priceId) ? 'pro' : 'start';
+  return subscription.metadata?.plan === 'pro' ? 'pro' : 'start';
+}
+
 /** Abonnement d'un restaurant ou d'un livreur (même offre), retrouvé par son client Stripe. */
 async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscription) {
   const customerId =
@@ -57,6 +71,7 @@ async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscri
           current_period_end: toDate(periodEnd),
           cancel_at_period_end: subscription.cancel_at_period_end,
           trial_used: existing.trial_used || subscription.trial_end !== null,
+          ...(table === 'subscriptions' ? { plan: merchantPlan(subscription) } : {}),
         })
         .eq('stripe_customer_id', customerId),
     );

@@ -29,11 +29,20 @@ export async function createMerchant(values: MerchantFormValues) {
     p_default_prep_minutes: values.defaultPrepMinutes,
   });
   if (error) throw error;
+  // Informations de l'entreprise saisies dès la création : enregistrées juste après.
+  const { legal_name, siret, vat_number, contact_email } = formValuesToPatch(values);
+  if (legal_name || siret || vat_number || contact_email) {
+    await updateMerchant(data.id, { legal_name, siret, vat_number, contact_email });
+  }
   return data;
 }
 
 export type MerchantPatch = Pick<
   TablesUpdate<'merchants'>,
+  | 'legal_name'
+  | 'siret'
+  | 'vat_number'
+  | 'contact_email'
   | 'name'
   | 'description'
   | 'category'
@@ -70,6 +79,10 @@ export function formValuesToPatch(values: MerchantFormValues): MerchantPatch {
     city: values.address.city,
     latitude: values.address.latitude,
     longitude: values.address.longitude,
+    legal_name: values.legalName || null,
+    siret: values.siret ? values.siret.replace(/\s/g, '') : null,
+    vat_number: values.vatNumber ? values.vatNumber.replace(/\s/g, '').toUpperCase() : null,
+    contact_email: values.contactEmail || null,
   };
 }
 
@@ -96,6 +109,23 @@ export async function fetchTodaySummary(merchantId: string) {
   const { data, error } = await supabase
     .rpc('merchant_today_summary', { p_merchant_id: merchantId })
     .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Ventes des derniers jours (jours sans vente compris), du plus ancien au plus récent. */
+export async function fetchSalesByDay(merchantId: string, days = 7) {
+  const { data, error } = await supabase.rpc('merchant_sales_by_day', {
+    p_merchant_id: merchantId,
+    p_days: days,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Produits les plus vendus sur 30 jours. */
+export async function fetchTopItems(merchantId: string) {
+  const { data, error } = await supabase.rpc('merchant_top_items', { p_merchant_id: merchantId });
   if (error) throw error;
   return data;
 }
