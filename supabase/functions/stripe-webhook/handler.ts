@@ -111,17 +111,54 @@ async function orderFromEvent(
   return { id: order.id, kind };
 }
 
-const authorizeRpc = (kind: PaymentKind) =>
-  kind === 'delivery' ? 'mark_delivery_authorized' : 'mark_order_authorized';
+/**
+ * Course payée. Le paiement doit appartenir au livreur actuel de la mission : en web, le
+ * paiement n'est rattaché qu'à ce moment (metadata.courier_id). Si la mission a changé de
+ * main entre-temps, le client est remboursé et la commande n'est pas modifiée.
+ */
+async function settleDelivery(
+  db: SupabaseClient,
+  stripe: Stripe,
+  event: Stripe.Event,
+  orderId: string,
+  intentId: string,
+  metadata: Stripe.Metadata | null | undefined,
+) {
+  const courierId = metadata?.courier_id;
+  if (courierId) {
+    unwrap(
+      await db.rpc('attach_delivery_payment_intent', {
+        p_order_id: orderId,
+        p_courier_id: courierId,
+        p_payment_intent_id: intentId,
+      }),
+    );
+  }
+  const settled = unwrap(
+    await db.rpc('mark_delivery_authorized', {
+      p_order_id: orderId,
+      p_payment_intent_id: intentId,
+    }),
+  );
+  if (!settled && event.account) {
+    console.warn(`Course ${orderId} : paiement ${intentId} d'un ancien livreur, remboursé`);
+    await stripe.refunds.create(
+      { payment_intent: intentId },
+      { stripeAccount: event.account, idempotencyKey: `refund-stale-${intentId}` },
+    );
+  }
+}
 
 async function processEvent(db: SupabaseClient, stripe: Stripe, event: Stripe.Event) {
   switch (event.type) {
+    // Repas : autorisé (capture manuelle, capturé quand le restaurant accepte).
     case 'payment_intent.amount_capturable_updated': {
       const intent = event.data.object;
+      if (kindOf(intent.metadata) !== 'meal') break;
       const order = await orderFromEvent(db, event, intent.metadata, intent.amount_capturable);
       if (order) {
         unwrap(
-          await db.rpc(authorizeRpc(order.kind), {
+          await db.rpc('mark_order_authorized', {
             p_order_id: order.id,
             p_payment_intent_id: intent.id,
           }),
@@ -129,8 +166,18 @@ async function processEvent(db: SupabaseClient, stripe: Stripe, event: Stripe.Ev
       }
       break;
     }
+    // Course : encaissée tout de suite quand le client la règle.
+    case 'payment_intent.succeeded': {
+      const intent = event.data.object;
+      if (kindOf(intent.metadata) !== 'delivery') break;
+      const order = await orderFromEvent(db, event, intent.metadata, intent.amount_received);
+      if (order) await settleDelivery(db, stripe, event, order.id, intent.id, intent.metadata);
+      break;
+    }
     case 'payment_intent.canceled': {
       const intent = event.data.object;
+      // Une course annulée (changement de livreur) ne touche pas la commande.
+      if (kindOf(intent.metadata) !== 'meal') break;
       const order = await orderFromEvent(db, event, intent.metadata);
       if (order) unwrap(await db.rpc('mark_order_payment_failed', { p_order_id: order.id }));
       break;
@@ -147,20 +194,25 @@ async function processEvent(db: SupabaseClient, stripe: Stripe, event: Stripe.Ev
           typeof session.payment_intent === 'string'
             ? session.payment_intent
             : session.payment_intent.id;
-        if (order)
+        if (order?.kind === 'delivery') {
+          await settleDelivery(db, stripe, event, order.id, intentId, session.metadata);
+        } else if (order) {
           unwrap(
-            await db.rpc(authorizeRpc(order.kind), {
+            await db.rpc('mark_order_authorized', {
               p_order_id: order.id,
               p_payment_intent_id: intentId,
             }),
           );
+        }
       }
       break;
     }
     case 'checkout.session.expired': {
       const session = event.data.object;
       const order =
-        session.mode === 'payment' ? await orderFromEvent(db, event, session.metadata) : null;
+        session.mode === 'payment' && kindOf(session.metadata) === 'meal'
+          ? await orderFromEvent(db, event, session.metadata)
+          : null;
       if (order) unwrap(await db.rpc('mark_order_payment_failed', { p_order_id: order.id }));
       break;
     }

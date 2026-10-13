@@ -1,5 +1,5 @@
 begin;
-select plan(87);
+select plan(88);
 
 -- Contexte (seed) : « Chez Samir » (48.8686, 2.3314) livre à 3 km pour 3,50 € ; Karim est
 -- livreur, rattaché, actif et disponible. Nadia est cliente, Samir le commerçant.
@@ -336,6 +336,7 @@ select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
 select throws_ok($$select public.courier_accept_mission((select id from o where key = 'c'))$$,
                  'mission_unavailable', 'une course abandonnée n''est pas reproposée au même livreur');
 select lives_ok($$select public.courier_accept_mission((select id from o where key = 'd'))$$, 'la capacité libérée permet de prendre d');
+select throws_ok($$select count(*) from public.order_courier_skips$$, '42501', null, 'la table des renoncements est inaccessible aux clients de l''API');
 reset role;
 select public.attach_delivery_payment_intent((select id from o where key = 'b'),
   (select courier_id from public.orders where id = (select id from o where key = 'b')), 'pi_b_course');

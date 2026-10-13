@@ -1,11 +1,5 @@
 import { HttpError, handle, json, readJson } from '../_shared/http.ts';
-import {
-  deliveryPayment,
-  fetchOrder,
-  mealPayment,
-  releaseOrderPayments,
-  releasePayment,
-} from '../_shared/orders.ts';
+import { fetchOrder, mealPayment, releaseOrderPayments } from '../_shared/orders.ts';
 import { type Stripe, stripeClient } from '../_shared/stripe.ts';
 import { adminClient, requireUser, unwrap } from '../_shared/supabase.ts';
 
@@ -18,9 +12,9 @@ type Body = {
 
 /**
  * Réponse du commerçant à une nouvelle commande.
- *   accepter : capture des paiements (repas, et course pour une livraison), puis « accepted » ;
- *   refuser  : annulation des autorisations (aucun débit, aucun frais), puis « refused ».
- * Une livraison ne peut être acceptée qu'une fois la course confirmée par le livreur.
+ *   accepter : capture du repas (rien à capturer en espèces), puis « accepted ». Pour une
+ *              livraison, la course est ensuite proposée aux livreurs (missions) ;
+ *   refuser  : annulation de l'autorisation (aucun débit, aucun frais), puis « refused ».
  */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
@@ -58,34 +52,17 @@ export const handler = handle(async (req) => {
   if (!Number.isInteger(prepMinutes) || prepMinutes < 1 || prepMinutes > 180) {
     throw new HttpError(400, 'prep_minutes_required');
   }
-  if (order.fulfillment === 'delivery' && !order.courier_accepted_at) {
-    throw new HttpError(409, 'courier_not_confirmed');
-  }
 
-  // Repas d'abord ; si la course ne peut pas être encaissée, le repas est remboursé.
   const meal = mealPayment(order);
-  const course = deliveryPayment(order);
   if (!(await capture(stripe, meal, `capture-${order.id}`))) {
-    await releasePayment(stripe, course);
     unwrap(await transition('refused', { p_refusal_reason: 'Paiement non abouti' }));
-    throw new HttpError(402, 'payment_capture_failed');
-  }
-  if (
-    order.fulfillment === 'delivery' &&
-    !(await capture(stripe, course, `capture-delivery-${order.id}`))
-  ) {
-    await refund(stripe, meal, `refund-${order.id}`);
-    unwrap(
-      await transition('refused', { p_refusal_reason: 'Paiement de la livraison non abouti' }),
-    );
     throw new HttpError(402, 'payment_capture_failed');
   }
 
   const { error } = await transition('accepted', { p_prep_minutes: prepMinutes });
   if (error) {
-    // Course rare (annulation ou expiration simultanée) : on rembourse ce qui vient d'être capturé.
+    // Cas rare (annulation ou expiration simultanée) : on rembourse ce qui vient d'être capturé.
     await refund(stripe, meal, `refund-${order.id}`);
-    await refund(stripe, course, `refund-delivery-${order.id}`);
     throw new Error(error.message);
   }
   return json({ orderId: order.id, status: 'accepted' });

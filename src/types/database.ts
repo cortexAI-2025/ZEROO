@@ -503,6 +503,7 @@ export type Database = {
           delivery_enabled: boolean;
           delivery_fee_cents: number;
           delivery_radius_m: number;
+          accepts_cash_pickup: boolean;
           description: string | null;
           id: string;
           is_paused: boolean;
@@ -539,6 +540,7 @@ export type Database = {
           delivery_enabled?: boolean;
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
+          accepts_cash_pickup?: boolean;
           description?: string | null;
           id?: string;
           is_paused?: boolean;
@@ -564,6 +566,7 @@ export type Database = {
           delivery_enabled?: boolean;
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
+          accepts_cash_pickup?: boolean;
           description?: string | null;
           id?: string;
           is_paused?: boolean;
@@ -675,6 +678,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -731,6 +737,9 @@ export type Database = {
           delivery_latitude?: number | null;
           delivery_longitude?: number | null;
           delivery_paid_at?: string | null;
+          delivery_payment_due_at?: string | null;
+          delivery_payment_method?: Database['public']['Enums']['payment_method'];
+          meal_payment_method?: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id?: string | null;
           delivery_phone?: string | null;
           delivery_postal_code?: string | null;
@@ -786,6 +795,9 @@ export type Database = {
           delivery_latitude?: number | null;
           delivery_longitude?: number | null;
           delivery_paid_at?: string | null;
+          delivery_payment_due_at?: string | null;
+          delivery_payment_method?: Database['public']['Enums']['payment_method'];
+          meal_payment_method?: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id?: string | null;
           delivery_phone?: string | null;
           delivery_postal_code?: string | null;
@@ -1004,6 +1016,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1037,6 +1052,24 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      available_missions: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          accepted_at: string | null;
+          delivery_city: string | null;
+          delivery_distance_m: number | null;
+          delivery_fee_cents: number;
+          delivery_postal_code: string | null;
+          estimated_ready_at: string | null;
+          merchant_address: string;
+          merchant_city: string;
+          merchant_id: string;
+          merchant_name: string;
+          order_id: string;
+          payment_method: Database['public']['Enums']['payment_method'];
+          status: Database['public']['Enums']['order_status'];
+        }[];
+      };
       available_couriers: {
         Args: { p_merchant_id: string };
         Returns: {
@@ -1061,7 +1094,7 @@ export type Database = {
       };
       call_expire_orders: { Args: Record<PropertyKey, never>; Returns: undefined };
       call_internal_function: { Args: { p_body: Json; p_name: string }; Returns: undefined };
-      courier_confirm_order: {
+      courier_accept_mission: {
         Args: { p_order_id: string };
         Returns: {
           accepted_at: string | null;
@@ -1092,6 +1125,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1166,6 +1202,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1249,6 +1288,7 @@ export type Database = {
           delivery_enabled: boolean;
           delivery_fee_cents: number;
           delivery_radius_m: number;
+          accepts_cash_pickup: boolean;
           description: string | null;
           id: string;
           is_paused: boolean;
@@ -1277,7 +1317,9 @@ export type Database = {
           p_customer_id: string;
           p_customer_note?: string;
           p_delivery?: Json;
+          p_delivery_payment?: Database['public']['Enums']['payment_method'];
           p_items: Json;
+          p_meal_payment?: Database['public']['Enums']['payment_method'];
           p_merchant_id: string;
         };
         Returns: {
@@ -1309,6 +1351,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1456,6 +1501,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1520,6 +1568,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1584,6 +1635,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1739,6 +1793,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1825,6 +1882,9 @@ export type Database = {
           delivery_latitude: number | null;
           delivery_longitude: number | null;
           delivery_paid_at: string | null;
+          delivery_payment_due_at: string | null;
+          delivery_payment_method: Database['public']['Enums']['payment_method'];
+          meal_payment_method: Database['public']['Enums']['payment_method'];
           delivery_payment_intent_id: string | null;
           delivery_phone: string | null;
           delivery_postal_code: string | null;
@@ -1864,6 +1924,7 @@ export type Database = {
       courier_link_status: 'pending' | 'approved' | 'rejected';
       courier_vehicle: 'bike' | 'scooter' | 'car' | 'foot';
       fulfillment_type: 'pickup' | 'delivery';
+      payment_method: 'card' | 'cash';
       order_status:
         | 'pending_payment'
         | 'placed'
@@ -2004,6 +2065,7 @@ export const Constants = {
       courier_link_status: ['pending', 'approved', 'rejected'],
       courier_vehicle: ['bike', 'scooter', 'car', 'foot'],
       fulfillment_type: ['pickup', 'delivery'],
+      payment_method: ['card', 'cash'],
       order_status: [
         'pending_payment',
         'placed',

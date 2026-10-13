@@ -4,11 +4,12 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { useRealtimeChanges } from '@/lib/realtime';
 
 import {
-  confirmRun,
+  acceptMission,
   declineRun,
   fetchActiveRuns,
   fetchDeliveredRuns,
   fetchEarnings,
+  fetchMissions,
   fetchMyCourier,
   fetchMyLinks,
   leaveMerchant,
@@ -20,6 +21,7 @@ import {
 export const courierKeys = {
   all: ['courier'] as const,
   mine: (userId: string | undefined) => ['courier', 'mine', userId] as const,
+  missions: (courierId: string) => ['courier', courierId, 'missions'] as const,
   runs: (courierId: string) => ['courier', courierId, 'runs'] as const,
   delivered: (courierId: string) => ['courier', courierId, 'delivered'] as const,
   earnings: (courierId: string) => ['courier', courierId, 'earnings'] as const,
@@ -66,6 +68,15 @@ export function useActiveRuns(courierId: string) {
   });
 }
 
+/** Missions à prendre : relues souvent, la première acceptation l'emporte. */
+export function useMissions(courierId: string) {
+  return useQuery({
+    queryKey: courierKeys.missions(courierId),
+    queryFn: fetchMissions,
+    refetchInterval: 10_000,
+  });
+}
+
 export function useDeliveredRuns(courierId: string) {
   return useQuery({
     queryKey: courierKeys.delivered(courierId),
@@ -91,7 +102,7 @@ export function useCourierActions() {
   const onSuccess = () => queryClient.invalidateQueries({ queryKey: courierKeys.all });
   return {
     setAvailability: useMutation({ mutationFn: setAvailability, onSuccess }),
-    confirm: useMutation({ mutationFn: confirmRun, onSuccess }),
+    accept: useMutation({ mutationFn: acceptMission, onSuccess }),
     decline: useMutation({ mutationFn: declineRun, onSuccess }),
     deliver: useMutation({
       mutationFn: ({ orderId, code }: { orderId: string; code: string }) =>

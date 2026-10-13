@@ -3,10 +3,18 @@ import { formatCents, formatTime } from '../_shared/format.ts';
 import { type PushContent, sendPush } from '../_shared/push.ts';
 import { adminClient, unwrap } from '../_shared/supabase.ts';
 
-type Body = { order_id: string; status: string; previous_status: string | null };
+type Body = {
+  order_id: string;
+  status: string;
+  previous_status: string | null;
+  /** Absent : changement de statut. Sinon : événement de mission (livraison). */
+  event?: 'mission_available' | 'courier_assigned';
+};
 
 type OrderForPush = {
   id: string;
+  merchant_id: string;
+  delivery_payment_method: 'card' | 'cash';
   customer_id: string | null;
   customer_name: string | null;
   pickup_code: string;
@@ -32,14 +40,14 @@ type OrderForPush = {
 export const handler = handle(async (req) => {
   if (req.headers.get('x-cron-secret') !== requireEnv('CRON_SECRET'))
     throw new HttpError(401, 'unauthorized');
-  const { order_id, status, previous_status } = await readJson<Body>(req);
+  const { order_id, status, previous_status, event } = await readJson<Body>(req);
 
   const db = adminClient();
   const order = unwrap(
     await db
       .from('orders')
       .select(
-        'id, customer_id, customer_name, pickup_code, total_cents, is_loyalty_reward, estimated_ready_at, refusal_reason, fulfillment, delivery_fee_cents, delivery_city, delivery_code, courier_name, cancelled_by, couriers(user_id), merchants(name, owner_id, timezone)',
+        'id, merchant_id, delivery_payment_method, customer_id, customer_name, pickup_code, total_cents, is_loyalty_reward, estimated_ready_at, refusal_reason, fulfillment, delivery_fee_cents, delivery_city, delivery_code, courier_name, cancelled_by, couriers(user_id), merchants(name, owner_id, timezone)',
       )
       .eq('id', order_id)
       .maybeSingle(),
@@ -67,6 +75,47 @@ export const handler = handle(async (req) => {
   const area = order.delivery_city ?? '';
   const courier = order.courier_name ?? 'Votre livreur';
 
+  if (event === 'mission_available') {
+    // Tous les livreurs rattachés et disponibles : le premier qui accepte obtient la course.
+    const links = unwrap(
+      await db
+        .from('merchant_couriers')
+        .select('couriers(user_id, is_available)')
+        .eq('merchant_id', order.merchant_id)
+        .eq('status', 'approved'),
+    ) as unknown as { couriers: { user_id: string; is_available: boolean } | null }[];
+    const userIds = links
+      .map((link) => link.couriers)
+      .filter((c): c is { user_id: string; is_available: boolean } => !!c?.is_available)
+      .map((c) => c.user_id);
+    if (userIds.length === 0) return json({ sent: 0 });
+    return json(
+      await sendPush(db, userIds, {
+        data: { url: '/livreur' },
+        title: 'Nouvelle mission 🛵',
+        body: `${merchant.name} → ${area} · ${formatCents(order.delivery_fee_cents)}. Le premier qui accepte la prend.`,
+        sound: 'new-order.wav',
+        channelId: 'orders',
+      }),
+    );
+  }
+  if (event === 'courier_assigned') {
+    return json(
+      await toCustomer(
+        order.delivery_payment_method === 'card'
+          ? {
+              title: `${courier} prend votre livraison 🛵`,
+              body: `Réglez la course (${formatCents(order.delivery_fee_cents)}) dans les 5 minutes pour la confirmer.`,
+              channelId: 'orders',
+            }
+          : {
+              title: `${courier} prend votre livraison 🛵`,
+              body: `Prévoyez ${formatCents(order.delivery_fee_cents)} en espèces à lui remettre à la livraison.`,
+            },
+      ),
+    );
+  }
+
   let result: { sent: number } = { sent: 0 };
   switch (status) {
     case 'placed':
@@ -76,15 +125,7 @@ export const handler = handle(async (req) => {
           body: `${customer} · ${formatCents(order.total_cents)}${order.is_loyalty_reward ? ' · menu offert' : ''}`,
           sound: 'new-order.wav',
           channelId: 'orders',
-        }),
-        isDelivery
-          ? await toCourier({
-              title: 'Nouvelle course 🛵',
-              body: `${merchant.name} → ${area} · ${formatCents(order.delivery_fee_cents)}. Confirmez la course.`,
-              sound: 'new-order.wav',
-              channelId: 'orders',
-            })
-          : { sent: 0 },
+        })
       );
       break;
     case 'accepted': {
@@ -95,19 +136,11 @@ export const handler = handle(async (req) => {
         await toCustomer({
           title: 'Commande acceptée ✅',
           body: isDelivery
-            ? `${merchant.name} prépare votre commande, ${courier} la livrera.`
+            ? `${merchant.name} prépare votre commande. Un livreur va la prendre en charge.`
             : readyAt
               ? `${merchant.name} prépare votre commande, prête vers ${readyAt}.`
               : `${merchant.name} prépare votre commande.`,
-        }),
-        isDelivery
-          ? await toCourier({
-              title: 'Course confirmée',
-              body: readyAt
-                ? `${merchant.name} prépare la commande ${order.pickup_code}, prête vers ${readyAt}.`
-                : `${merchant.name} prépare la commande ${order.pickup_code}.`,
-            })
-          : { sent: 0 },
+        })
       );
       break;
     }
@@ -165,31 +198,18 @@ export const handler = handle(async (req) => {
     case 'cancelled':
       // Seuls ceux qui avaient déjà reçu la commande sont prévenus.
       if (previous_status !== 'placed') break;
-      if (order.cancelled_by === 'courier') {
-        result = sum(
-          await toCustomer({
-            title: 'Livraison impossible',
-            body: `Aucun livreur n’a pu prendre votre commande chez ${merchant.name}. Vous n’avez pas été débité.`,
-          }),
-          await toMerchant({
-            title: 'Commande annulée',
-            body: `Le livreur a décliné la commande ${order.pickup_code}.`,
-          }),
-        );
-      } else {
-        result = sum(
-          await toMerchant({
-            title: 'Commande annulée',
-            body: `${customer} a annulé sa commande ${order.pickup_code}.`,
-          }),
-          isDelivery
-            ? await toCourier({
-                title: 'Course annulée',
-                body: `Le client a annulé la commande ${order.pickup_code}.`,
-              })
-            : { sent: 0 },
-        );
-      }
+      result = sum(
+        await toMerchant({
+          title: 'Commande annulée',
+          body: `${customer} a annulé sa commande ${order.pickup_code}.`,
+        }),
+        isDelivery
+          ? await toCourier({
+              title: 'Course annulée',
+              body: `Le client a annulé la commande ${order.pickup_code}.`,
+            })
+          : { sent: 0 },
+      );
       break;
   }
   return json(result);

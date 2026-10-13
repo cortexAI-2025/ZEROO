@@ -8,6 +8,7 @@ import { useCart } from '@/features/cart/store';
 import { directionsUrl } from '@/features/discover/location';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { cancelMyOrder } from '@/features/orders/api';
+import { payDelivery } from '@/features/payments/pay';
 import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
 import { confirmAsync } from '@/lib/confirm';
@@ -34,6 +35,8 @@ export default function OrderScreen() {
   const order = query.data;
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
 
   // Retour de Stripe Checkout (web) après paiement : le panier a été commandé.
   const merchantId = order?.merchant_id;
@@ -41,6 +44,20 @@ export default function OrderScreen() {
     if (paid && merchantId && useCart.getState().merchant?.id === merchantId)
       useCart.getState().clear();
   }, [paid, merchantId]);
+
+  // Course par carte à régler dès qu'un livreur a accepté la mission.
+  const payRide = async () => {
+    setPayError(null);
+    setPaying(true);
+    try {
+      await payDelivery(id);
+      await query.refetch();
+    } catch (e) {
+      setPayError(t(errorKey(e)));
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const cancel = async () => {
     const ok = await confirmAsync({
@@ -75,11 +92,23 @@ export default function OrderScreen() {
   const canDepart =
     !isDelivery && ['placed', 'accepted', 'preparing', 'ready'].includes(order.status);
   const courier = order.courier_name ?? '';
+  const orderActive = ['placed', 'accepted', 'preparing', 'ready', 'out_for_delivery'].includes(
+    order.status,
+  );
+  const ridePayable =
+    isDelivery &&
+    orderActive &&
+    !!order.courier_id &&
+    order.delivery_payment_method === 'card' &&
+    !order.delivery_authorized_at;
+  const rideCash = isDelivery && order.delivery_payment_method === 'cash';
   const statusText =
     isDelivery && order.status === 'placed'
       ? t('client.order.status.placedDelivery')
       : isDelivery && order.status === 'accepted'
-        ? t('client.order.status.acceptedDelivery', { courier })
+        ? courier
+          ? t('client.order.status.acceptedDelivery', { courier })
+          : t('client.order.status.acceptedDeliveryNoCourier')
         : t(`client.order.status.${order.status}`, {
             time: formatTime(order.estimated_ready_at),
             courier,
@@ -170,7 +199,37 @@ export default function OrderScreen() {
           ) : null}
           {courier ? (
             <AppText variant="muted">{t('client.order.courier', { name: courier })}</AppText>
+          ) : orderActive && order.status !== 'placed' ? (
+            <AppText variant="muted">{t('client.order.searchingCourier')}</AppText>
           ) : null}
+          {rideCash && orderActive ? (
+            <AppText variant="link" testID="ride-cash-notice">
+              {t('client.order.rideCash', { price: formatCents(order.delivery_fee_cents) })}
+            </AppText>
+          ) : null}
+          {isDelivery && order.delivery_authorized_at ? (
+            <AppText variant="muted">{t('client.order.ridePaid')}</AppText>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {ridePayable ? (
+        <Card testID="ride-payment-card">
+          <AppText variant="subtitle">
+            {t('client.order.payRideTitle', { name: courier })}
+          </AppText>
+          <AppText variant="muted">
+            {order.delivery_payment_due_at
+              ? t('client.order.payRideBefore', { time: formatTime(order.delivery_payment_due_at) })
+              : t('client.order.payRideHint')}
+          </AppText>
+          <Button
+            testID="pay-ride"
+            title={t('client.order.payRide', { price: formatCents(order.delivery_fee_cents) })}
+            loading={paying}
+            onPress={() => void payRide()}
+          />
+          {payError ? <AppText variant="error">{payError}</AppText> : null}
         </Card>
       ) : null}
 

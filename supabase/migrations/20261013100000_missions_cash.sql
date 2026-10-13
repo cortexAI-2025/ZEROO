@@ -31,6 +31,7 @@ create table public.order_courier_skips (
   primary key (order_id, courier_id)
 );
 alter table public.order_courier_skips enable row level security;  -- aucune policy : accès par fonctions uniquement
+revoke all on public.order_courier_skips from anon, authenticated;
 
 -- =============================================================================
 -- Capacité des livreurs

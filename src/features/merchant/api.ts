@@ -50,6 +50,7 @@ export type MerchantPatch = Pick<
   | 'delivery_enabled'
   | 'delivery_fee_cents'
   | 'delivery_radius_m'
+  | 'accepts_cash_pickup'
 >;
 
 export async function updateMerchant(id: string, patch: MerchantPatch) {

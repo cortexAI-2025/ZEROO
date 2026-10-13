@@ -12,6 +12,10 @@ type Body = {
   note?: string;
   /** native : PaymentSheet dans l'app ; web : page Stripe Checkout. */
   channel: 'native' | 'web';
+  /** Repas : carte (défaut) ou espèces au comptoir (retrait uniquement, restaurants qui l'acceptent). */
+  mealPayment?: 'card' | 'cash';
+  /** Course : carte (réglée quand un livreur accepte) ou espèces remises au livreur. */
+  deliveryPayment?: 'card' | 'cash';
   /** Absent : retrait sur place. */
   delivery?: {
     addressLine: string;
@@ -26,7 +30,7 @@ type Body = {
 
 /** Un paiement à confirmer dans l'app (feuille de paiement Stripe). */
 type NativePayment = {
-  kind: 'meal' | 'delivery';
+  kind: 'meal';
   clientSecret: string;
   stripeAccountId: string;
   displayName: string;
@@ -34,11 +38,11 @@ type NativePayment = {
 };
 
 /**
- * Crée la commande (prix recalculés en base) puis ses paiements, en charge directe et sans
- * commission :
- *   • le repas sur le compte Stripe du restaurant ;
- *   • pour une livraison, la course sur le compte Stripe du livreur choisi par la base.
- * Les paiements sont seulement autorisés : ils seront capturés quand le restaurant acceptera.
+ * Crée la commande (prix recalculés en base) puis le paiement du repas, en charge directe et
+ * sans commission, sur le compte Stripe du restaurant. Il est seulement autorisé : il sera
+ * capturé quand le restaurant acceptera.
+ * La course n'est pas payée ici : elle l'est quand un livreur accepte la mission
+ * (fonction pay-delivery). Retrait en espèces : aucun paiement en ligne.
  */
 export const handler = handle(async (req) => {
   const user = await requireUser(req);
@@ -75,10 +79,14 @@ export const handler = handle(async (req) => {
             instructions: delivery.instructions ?? null,
           }
         : null,
+      p_meal_payment: body.mealPayment ?? 'card',
+      p_delivery_payment: body.deliveryPayment ?? 'card',
     }),
   ) as OrderRow;
 
-  const isDelivery = order.fulfillment === 'delivery';
+  // Espèces au comptoir : la commande est déjà partie au restaurant, rien à payer en ligne.
+  if (order.meal_payment_method === 'cash') return json({ orderId: order.id, cash: true });
+
   const mealFree = order.total_cents === 0;
   const stripe = stripeClient();
 
@@ -93,76 +101,43 @@ export const handler = handle(async (req) => {
     unwrap(
       await db.rpc('mark_order_authorized', { p_order_id: order.id, p_payment_intent_id: null }),
     );
-    if (!isDelivery) return json({ orderId: order.id, free: true });
-  } else {
-    if (!order.stripe_account_id) return await fail('merchant_not_accepting');
-    if (order.total_cents < MIN_CHARGE_CENTS) return await fail('amount_too_small');
+    return json({ orderId: order.id, free: true });
   }
-  if (isDelivery && !order.courier_stripe_account_id) return await fail('no_courier_available');
+  if (!order.stripe_account_id) return await fail('merchant_not_accepting');
+  if (order.total_cents < MIN_CHARGE_CENTS) return await fail('amount_too_small');
 
   const merchant = unwrap(
     await db.from('merchants').select('name').eq('id', order.merchant_id).single(),
   ) as { name: string };
-  const courierName = (
-    unwrap(await db.from('orders').select('courier_name').eq('id', order.id).single()) as {
-      courier_name: string | null;
-    }
-  ).courier_name;
 
   const meal = {
     amount: order.total_cents,
-    account: order.stripe_account_id!,
+    account: order.stripe_account_id,
     description: `Commande ${order.pickup_code} – ${merchant.name}`,
     metadata: { order_id: order.id, kind: 'meal' },
-  };
-  const course = {
-    amount: order.delivery_fee_cents,
-    account: order.courier_stripe_account_id!,
-    description: `Livraison de la commande ${order.pickup_code} – ${merchant.name}`,
-    metadata: { order_id: order.id, kind: 'delivery' },
   };
 
   try {
     if (body.channel === 'web') {
       return json({
         orderId: order.id,
-        checkoutUrl: await createCheckouts(db, stripe, order, user.email, {
-          meal: mealFree ? null : meal,
-          course: isDelivery ? course : null,
-        }),
+        checkoutUrl: await createMealCheckout(db, stripe, order, user.email, meal),
       });
     }
 
-    const payments: NativePayment[] = [];
-    if (!mealFree) {
-      const intent = await createIntent(stripe, meal, user.email, `payment-${order.id}`);
-      unwrap(
-        await db.from('orders').update({ stripe_payment_intent_id: intent.id }).eq('id', order.id),
-      );
-      payments.push({
+    const intent = await createIntent(stripe, meal, user.email, `payment-${order.id}`);
+    unwrap(
+      await db.from('orders').update({ stripe_payment_intent_id: intent.id }).eq('id', order.id),
+    );
+    const payments: NativePayment[] = [
+      {
         kind: 'meal',
         clientSecret: intent.client_secret!,
         stripeAccountId: meal.account,
         displayName: merchant.name,
         amountCents: meal.amount,
-      });
-    }
-    if (isDelivery) {
-      const intent = await createIntent(stripe, course, user.email, `delivery-${order.id}`);
-      unwrap(
-        await db
-          .from('orders')
-          .update({ delivery_payment_intent_id: intent.id })
-          .eq('id', order.id),
-      );
-      payments.push({
-        kind: 'delivery',
-        clientSecret: intent.client_secret!,
-        stripeAccountId: course.account,
-        displayName: courierName ?? merchant.name,
-        amountCents: course.amount,
-      });
-    }
+      },
+    ];
     return json({ orderId: order.id, payments });
   } catch (error) {
     const latest = unwrap(
@@ -197,94 +172,44 @@ function createIntent(stripe: Stripe, charge: Charge, email: string | undefined,
   );
 }
 
-/**
- * Web : une page Stripe Checkout par vendeur. Pour une livraison, la page du repas renvoie
- * directement vers celle de la course ; la dernière renvoie au suivi de commande.
- */
-async function createCheckouts(
+/** Web : page Stripe Checkout du repas ; elle renvoie vers le suivi de commande. */
+async function createMealCheckout(
   db: SupabaseClient,
   stripe: Stripe,
   order: OrderRow,
   email: string | undefined,
-  charges: { meal: Charge | null; course: Charge | null },
+  meal: Charge,
 ): Promise<string> {
-  const cancelUrl = `${appWebUrl()}/cart?cancelled=${order.id}`;
-  const expiresAt = Math.floor(Date.now() / 1000) + 31 * 60;
-  let nextUrl = `${appWebUrl()}/order/${order.id}?paid=1`;
-
-  if (charges.course) {
-    const session = await stripe.checkout.sessions.create(
-      {
-        mode: 'payment',
-        locale: 'fr',
-        customer_email: email,
-        line_items: [
-          {
-            quantity: 1,
-            price_data: {
-              currency: 'eur',
-              unit_amount: charges.course.amount,
-              product_data: { name: charges.course.description },
-            },
-          },
-        ],
-        payment_intent_data: {
-          capture_method: 'manual',
-          description: charges.course.description,
-          metadata: charges.course.metadata,
+  const items = unwrap(
+    await db.from('order_items').select('name, unit_price_cents, quantity').eq('order_id', order.id),
+  ) as { name: string; unit_price_cents: number; quantity: number }[];
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: 'payment',
+      locale: 'fr',
+      customer_email: email,
+      line_items: items.map((item) => ({
+        quantity: item.quantity,
+        price_data: {
+          currency: 'eur',
+          unit_amount: item.unit_price_cents,
+          product_data: { name: item.name },
         },
-        metadata: charges.course.metadata,
-        success_url: nextUrl,
-        cancel_url: cancelUrl,
-        expires_at: expiresAt,
+      })),
+      payment_intent_data: {
+        capture_method: 'manual',
+        description: meal.description,
+        metadata: meal.metadata,
       },
-      { stripeAccount: charges.course.account, idempotencyKey: `delivery-checkout-${order.id}` },
-    );
-    unwrap(
-      await db
-        .from('orders')
-        .update({ delivery_checkout_session_id: session.id })
-        .eq('id', order.id),
-    );
-    nextUrl = session.url!;
-  }
-
-  if (charges.meal) {
-    const items = unwrap(
-      await db
-        .from('order_items')
-        .select('name, unit_price_cents, quantity')
-        .eq('order_id', order.id),
-    ) as { name: string; unit_price_cents: number; quantity: number }[];
-    const session = await stripe.checkout.sessions.create(
-      {
-        mode: 'payment',
-        locale: 'fr',
-        customer_email: email,
-        line_items: items.map((item) => ({
-          quantity: item.quantity,
-          price_data: {
-            currency: 'eur',
-            unit_amount: item.unit_price_cents,
-            product_data: { name: item.name },
-          },
-        })),
-        payment_intent_data: {
-          capture_method: 'manual',
-          description: charges.meal.description,
-          metadata: charges.meal.metadata,
-        },
-        metadata: charges.meal.metadata,
-        success_url: nextUrl,
-        cancel_url: cancelUrl,
-        expires_at: expiresAt,
-      },
-      { stripeAccount: charges.meal.account, idempotencyKey: `checkout-${order.id}` },
-    );
-    unwrap(
-      await db.from('orders').update({ stripe_checkout_session_id: session.id }).eq('id', order.id),
-    );
-    nextUrl = session.url!;
-  }
-  return nextUrl;
+      metadata: meal.metadata,
+      success_url: `${appWebUrl()}/order/${order.id}?paid=1`,
+      cancel_url: `${appWebUrl()}/cart?cancelled=${order.id}`,
+      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+    },
+    { stripeAccount: meal.account, idempotencyKey: `checkout-${order.id}` },
+  );
+  unwrap(
+    await db.from('orders').update({ stripe_checkout_session_id: session.id }).eq('id', order.id),
+  );
+  return session.url!;
 }

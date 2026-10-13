@@ -11,7 +11,7 @@
 | Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro multisite 29,99 € HT/mois (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
 | Positionnement | **Zéroo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
-| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant, la course au livreur, chacun directement sur son compte Stripe. Zéroo n'encaisse jamais d'argent. Voir §3.4. |
+| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. Zéroo n'encaisse jamais d'argent. Voir §3.4. |
 | Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
 | Site public | **zeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
 | Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme Zéroo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
@@ -372,34 +372,35 @@ Transitions autorisées :
 
 Le SIRET saisi est contrôlé (14 chiffres, clé de Luhn) et unique.
 
-**Attribution.**
-- À la commande, `create_order` choisit le livreur : rattaché et accepté par ce restaurant, disponible, actif, sans course en cours. Le livreur servi le moins récemment passe en premier.
-- Le livreur est **réservé** immédiatement (`for update skip locked` : deux commandes simultanées ne prennent pas le même).
-- On connaît ainsi le compte Stripe à débiter pour la course dès le paiement.
-- Pas de livreur libre : la livraison n'est pas proposée.
-- MVP : une course à la fois par livreur, et pas de suivi GPS (seule l'heure prévue est affichée).
+**Missions (migration `20261013100000_missions_cash.sql`, remplace l'attribution à la commande).**
+- La commande n'attend plus un livreur : le repas est payé, le restaurant accepte, puis la course est **proposée à tous les livreurs** rattachés, disponibles et ayant de la capacité (`available_missions`, sans l'adresse précise du client). **Le premier qui accepte l'obtient** (`courier_accept_mission` : verrou sur le livreur et `for update skip locked` sur la commande).
+- **Capacité** : jusqu'à **2 livraisons simultanées** par livreur, y compris pendant une tournée (`courier_at_capacity`). Un livreur plein ne voit plus de missions.
+- À la création, la livraison n'est proposée que s'il existe au moins un livreur rattaché et disponible avec de la capacité (contrôle souple, `merchant_delivery_quote`).
+- Un livreur peut **abandonner** une mission non payée (`courier-decline` → `courier_release_mission`) ; elle retourne dans le pool et ne lui est plus reproposée (`order_courier_skips`).
+- Les livreurs sont prévenus par notification d'une nouvelle mission (trigger `orders_notify_missions`), le client quand un livreur prend sa course.
+- Limite connue : si aucun livreur n'accepte, la commande reste en attente de livreur (pas encore d'alerte ni de bascule en retrait).
 
-**Paiements.** Les deux paiements sont **autorisés** à la commande, avec capture manuelle :
-- **app** : deux feuilles de paiement à la suite ;
-- **web** : deux pages Stripe Checkout enchaînées (le retour de la première ouvre la seconde).
-
-La commande passe en `placed` seulement quand **les deux** sont autorisés (`meal_authorized_at` et `delivery_authorized_at`). Un repas à 0 € (menu offert) compte comme autorisé.
-
-À l'acceptation du restaurant, les deux paiements sont **capturés**. Si une capture échoue, l'autre est remboursée et la commande est refusée. Refus, annulation ou expiration **libèrent les deux** autorisations : aucun débit.
+**Paiements.**
+- **Repas** : autorisé à la commande (capture manuelle, capturé à l'acceptation du restaurant) sur le compte du restaurant. La commande passe en `placed` dès que le repas est autorisé. Refus, annulation ou expiration libèrent l'autorisation : aucun débit. Un repas à 0 € (menu offert) compte comme autorisé.
+- **Espèces au comptoir** (retrait uniquement, restaurants avec `accepts_cash_pickup`) : aucun paiement en ligne, la commande est `placed` immédiatement ; `paid_at` est posé au retrait. Pas d'espèces pour le repas d'une livraison.
+- **Course** (`delivery_payment_method`, choix du client à la commande) :
+  - **carte** : quand un livreur accepte, le client dispose de **5 minutes** (`delivery_payment_due_at`) pour la régler en un geste (Edge Function `pay-delivery`, charge directe sur le compte du livreur, encaissée tout de suite). Non payée à temps, la mission repart dans le pool (`expire_unpaid_missions`, appelée par `expire-orders`) et le paiement ouvert est annulé. Le paiement est rattaché au livreur actuel (`delivery_payment_intent_id`) : un paiement d'un ancien livreur est ignoré ou remboursé. Le restaurant ne remet pas la commande au livreur tant que la course par carte n'est pas payée (`delivery_not_paid`) ;
+  - **espèces** : aucun paiement en ligne, le livreur encaisse à la porte ; `delivery_paid_at` est posé à la validation par code.
+- Zidozid ne touche jamais l'argent des commandes. Le relevé du client porte une ligne par vendeur.
+- Phase 2 prévue : carte enregistrée à la commande et course prélevée automatiquement à l'acceptation (nécessite des clients Stripe côté plateforme et le clonage des moyens de paiement vers les comptes livreurs).
 
 **Statuts** (ajouts `out_for_delivery`, `delivered`).
 
 | Transition | Qui | Condition |
 |---|---|---|
-| `placed` (livreur confirme) | livreur, `courier-decision` | le livreur confirme la course (`courier_accepted_at`) ; le statut ne change pas |
-| `placed → cancelled` | livreur, `courier-decision` | le livreur décline : les deux paiements sont libérés, `cancelled_by = 'courier'` |
-| `placed → accepted` | restaurant, `order-decision` | pour une livraison, **seulement après la confirmation du livreur** ; capture des deux paiements |
+| `placed → accepted` | restaurant, `order-decision` | capture du repas (rien en espèces) ; la course est ensuite proposée aux livreurs |
+| mission prise | livreur, `courier_accept_mission` | le statut ne change pas ; `courier_id`, `courier_accepted_at` |
 | `accepted → preparing → ready` | restaurant | inchangé |
-| `ready → out_for_delivery` | restaurant (`set_order_status`) | le livreur présente le **code de retrait** au comptoir |
+| `ready → out_for_delivery` | restaurant (`set_order_status`) | un livreur doit avoir pris la course, et la course par carte être payée ; le livreur présente le **code de retrait** |
 | `out_for_delivery → delivered` | livreur (`courier_mark_delivered`) | le client donne son **code de livraison** (4 chiffres) au livreur |
 | `ready → collected` | restaurant | retrait uniquement |
 
-Expiration : sans réponse du restaurant **ou** du livreur après 10 minutes, la commande passe en `expired`. La fidélité compte aussi à `delivered`.
+Expiration : sans réponse du restaurant après 10 minutes, la commande passe en `expired`. La fidélité compte aussi à `delivered`.
 
 **Données (migration `20261009120100_delivery.sql`).**
 - `couriers` (un profil par compte) :

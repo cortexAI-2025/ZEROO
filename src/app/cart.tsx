@@ -58,6 +58,9 @@ export default function CartScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelledNotice, setCancelledNotice] = useState(false);
+  // Espèces : au comptoir pour un retrait (si le restaurant l'accepte), au livreur pour une course.
+  const [mealCash, setMealCash] = useState(false);
+  const [rideCash, setRideCash] = useState(false);
   const subtotal = cartTotalCents(lines);
   const discount = cartDiscountCents(lines, activeRewardKey);
   const total = subtotal - discount;
@@ -66,6 +69,8 @@ export default function CartScreen() {
     ? (quote?.fee_cents ?? deliverySettings?.delivery_fee_cents ?? 0)
     : 0;
   const grandTotal = total + deliveryFee;
+  const canPayCashAtCounter = !isDelivery && !!deliverySettings?.accepts_cash_pickup;
+  const cashMeal = canPayCashAtCounter && mealCash;
   const deliveryReady =
     !isDelivery ||
     (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone));
@@ -91,6 +96,8 @@ export default function CartScreen() {
         lines,
         note,
         rewardLineKey: activeRewardKey,
+        mealPayment: cashMeal ? 'cash' : 'card',
+        deliveryPayment: isDelivery && rideCash ? 'cash' : 'card',
         delivery:
           isDelivery && deliveryAddress
             ? {
@@ -250,6 +257,49 @@ export default function CartScreen() {
         </Card>
       ) : null}
 
+      {canPayCashAtCounter ? (
+        <Card testID="meal-payment">
+          <AppText variant="subtitle">{t('client.cart.payHow')}</AppText>
+          <View style={styles.chips}>
+            <Chip
+              testID="meal-payment-card"
+              label={t('client.cart.payOnline')}
+              selected={!cashMeal}
+              onPress={() => setMealCash(false)}
+            />
+            <Chip
+              testID="meal-payment-cash"
+              label={t('client.cart.payCash')}
+              selected={cashMeal}
+              onPress={() => setMealCash(true)}
+            />
+          </View>
+        </Card>
+      ) : null}
+
+      {isDelivery ? (
+        <Card testID="ride-payment">
+          <AppText variant="subtitle">{t('client.cart.rideHow')}</AppText>
+          <View style={styles.chips}>
+            <Chip
+              testID="ride-payment-card"
+              label={t('client.cart.rideCard')}
+              selected={!rideCash}
+              onPress={() => setRideCash(false)}
+            />
+            <Chip
+              testID="ride-payment-cash"
+              label={t('client.cart.rideCash')}
+              selected={rideCash}
+              onPress={() => setRideCash(true)}
+            />
+          </View>
+          <AppText variant="muted">
+            {rideCash ? t('client.cart.rideCashHint') : t('client.cart.rideCardHint')}
+          </AppText>
+        </Card>
+      ) : null}
+
       <TextField
         label={t('client.cart.note')}
         placeholder={t('client.cart.notePlaceholder')}
@@ -286,7 +336,11 @@ export default function CartScreen() {
         </AppText>
       </View>
       <AppText variant="muted">
-        {grandTotal === 0 ? t('client.loyalty.freeOrder') : t('client.cart.paymentInfo')}
+        {cashMeal
+          ? t('client.cart.cashInfo')
+          : total === 0
+            ? t('client.loyalty.freeOrder')
+            : t('client.cart.paymentInfo')}
       </AppText>
       {isDelivery ? <AppText variant="muted">{t('client.cart.twoPayments')}</AppText> : null}
       <AppText variant="muted">{t('client.cart.noFees')}</AppText>
@@ -299,9 +353,11 @@ export default function CartScreen() {
         <Button
           testID="place-order"
           title={
-            grandTotal === 0
-              ? t('client.cart.orderFree')
-              : t('client.cart.order', { price: formatCents(grandTotal) })
+            cashMeal
+              ? t('client.cart.orderCash')
+              : total === 0
+                ? t('client.cart.orderFree')
+                : t('client.cart.order', { price: formatCents(total) })
           }
           loading={busy}
           disabled={!deliveryReady}
