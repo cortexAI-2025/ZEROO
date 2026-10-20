@@ -117,7 +117,7 @@ Parcours manuel (une tablette ou un navigateur côté caisse suffit) :
    - saisissez les horaires (`11:30`, `18h`, et un créneau peut finir après minuit), puis « Copier le lundi sur toute la semaine » ;
    - activez « Visible des clients ». Cette option est bloquée tant qu'il n'y a ni produit disponible ni horaire ;
    - testez une pause de 15 min, puis « Reprendre les commandes ».
-4. **QR code** (Boutique → QR code) : il pointe vers `https://zeroo.online/m/<slug>` (le site redirige vers l'app web). On peut le partager, ou l'imprimer depuis le web.
+4. **QR code** (Boutique → QR code) : il pointe vers `https://zeeroo.fr/m/<slug>` (le site redirige vers l'app web). On peut le partager, ou l'imprimer depuis le web.
 5. **Commandes en direct** (onglet Commandes) : laissez l'écran ouvert, puis lancez `npm run dev:order` dans un terminal.
    - La commande apparaît sans rechargement, avec une sonnerie. Sur le web, cliquez d'abord « Activer la sonnerie ».
    - Choisissez un délai puis « Accepter » → « Lancer la préparation » → « Commande prête ».
@@ -198,7 +198,7 @@ Stripe ne sert qu'aux abonnements (pas de Connect).
      STRIPE_PRICE_START_MONTH=price_… STRIPE_PRICE_START_YEAR=price_… \
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
      STRIPE_PRICE_COURIER_MONTH=price_… STRIPE_PRICE_COURIER_YEAR=price_… \
-     APP_WEB_URL=https://app.zeroo.online CRON_SECRET=$(openssl rand -hex 32)
+     APP_WEB_URL=https://app.zeeroo.fr CRON_SECRET=$(openssl rand -hex 32)
    ```
 6. **Expiration automatique**, chaque minute via pg_cron. Dans l'éditeur SQL Supabase, en remettant la même valeur que `CRON_SECRET` :
    ```sql
@@ -344,8 +344,8 @@ Le référencement passe par `<Head>` (titre, description, Open Graph). L'écran
 
 ## Domaines
 
-- **zeroo.online** : site vitrine (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages), avec la démo interactive. Les liens commerçant `zeroo.online/m/<slug>` (QR codes) y sont redirigés vers l'app web.
-- **app.zeroo.online** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements), hébergée sur **Vercel** (projet `zeroo`, relié à ce dépôt : chaque push sur `main` est déployé). `vercel.json` : `npm run build:web` → `dist/`, toutes les routes renvoient vers `index.html` (application monopage). Variables à définir dans Vercel : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OAUTH_PROVIDERS` (voir « Inscription et connexion »).
+- **zeeroo.fr** : site vitrine (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages), avec la démo interactive. Les liens commerçant `zeeroo.fr/m/<slug>` (QR codes) y sont redirigés vers l'app web.
+- **app.zeeroo.fr** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements), hébergée sur **Vercel** (projet `zeroo`, relié à ce dépôt : chaque push sur `main` est déployé). `vercel.json` : `npm run build:web` → `dist/`, toutes les routes renvoient vers `index.html` (application monopage). Variables à définir dans Vercel : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OAUTH_PROVIDERS` (voir « Inscription et connexion »).
 
 Ce dépôt-ci ne contient que l'application.
 
@@ -355,7 +355,7 @@ Ce dépôt-ci ne contient que l'application.
 - **Commerçants et livreurs** : Google, Apple ou e-mail, puis vérification obligatoire de l'e-mail et du téléphone mobile (code SMS) avant de créer leur espace. La règle est appliquée en base (`pro_verification_required`).
 
 À configurer dans Supabase (projet de production) :
-1. **Authentication → URL Configuration** : Site URL `https://app.zeroo.online`, Redirect URLs `https://app.zeroo.online/**` (et `zeroo://**` pour l'app mobile).
+1. **Authentication → URL Configuration** : Site URL `https://app.zeeroo.fr`, Redirect URLs `https://app.zeeroo.fr/**` (et `zeroo://**` pour l'app mobile).
 2. **Authentication → Providers → Google** : ID client et secret OAuth (Google Cloud Console, type « Application Web », URI de redirection autorisée : `https://<projet>.supabase.co/auth/v1/callback`). Ajoutez aussi les ID clients iOS / Android dans « Authorized Client IDs » pour l'app mobile.
 3. **Authentication → Providers → Apple** : Services ID, Team ID, Key ID et clé `.p8` (compte Apple Developer), même URL de retour.
 4. **Authentication → Providers → Phone** : activez le fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Laissez « Enable phone signup » désactivé : le téléphone sert seulement à vérifier les professionnels.

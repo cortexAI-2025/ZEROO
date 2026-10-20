@@ -213,9 +213,9 @@ run('Espace commerçant', async () => {
   // QR code
   await v(page.getByRole('tab', { name: /Boutique/ })).click();
   await text('QR code à afficher').click();
-  await text(`https://zeroo.online/m/${slug}`).waitFor();
+  await text(`https://zeeroo.fr/m/${slug}`).waitFor();
   if (!(await v(page.getByTestId('merchant-qr')).locator('svg').count())) throw new Error('qr');
-  step('QR code vers https://zeroo.online/m/' + slug);
+  step('QR code vers https://zeeroo.fr/m/' + slug);
   await page.goBack();
 
   // Commandes en temps réel
