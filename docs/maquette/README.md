@@ -1,4 +1,4 @@
-# Maquette cliquable Zéroo
+# Maquette cliquable Zeeroo
 
 **`zeroo-maquette.html`** : un seul fichier HTML autonome, à ouvrir dans n'importe quel navigateur (double-clic, aucune installation). Il présente les trois espaces côte à côte, dans des cadres de téléphone ; sur petit écran, des boutons Client / Restaurant / Livreur passent de l'un à l'autre.
 

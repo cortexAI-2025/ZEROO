@@ -1,7 +1,7 @@
 import { formatCents } from '@/lib/money';
 
 /**
- * Grille tarifaire Zéroo (prix HT, TVA 20 % en plus). Seuls les abonnements passent par Stripe :
+ * Grille tarifaire Zeeroo (prix HT, TVA 20 % en plus). Seuls les abonnements passent par Stripe :
  * les restaurants et les livreurs encaissent directement leurs ventes et leurs courses.
  * Le client ne paie rien.
  *

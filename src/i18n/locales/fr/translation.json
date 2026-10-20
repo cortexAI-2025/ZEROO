@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Zéroo",
+    "appName": "Zeeroo",
     "continue": "Continuer",
     "cancel": "Annuler",
     "loading": "Chargement…",
@@ -98,7 +98,7 @@
       "locationFailed": "Impossible d'obtenir votre position. Cherchez par ville ou code postal.",
       "nearbyTitle": "Autour de vous",
       "resultsTitle": "Résultats",
-      "noNearby": "Aucun commerce Zéroo dans un rayon de 10 km pour l'instant.",
+      "noNearby": "Aucun commerce Zeeroo dans un rayon de 10 km pour l'instant.",
       "noResults": "Aucun commerce trouvé.",
       "locating": "Localisation…"
     },
@@ -160,7 +160,7 @@
         "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
       },
       "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
-      "twoPayments": "Deux paiements : le repas au restaurant, la course au livreur. Aucun frais Zéroo.",
+      "twoPayments": "Deux paiements : le repas au restaurant, la course au livreur. Aucun frais Zeeroo.",
       "deliveryAddress": "Adresse de livraison",
       "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve."
     },
@@ -264,7 +264,7 @@
       "boulangerie": "Boulangerie",
       "autre": "Autre"
     },
-    "noMerchantTitle": "Bienvenue sur Zéroo Pro",
+    "noMerchantTitle": "Bienvenue sur Zeeroo Pro",
     "noMerchantBody": "Créez votre commerce pour recevoir des commandes sans aucune commission. 30 jours d'essai gratuit, puis à partir de 19,99 € HT par mois (23,99 € TTC).",
     "createMerchant": "Créer mon commerce",
     "form": {
@@ -439,18 +439,18 @@
       "title": "Votre QR code",
       "body": "Imprimez-le et affichez-le en caisse et en vitrine : vos clients commandent directement chez vous, sans commission.",
       "cta": "Commandez en ligne, récupérez sans attendre",
-      "shareMessage": "Commandez chez {{name}} sur Zéroo : {{url}}",
+      "shareMessage": "Commandez chez {{name}} sur Zeeroo : {{url}}",
       "print": "Imprimer"
     },
     "billing": {
       "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission Zéroo.",
+      "paymentsNone": "Pour encaisser vos commandes, créez votre compte Stripe : l'argent de vos ventes arrive directement sur votre compte bancaire, sans commission Zeeroo.",
       "paymentsSetup": "Configurer mes paiements",
       "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
       "paymentsContinue": "Compléter mon dossier Stripe",
       "paymentsActive": "Paiements actifs : l'argent de vos ventes est versé sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
-      "subscriptionTitle": "Abonnement Zéroo",
+      "subscriptionTitle": "Abonnement Zeeroo",
       "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
       "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC). Pro multisite : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
@@ -462,7 +462,7 @@
       "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
       "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des commandes.",
       "inactive": "Abonnement inactif : vous ne recevez plus de commandes.",
-      "webOnly": "L'abonnement se gère depuis zeroo.fr/pro, sur ordinateur ou dans le navigateur de votre téléphone.",
+      "webOnly": "L'abonnement se gère depuis zeeroo.fr/pro, sur ordinateur ou dans le navigateur de votre téléphone.",
       "returnTitle": "Retour de Stripe",
       "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
       "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Boutique.",
@@ -479,7 +479,7 @@
       "radius": "Zone de livraison",
       "radiusHint": "Distance maximale autour de votre restaurant.",
       "couriers": "Vos livreurs",
-      "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app Zéroo.",
+      "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app Zeeroo.",
       "noCourierWarning": "Aucun livreur accepté : la livraison n'est pas encore proposée à vos clients.",
       "requests": "Demandes de livreurs",
       "approve": "Accepter",
@@ -507,7 +507,7 @@
     "invalidTransition": "Cette commande a déjà changé de statut. La liste a été actualisée.",
     "prepMinutesRequired": "Indiquez un délai de préparation.",
     "orderNotFound": "Commande introuvable.",
-    "merchantOwnerCannotDelete": "Ce compte gère un commerce. Pour le supprimer, contactez le support Zéroo afin de clôturer d'abord votre commerce et votre abonnement.",
+    "merchantOwnerCannotDelete": "Ce compte gère un commerce. Pour le supprimer, contactez le support Zeeroo afin de clôturer d'abord votre commerce et votre abonnement.",
     "merchantNotAccepting": "Ce commerce ne prend pas de commandes pour le moment (fermé ou en pause).",
     "itemUnavailable": "Un produit de votre panier n'est plus disponible. Retirez-le puis réessayez.",
     "invalidOptions": "Les options d'un produit ne sont plus valides. Retirez-le puis ajoutez-le à nouveau.",
@@ -552,12 +552,12 @@
     "courierBody": "Activez les notifications pour être prévenu de chaque nouvelle course, même téléphone verrouillé."
   },
   "landing": {
-    "metaTitle": "Zéroo · À emporter au prix de la carte, sans commission",
-    "metaDescription": "Zéroo relie les restaurants, snacks et sandwicheries à leurs clients : commande et paiement en ligne, retrait sans attente. Le client paie le prix de la carte, le restaurant un abonnement fixe, sans commission.",
+    "metaTitle": "Zeeroo · À emporter au prix de la carte, sans commission",
+    "metaDescription": "Zeeroo relie les restaurants, snacks et sandwicheries à leurs clients : commande et paiement en ligne, retrait sans attente. Le client paie le prix de la carte, le restaurant un abonnement fixe, sans commission.",
     "signIn": "Se connecter",
     "hero": {
       "title": "À emporter, au prix de la carte. Sans commission.",
-      "subtitle": "Zéroo est un service qui relie les restaurants, snacks et sandwicheries à leurs clients. Vous commandez et payez depuis votre téléphone, le restaurant prépare au bon moment, vous récupérez sans attendre.",
+      "subtitle": "Zeeroo est un service qui relie les restaurants, snacks et sandwicheries à leurs clients. Vous commandez et payez depuis votre téléphone, le restaurant prépare au bon moment, vous récupérez sans attendre.",
       "ctaCustomer": "Commander",
       "ctaRestaurant": "Inscrire mon restaurant",
       "badges": {
@@ -565,14 +565,14 @@
         "fees": "Aucun frais pour le client",
         "trial": "30 jours d'essai pour les restaurants"
       },
-      "stores": "Bientôt sur l'App Store et Google Play. Dès maintenant sur zeroo.fr."
+      "stores": "Bientôt sur l'App Store et Google Play. Dès maintenant sur zeeroo.fr."
     },
     "model": {
       "title": "Un service, pas un intermédiaire qui se paie sur vos repas",
       "items": {
         "sellers": {
           "title": "Les repas sont vendus par les restaurants",
-          "body": "Zéroo ne vend aucun repas. Chaque restaurant fixe ses prix, et le paiement du client lui est versé directement."
+          "body": "Zeeroo ne vend aucun repas. Chaque restaurant fixe ses prix, et le paiement du client lui est versé directement."
         },
         "price": {
           "title": "Le client paie le prix de la carte",
@@ -580,7 +580,7 @@
         },
         "subscription": {
           "title": "Le restaurant paie un abonnement fixe",
-          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser Zéroo, quel que soit le nombre de commandes. Aucune commission."
+          "body": "À partir de 19,99 € HT par mois (23,99 € TTC) pour utiliser Zeeroo, quel que soit le nombre de commandes. Aucune commission."
         }
       }
     },
@@ -655,7 +655,7 @@
       "title": "Ce que coûte une commande",
       "headers": {
         "label": "",
-        "zeroo": "Zéroo",
+        "zeroo": "Zeeroo",
         "others": "Plateforme à commission"
       },
       "rows": {
@@ -680,7 +680,7 @@
           "others": "variable, selon les ventes"
         }
       },
-      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zéroo Start : 19,99 € HT (23,99 € TTC).",
+      "example": "Exemple : pour 3 000 € de commandes en ligne par mois, une commission de 25 % représente 750 €. Avec Zeeroo Start : 19,99 € HT (23,99 € TTC).",
       "note": "Montants indicatifs : les taux varient selon les plateformes et les contrats."
     },
     "pricing": {
@@ -703,14 +703,14 @@
         "noCommitment": "Sans engagement, résiliable à tout moment"
       },
       "cta": "Essayer gratuitement 30 jours",
-      "customers": "Pour les clients, Zéroo est gratuit."
+      "customers": "Pour les clients, Zeeroo est gratuit."
     },
     "faq": {
       "title": "Questions fréquentes",
       "items": {
         "sell": {
-          "q": "Zéroo vend-il des repas ?",
-          "a": "Non. Zéroo est un service. Les repas sont vendus par les restaurants, à leurs prix, et le paiement leur est versé directement."
+          "q": "Zeeroo vend-il des repas ?",
+          "a": "Non. Zeeroo est un service. Les repas sont vendus par les restaurants, à leurs prix, et le paiement leur est versé directement."
         },
         "fees": {
           "q": "Le client paie-t-il des frais ?",
@@ -722,7 +722,7 @@
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
-          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. Zéroo n'encaisse jamais l'argent des commandes."
+          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. Zeeroo n'encaisse jamais l'argent des commandes."
         },
         "trial": {
           "q": "Comment fonctionne l'essai gratuit ?",
@@ -738,10 +738,10 @@
       "title": "Prêt à commander, ou à recevoir vos premières commandes ?"
     },
     "footer": {
-      "tagline": "Zéroo · la vente à emporter sans commission.",
+      "tagline": "Zeeroo · la vente à emporter sans commission.",
       "legal": "Mentions légales",
       "privacy": "Confidentialité",
-      "copyright": "© {{year}} Zéroo"
+      "copyright": "© {{year}} Zeeroo"
     }
   },
   "legal": {
@@ -752,11 +752,11 @@
       "sections": {
         "editor": {
           "title": "Éditeur et exploitant",
-          "body": "Zéroo est édité et exploité commercialement par aiworkpay, société par actions simplifiée unipersonnelle (SASU) au capital de 10 000 €, dont le siège est situé 60 rue François 1er, 75008 Paris, France, immatriculée sous le numéro 941 861 775 RCS Paris.\nDirecteur de la publication : Ahmed AKAFOU.\nContact : contact@zeroo.fr."
+          "body": "Zeeroo est édité et exploité commercialement par aiworkpay, société par actions simplifiée unipersonnelle (SASU) au capital de 10 000 €, dont le siège est situé 60 rue François 1er, 75008 Paris, France, immatriculée sous le numéro 941 861 775 RCS Paris.\nDirecteur de la publication : Ahmed AKAFOU.\nContact : contact@zeeroo.fr."
         },
         "service": {
           "title": "Nature du service",
-          "body": "Zéroo est un service de commande à emporter mis à disposition des restaurants, contre un abonnement, et des clients, gratuitement. Zéroo ne vend aucun repas : les produits sont vendus par chaque restaurant, à ses prix, et le paiement lui est versé directement."
+          "body": "Zeeroo est un service de commande à emporter mis à disposition des restaurants, contre un abonnement, et des clients, gratuitement. Zeeroo ne vend aucun repas : les produits sont vendus par chaque restaurant, à ses prix, et le paiement lui est versé directement."
         },
         "hosting": {
           "title": "Hébergement",
@@ -764,7 +764,7 @@
         },
         "ip": {
           "title": "Propriété intellectuelle",
-          "body": "Les contenus de Zéroo (textes, marque, logo, interface) sont protégés. Les menus, photos et descriptions publiés par les restaurants restent leur propriété et leur responsabilité."
+          "body": "Les contenus de Zeeroo (textes, marque, logo, interface) sont protégés. Les menus, photos et descriptions publiés par les restaurants restent leur propriété et leur responsabilité."
         }
       }
     },
@@ -773,11 +773,11 @@
       "sections": {
         "controller": {
           "title": "Responsable du traitement",
-          "body": "aiworkpay SASU, 60 rue François 1er, 75008 Paris, France (941 861 775 RCS Paris). Contact pour toute question sur vos données : contact@zeroo.fr."
+          "body": "aiworkpay SASU, 60 rue François 1er, 75008 Paris, France (941 861 775 RCS Paris). Contact pour toute question sur vos données : contact@zeeroo.fr."
         },
         "data": {
           "title": "Données traitées",
-          "body": "Compte : adresse e-mail, mot de passe (stocké chiffré), prénom et téléphone facultatifs.\nCommandes : produits, montants, horaires, note pour le restaurant ; votre prénom est communiqué au restaurant concerné.\nFidélité : nombre de menus achetés et menus offerts, par restaurant.\nPosition : utilisée ponctuellement pour la recherche à proximité et pour « Je pars maintenant », uniquement après votre action. Elle n'est jamais enregistrée : seule l'heure d'arrivée estimée l'est.\nNotifications : identifiant de votre appareil, si vous les activez.\nPaiement : traité par Stripe. Zéroo n'a jamais accès à votre numéro de carte.\nRestaurants : informations du commerce, compte de paiement Stripe et abonnement."
+          "body": "Compte : adresse e-mail, mot de passe (stocké chiffré), prénom et téléphone facultatifs.\nCommandes : produits, montants, horaires, note pour le restaurant ; votre prénom est communiqué au restaurant concerné.\nFidélité : nombre de menus achetés et menus offerts, par restaurant.\nPosition : utilisée ponctuellement pour la recherche à proximité et pour « Je pars maintenant », uniquement après votre action. Elle n'est jamais enregistrée : seule l'heure d'arrivée estimée l'est.\nNotifications : identifiant de votre appareil, si vous les activez.\nPaiement : traité par Stripe. Zeeroo n'a jamais accès à votre numéro de carte.\nRestaurants : informations du commerce, compte de paiement Stripe et abonnement."
         },
         "purposes": {
           "title": "Finalités et bases légales",
@@ -793,7 +793,7 @@
         },
         "rights": {
           "title": "Vos droits",
-          "body": "Vous pouvez accéder à vos données, les rectifier, demander leur portabilité ou vous opposer à un traitement en écrivant à contact@zeroo.fr. Vous pouvez supprimer votre compte à tout moment dans l'application (Compte → Supprimer mon compte). Vous pouvez aussi saisir la CNIL (cnil.fr)."
+          "body": "Vous pouvez accéder à vos données, les rectifier, demander leur portabilité ou vous opposer à un traitement en écrivant à contact@zeeroo.fr. Vous pouvez supprimer votre compte à tout moment dans l'application (Compte → Supprimer mon compte). Vous pouvez aussi saisir la CNIL (cnil.fr)."
         },
         "storage": {
           "title": "Stockage sur votre appareil",
@@ -815,7 +815,7 @@
       "account": "Compte"
     },
     "onboarding": {
-      "title": "Devenir livreur Zéroo",
+      "title": "Devenir livreur Zeeroo",
       "intro": "Livrez pour les restaurants de votre secteur, en indépendant. Le client paie la course directement sur votre compte, sans commission. Abonnement : 14,99 € HT par mois (17,99 € TTC), 30 jours d'essai.",
       "name": "Nom affiché",
       "nameHint": "Le client ne voit que votre prénom.",
@@ -901,7 +901,7 @@
       "month": "Ce mois-ci",
       "runs_one": "{{count}} course",
       "runs_other": "{{count}} courses",
-      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission Zéroo. Stripe la verse sur votre compte bancaire.",
+      "info": "Le client paie chaque course directement sur votre compte Stripe, sans commission Zeeroo. Stripe la verse sur votre compte bancaire.",
       "history": "Dernières courses",
       "empty": "Aucune course livrée pour le moment."
     },
@@ -911,13 +911,13 @@
     },
     "billing": {
       "paymentsTitle": "Paiements",
-      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission Zéroo. Stripe vérifie votre identité et votre SIRET.",
+      "paymentsNone": "Pour être payé de vos courses, créez votre compte Stripe : le client paie la course directement sur votre compte bancaire, sans commission Zeeroo. Stripe vérifie votre identité et votre SIRET.",
       "paymentsSetup": "Configurer mes paiements",
       "paymentsPending": "Stripe vérifie vos informations. Vous pouvez compléter votre dossier si besoin.",
       "paymentsContinue": "Compléter mon dossier Stripe",
       "paymentsActive": "Paiements actifs : vos courses sont versées sur votre compte bancaire.",
       "stripeDashboard": "Ouvrir mon tableau de bord Stripe",
-      "subscriptionTitle": "Abonnement Zéroo Livreur",
+      "subscriptionTitle": "Abonnement Zeeroo Livreur",
       "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
       "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
@@ -929,7 +929,7 @@
       "cancelAtPeriodEnd": "Résiliation programmée au {{date}}.",
       "pastDue": "Le dernier prélèvement de l'abonnement a échoué : mettez à jour votre carte pour continuer à recevoir des courses.",
       "inactive": "Abonnement inactif : vous ne recevez plus de courses.",
-      "webOnly": "L'abonnement se gère depuis zeroo.fr, sur ordinateur ou dans le navigateur de votre téléphone.",
+      "webOnly": "L'abonnement se gère depuis zeeroo.fr, sur ordinateur ou dans le navigateur de votre téléphone.",
       "returnTitle": "Retour de Stripe",
       "returnDone": "C'est enregistré. L'état de vos paiements et de votre abonnement se met à jour en quelques instants.",
       "returnRefresh": "Le lien a expiré. Relancez la configuration depuis l'onglet Compte.",

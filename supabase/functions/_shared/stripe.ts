@@ -28,4 +28,4 @@ export const MIN_CHARGE_CENTS = 50;
 
 /** URL publique de l'app web (retours de Stripe Checkout et de l'inscription Connect). */
 export const appWebUrl = () =>
-  (Deno.env.get('APP_WEB_URL') ?? 'https://zeroo.fr').replace(/\/$/, '');
+  (Deno.env.get('APP_WEB_URL') ?? 'https://zeeroo.fr').replace(/\/$/, '');

@@ -10,7 +10,7 @@ const easProjectId = process.env.EAS_PROJECT_ID;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Zéroo',
+  name: 'Zeeroo',
   slug: 'zeroo',
   version: '0.1.0',
   orientation: 'portrait',
@@ -50,7 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Zéroo utilise votre position pour trouver les commerces proches de vous. Elle n’est pas enregistrée.',
+          'Zeeroo utilise votre position pour trouver les commerces proches de vous. Elle n’est pas enregistrée.',
       },
     ],
     ...(googleIosUrlScheme

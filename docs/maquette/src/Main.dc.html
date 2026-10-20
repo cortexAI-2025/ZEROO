@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Zéroo — application client</title>
+<title>Zeeroo — application client</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -23,7 +23,7 @@ button{font:inherit;color:inherit}
 <sc-if value="{{isHome}}" hint-placeholder-val="{{true}}">
 <div style="display: flex; flex-direction: column; gap: 20px; padding: 20px 20px 28px">
   <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
-    <img src="/_blob/1be05210a14ea5a8793dfd4668645adc" alt="Zéroo" style="height: 30px; width: auto">
+    <img src="/_blob/1be05210a14ea5a8793dfd4668645adc" alt="Zeeroo" style="height: 30px; width: auto">
     <button type="button" style="display: flex; align-items: center; gap: 6px; border: none; background: none; padding: 6px 10px; font-size: 15px; font-weight: 600; cursor: pointer; min-height: 44px">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
       Versailles (78000)
@@ -566,8 +566,8 @@ class Component extends DCLogic {
       pickupStyle: seg(!isDelivery), deliveryStyle: seg(isDelivery),
       appleStyle: payOpt(s.payWith === "apple"), cardStyle: payOpt(s.payWith === "card"),
       payNote: isDelivery
-        ? "Paiement sécurisé par Stripe. Le repas est payé directement au restaurant et la course directement au livreur. Zéroo ne prend aucune commission."
-        : "Paiement sécurisé par Stripe, versé directement au restaurant. Zéroo ne prend aucune commission.",
+        ? "Paiement sécurisé par Stripe. Le repas est payé directement au restaurant et la course directement au livreur. Zeeroo ne prend aucune commission."
+        : "Paiement sécurisé par Stripe, versé directement au restaurant. Zeeroo ne prend aucune commission.",
       order: order || { steps: [] },
       hasOrder: !!s.order, noOrder: !s.order,
       tabHomeStyle: tab(s.screen === "home"), tabOrdersStyle: tab(s.screen === "orders"),

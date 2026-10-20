@@ -9,7 +9,7 @@ import type { Tables } from '@/types/database';
 import type { Interval, PlanId } from './plans';
 
 /**
- * Professionnel abonné à Zéroo et payé via Stripe Connect : un restaurant ou un livreur.
+ * Professionnel abonné à Zeeroo et payé via Stripe Connect : un restaurant ou un livreur.
  * Abonnements HT (restaurant Start ou Pro, livreur : voir plans.ts), 30 jours d'essai, tables distinctes.
  */
 export type BillingTarget = { role: 'merchant' | 'courier'; id: string };

@@ -1,6 +1,6 @@
 import { useColorScheme } from 'react-native';
 
-// Couleurs du logo Zéroo : vert vif et vert forêt. Le vif (#5DBE3A) n'a que 2,4:1 avec
+// Couleurs du logo Zeeroo : vert vif et vert forêt. Le vif (#5DBE3A) n'a que 2,4:1 avec
 // le blanc : les boutons utilisent un vert plus soutenu (contraste 5,4:1 avec le texte blanc).
 const palette = {
   brand: '#1F7A35',

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Assemble la maquette cliquable Zéroo (src/*.dc.html : client, restaurant, livreur) en un
+Assemble la maquette cliquable Zeeroo (src/*.dc.html : client, restaurant, livreur) en un
 seul fichier HTML autonome, logos intégrés.
 
 Usage : python3 docs/maquette/build.py   → docs/maquette/zeroo-maquette.html
@@ -211,7 +211,7 @@ html = f"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zéroo — maquette cliquable</title>
+<title>Zeeroo — maquette cliquable</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
 <style>{CSS}</style>
@@ -219,7 +219,7 @@ html = f"""<!doctype html>
 <body>
 <header class="top">
   <div>
-    <img src="{logo}" alt="Zéroo">
+    <img src="{logo}" alt="Zeeroo">
     <h1>Maquette cliquable</h1>
     <p>Le bon goût. Sans commission. Cliquez dans les écrans pour naviguer : commande côté client, gestion des commandes côté restaurant, courses côté livreur. Données fictives de démonstration.</p>
   </div>
@@ -232,7 +232,7 @@ html = f"""<!doctype html>
 <main class="phones">
 {''.join(phones)}
 </main>
-<footer>Zéroo · maquette de démonstration, non contractuelle.</footer>
+<footer>Zeeroo · maquette de démonstration, non contractuelle.</footer>
 {''.join(templates)}
 <script>
 {PRE}

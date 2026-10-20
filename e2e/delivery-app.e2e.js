@@ -85,7 +85,7 @@ run('Livraison dans l’app', async () => {
     const lea = await open();
     await signIn(lea, email);
     await lea.getByTestId('choose-space-courier').click();
-    await text(lea, 'Devenir livreur Zéroo').waitFor();
+    await text(lea, 'Devenir livreur Zeeroo').waitFor();
     await v(lea.getByTestId('courier-name')).fill('Léa Martin');
     await v(lea.getByTestId('courier-phone')).fill('06 11 22 33 44');
     await v(lea.getByTestId('courier-siret')).fill('123 456 789 00016');
@@ -161,7 +161,7 @@ run('Livraison dans l’app', async () => {
     await v(lea.getByTestId('subscription-card'))
       .getByText('Essai gratuit jusqu', { exact: false })
       .waitFor();
-    await v(lea.getByTestId('subscription-card')).getByText('Abonnement Zéroo Livreur').waitFor();
+    await v(lea.getByTestId('subscription-card')).getByText('Abonnement Zeeroo Livreur').waitFor();
     await shot(lea, '2-livreur-compte');
     step(
       'compte livreur : Stripe Connect activé par webhook, abonnement Livreur 9,99 € HT avec 30 jours d’essai',

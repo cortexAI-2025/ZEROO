@@ -119,7 +119,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 }
 
 /**
- * Page d'accueil de zeroo.fr (web). Message central : Zéroo est un service. Le client
+ * Page d'accueil de zeeroo.fr (web). Message central : Zeeroo est un service. Le client
  * paie le prix de la carte, le restaurant un abonnement fixe, sans commission.
  */
 export function LandingPage() {
@@ -157,7 +157,7 @@ export function LandingPage() {
         <meta name="description" content={t('landing.metaDescription')} />
         <meta property="og:title" content={t('landing.metaTitle')} />
         <meta property="og:description" content={t('landing.metaDescription')} />
-        <meta property="og:url" content="https://zeroo.fr" />
+        <meta property="og:url" content="https://zeeroo.fr" />
       </Head>
 
       {/* En-tête */}

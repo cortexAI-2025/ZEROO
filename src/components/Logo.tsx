@@ -6,7 +6,7 @@ const LOGO_DARK = require('@/assets/images/logo-dark.png');
 /** Proportions des fichiers logo (1557 × 416). */
 const RATIO = 1557 / 416;
 
-/** Logo Zéroo, fond transparent : « ZÉR » foncé sur fond clair, blanc sur fond sombre. */
+/** Logo Zeeroo, fond transparent : « ZÉR » foncé sur fond clair, blanc sur fond sombre. */
 export function Logo({ height = 40 }: { height?: number }) {
   const dark = useColorScheme() === 'dark';
   return (
@@ -14,7 +14,7 @@ export function Logo({ height = 40 }: { height?: number }) {
       source={dark ? LOGO_DARK : LOGO}
       style={{ height, width: height * RATIO }}
       contentFit="contain"
-      accessibilityLabel="Zéroo"
+      accessibilityLabel="Zeeroo"
       accessibilityRole="image"
     />
   );

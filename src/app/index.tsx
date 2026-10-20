@@ -6,7 +6,7 @@ import { LandingPage } from '@/features/landing/LandingPage';
 import { homeHref, useSpace } from '@/features/space/SpaceProvider';
 
 /**
- * zeroo.fr : page d'accueil pour les visiteurs du site. Dans l'app mobile, ou pour un
+ * zeeroo.fr : page d'accueil pour les visiteurs du site. Dans l'app mobile, ou pour un
  * utilisateur connecté, on va directement à la connexion ou à son espace.
  */
 export default function RootIndex() {

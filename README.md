@@ -1,8 +1,8 @@
-# Zéroo
+# Zeeroo
 
 > Le bon goût. Sans commission.
 
-Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zéroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 19,99 € HT/mois ou Pro multisite 29,99 € HT/mois, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
+Click-and-collect et livraison **sans commission** pour restaurants, snacks et sandwicheries. **Zeeroo est un service, pas un vendeur** : les repas sont vendus par les restaurants au prix de leur carte, et le paiement leur est versé directement. Le restaurant paie un abonnement fixe, le client ne paie aucun frais. Le commerçant paie un abonnement (30 jours d'essai, puis Start 19,99 € HT/mois ou Pro multisite 29,99 € HT/mois, moins cher à l'année) et ne verse aucune commission sur ses commandes. Le client commande et paie depuis son téléphone, puis récupère sa commande déjà prête. Fidélité intégrée : 9 menus achetés, le 10e est offert.
 
 - Architecture, schéma de données et plan de livraison : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Maquette cliquable (client, restaurant, livreur) : [docs/maquette/zeroo-maquette.html](docs/maquette/zeroo-maquette.html), voir [docs/maquette/README.md](docs/maquette/README.md)
@@ -117,7 +117,7 @@ Parcours manuel (une tablette ou un navigateur côté caisse suffit) :
    - saisissez les horaires (`11:30`, `18h`, et un créneau peut finir après minuit), puis « Copier le lundi sur toute la semaine » ;
    - activez « Visible des clients ». Cette option est bloquée tant qu'il n'y a ni produit disponible ni horaire ;
    - testez une pause de 15 min, puis « Reprendre les commandes ».
-4. **QR code** (Boutique → QR code) : il pointe vers `https://zeroo.fr/m/<slug>`. On peut le partager, ou l'imprimer depuis le web.
+4. **QR code** (Boutique → QR code) : il pointe vers `https://zeeroo.fr/m/<slug>`. On peut le partager, ou l'imprimer depuis le web.
 5. **Commandes en direct** (onglet Commandes) : laissez l'écran ouvert, puis lancez `npm run dev:order` dans un terminal.
    - La commande apparaît sans rechargement, avec une sonnerie. Sur le web, cliquez d'abord « Activer la sonnerie ».
    - Choisissez un délai puis « Accepter » → « Lancer la préparation » → « Commande prête ».
@@ -157,7 +157,7 @@ Ces règles sont couvertes par 23 tests pgTAP.
 ## Étape (d) : paiements
 
 ### Fonctionnement
-- **Le client paie le commerçant directement.** C'est une charge directe Stripe Connect sur le compte du commerçant, sans commission Zéroo : seuls les frais Stripe s'appliquent, à la charge du commerçant.
+- **Le client paie le commerçant directement.** C'est une charge directe Stripe Connect sur le compte du commerçant, sans commission Zeeroo : seuls les frais Stripe s'appliquent, à la charge du commerçant.
 - **Débit seulement si le commerçant accepte.** À la commande, la carte est seulement autorisée. Elle est débitée quand le commerçant accepte. S'il refuse, si le client annule, ou sans réponse sous 10 minutes, l'autorisation est annulée : aucun débit, aucun frais.
 - **Mobile** : feuille de paiement Stripe dans l'app (carte, Apple Pay, Google Pay).
 - **Web** (client arrivé par le QR code) : page Stripe Checkout.
@@ -180,15 +180,15 @@ Prix HT, TVA 20 % en plus. Seuls les abonnements passent par Stripe : les restau
 Le catalogue d'affichage est dans `src/features/billing/plans.ts` ; les prix facturés sont ceux des prix Stripe. **Les deux formules restaurant ne se distinguent pour l'instant que par le prix** : le contenu de Pro par rapport à Start reste à définir. Comparatif avec Uber Eats, Deliveroo et les solutions sans commission : [docs/COMPARATIF.md](docs/COMPARATIF.md).
 
 ### Configurer Stripe (mode test d'abord)
-Dans le dashboard du **compte Stripe dédié à Zéroo** :
+Dans le dashboard du **compte Stripe dédié à Zeeroo** :
 
 1. **Connect** → activer Connect.
-   - Renseigner le profil de la plateforme : nom « Zéroo », icône, couleur. C'est ce qu'affiche l'inscription des commerçants.
+   - Renseigner le profil de la plateforme : nom « Zeeroo », icône, couleur. C'est ce qu'affiche l'inscription des commerçants.
    - Les comptes créés laissent Stripe gérer la tarification : la plateforme ne paie aucun frais Connect, et chaque commerçant a son propre tableau de bord Stripe.
-2. **Catalogue de produits** → trois produits (« Zéroo Restaurant Start », « Zéroo Restaurant Pro », « Zéroo Livreur »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). Copier les six identifiants `price_…` dans les variables `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_MONTH`, `_COURIER_YEAR` (voir la grille ci-dessous).
+2. **Catalogue de produits** → trois produits (« Zeeroo Restaurant Start », « Zeeroo Restaurant Pro », « Zeeroo Livreur »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). Copier les six identifiants `price_…` dans les variables `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_MONTH`, `_COURIER_YEAR` (voir la grille ci-dessous).
    - **Catalogue de produits → Taux de taxe** : créer « TVA 20 % », France, **exclusif** (ajouté au prix HT). Copier `txr_…` dans `STRIPE_TAX_RATE_ID`.
    - Les factures affichent alors, par exemple pour Start mensuel, 19,99 € HT + 4,00 € de TVA = 23,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
-   - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de Zéroo : raison sociale, adresse, SIREN et numéro de TVA.
+   - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de Zeeroo : raison sociale, adresse, SIREN et numéro de TVA.
 3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation.
 4. **Développeurs → Webhooks**, deux points de terminaison vers `https://<projet>.supabase.co/functions/v1/stripe-webhook` :
 
@@ -203,7 +203,7 @@ Dans le dashboard du **compte Stripe dédié à Zéroo** :
      STRIPE_PRICE_START_MONTH=price_… STRIPE_PRICE_START_YEAR=price_… \
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
      STRIPE_PRICE_COURIER_MONTH=price_… STRIPE_PRICE_COURIER_YEAR=price_… \
-     APP_WEB_URL=https://zeroo.fr CRON_SECRET=$(openssl rand -hex 32)
+     APP_WEB_URL=https://zeeroo.fr CRON_SECRET=$(openssl rand -hex 32)
    ```
 6. **Expiration automatique**, chaque minute via pg_cron. Dans l'éditeur SQL Supabase, en remettant la même valeur que `CRON_SECRET` :
    ```sql
@@ -298,7 +298,7 @@ Les notifications ne fonctionnent que sur un vrai téléphone, avec un build de 
 - Le restaurant fixe **le prix de la course** (de 0,50 € à 20 €) et sa **zone** (de 1 à 8 km).
 - Le livreur est indépendant (auto-entrepreneur ou société, SIRET) et se rattache aux restaurants qui l'acceptent.
 - Il paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission.
-- Le client fait **deux paiements** : le repas, versé au restaurant, et la course, versée au livreur. Chacun va directement sur le compte Stripe du vendeur. Zéroo n'encaisse rien et le restaurant ne paie pas le livreur.
+- Le client fait **deux paiements** : le repas, versé au restaurant, et la course, versée au livreur. Chacun va directement sur le compte Stripe du vendeur. Zeeroo n'encaisse rien et le restaurant ne paie pas le livreur.
 
 **Parcours.**
 1. **Client** :
@@ -334,7 +334,7 @@ Il ne peut se rendre disponible qu'avec un compte Stripe actif, un abonnement en
 - `e2e/delivery.e2e.js` : serveur, double paiement contre stripe-mock, webhooks, notifications du livreur et du client, nouveau livreur ;
 - `e2e/delivery-app.e2e.js` : trois navigateurs (nouvelle livreuse, restaurant, cliente), du profil livreur à la livraison.
 
-## Page d'accueil zeroo.fr
+## Page d'accueil zeeroo.fr
 
 La racine de l'app web (`src/app/index.tsx`) affiche la page d'accueil aux visiteurs (`src/features/landing/LandingPage.tsx`). Les utilisateurs connectés sont redirigés vers leur espace, et dans l'app mobile on va directement à la connexion.
 
@@ -350,9 +350,9 @@ La racine de l'app web (`src/app/index.tsx`) affiche la page d'accueil aux visit
 
 Le référencement passe par `<Head>` (titre, description, Open Graph). L'écran « À proximité » des clients est désormais à l'adresse `/explore`.
 
-## Site vitrine zeroo.fr
+## Site vitrine zeeroo.fr
 
-Le site public **zeroo.fr** (nom de domaine à confirmer) n'existe pas encore. En attendant, l'app web sert elle-même de page d'accueil (voir plus haut).
+Le site public **zeeroo.fr** (nom de domaine à confirmer) n'existe pas encore. En attendant, l'app web sert elle-même de page d'accueil (voir plus haut).
 
 Ce dépôt-ci ne contient que l'application.
 
@@ -364,7 +364,7 @@ Les visuels sont générés par `python3 scripts/brand-assets.py` dans `assets/i
 
 | Fichier | Usage |
 |---|---|
-| `logo.png` / `logo-dark.png` | Logo « ZÉROO » sur fond transparent, pour fond clair / sombre, via `src/components/Logo.tsx` |
+| `logo.png` / `logo-dark.png` | Logo « ZEEROO » sur fond transparent, pour fond clair / sombre, via `src/components/Logo.tsx` |
 | `logo-mark.png` | Symbole « oo » seul |
 | `icon.png` | Icône iOS et App Store, 1024 px, symbole vert sur fond vert forêt |
 | `android-icon-*.png` | Icône Android adaptative : premier plan, fond vert forêt, version monochrome |

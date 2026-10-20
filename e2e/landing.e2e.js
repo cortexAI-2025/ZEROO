@@ -1,4 +1,4 @@
-// Page d'accueil zeroo.fr : contenu, pages légales, appels à l'action, redirections.
+// Page d'accueil zeeroo.fr : contenu, pages légales, appels à l'action, redirections.
 const { BASE, launch, run, step, visible } = require('./helpers');
 
 run("Page d'accueil", async () => {
@@ -17,7 +17,7 @@ run("Page d'accueil", async () => {
   if (!(await page.title()).includes('sans commission'))
     throw new Error('titre de page : ' + (await page.title()));
   await v(page.getByTestId('landing-model'))
-    .getByText('Zéroo ne vend aucun repas', { exact: false })
+    .getByText('Zeeroo ne vend aucun repas', { exact: false })
     .waitFor();
   await v(page.getByTestId('landing-model'))
     .getByText('Le client paie le prix de la carte')
@@ -26,13 +26,13 @@ run("Page d'accueil", async () => {
   await v(page.getByTestId('landing-comparison')).getByText('0 %', { exact: true }).waitFor();
   step('accroche, modèle (service, prix de la carte, abonnement fixe), comparaison et tarifs HT (Start, Pro, Livreur)');
 
-  await v(page.getByText('Zéroo vend-il des repas', { exact: false })).click();
-  await v(page.getByText('Non. Zéroo est un service', { exact: false })).waitFor();
-  step('FAQ dépliable : « Zéroo vend-il des repas ? Non. Zéroo est un service… »');
+  await v(page.getByText('Zeeroo vend-il des repas', { exact: false })).click();
+  await v(page.getByText('Non. Zeeroo est un service', { exact: false })).waitFor();
+  step('FAQ dépliable : « Zeeroo vend-il des repas ? Non. Zeeroo est un service… »');
 
   await v(page.getByText('Mentions légales')).first().click();
   await v(
-    page.getByText('Zéroo ne vend aucun repas : les produits sont vendus par chaque restaurant', {
+    page.getByText('Zeeroo ne vend aucun repas : les produits sont vendus par chaque restaurant', {
       exact: false,
     }),
   ).waitFor();
@@ -75,7 +75,7 @@ run("Page d'accueil", async () => {
   await v(mobile.getByText('Commander à emporter')).waitFor();
   if (!mobile.url().endsWith('/explore'))
     throw new Error('redirection attendue vers /explore : ' + mobile.url());
-  step('utilisateur connecté sur zeroo.fr → redirigé vers son espace (/explore)');
+  step('utilisateur connecté sur zeeroo.fr → redirigé vers son espace (/explore)');
 
   await browser.close();
 });

@@ -1,4 +1,4 @@
-# Zéroo : architecture (étape 0, proposition)
+# Zeeroo : architecture (étape 0, proposition)
 
 > Statut : **validé** (étape 0). Mis à jour au fil des étapes.
 
@@ -10,11 +10,11 @@
 | Fidélité | **9 menus payés et récupérés chez un commerçant = 1 menu offert**, en comptant chaque menu, même s'ils sont achetés dans une seule commande (validé). Le commerçant indique quels produits sont des « menus » éligibles. Voir §3.1. |
 | Comptes commerçant | **Un seul compte par commerce** (`merchants.owner_id` unique), pas de comptes employés au MVP. |
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro multisite 29,99 € HT/mois (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
-| Positionnement | **Zéroo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
-| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant, la course au livreur, chacun directement sur son compte Stripe. Zéroo n'encaisse jamais d'argent. Voir §3.4. |
-| Domaine | **zeroo.fr** : site principal, liens commerçant `https://zeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
-| Site public | **zeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
-| Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme Zéroo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
+| Positionnement | **Zeeroo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte, et le paiement leur est versé directement (Stripe Connect). Le restaurant paie un abonnement fixe pour utiliser le service ; le client ne paie aucun frais ni majoration. |
+| Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant, la course au livreur, chacun directement sur son compte Stripe. Zeeroo n'encaisse jamais d'argent. Voir §3.4. |
+| Domaine | **zeeroo.fr** : site principal, liens commerçant `https://zeeroo.fr/m/<slug>` (cibles des QR codes) et page d'abonnement commerçant. |
+| Site public | **zeeroo.fr** (domaine à confirmer) : site vitrine à créer. En attendant, l'app web sert de page d'accueil. Ce dépôt ne contient que l'application. |
+| Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme Zeeroo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
 
 ## 1. Stack retenue et ajustements
 
@@ -39,7 +39,7 @@
 
 1. **Type de compte Stripe Connect.** Avec des comptes Express ou Custom où la plateforme gère la tarification, Stripe facture la plateforme environ 2 € par compte actif et par mois, plus des frais par virement. Ça représenterait environ environ 10 % d'un abonnement Start à 19,99 € HT. Je recommande des comptes dont **Stripe gère la tarification** (configuration `controller` : `fees.payer = account`, `losses.payments = stripe`, `stripe_dashboard.type = full`, l'équivalent des comptes « Standard »). Avec cette configuration, la plateforme ne paie aucun frais Connect, et le commerçant a son propre dashboard Stripe pour ses virements, ses remboursements et ses litiges.
 2. **Pré-autorisation puis capture.** Le paiement est autorisé à la commande (`capture_method = manual`) et **capturé seulement quand le commerçant accepte**. Si le commerçant refuse, ou ne répond pas sous N minutes, l'autorisation est annulée. Cette approche a deux avantages : aucun remboursement n'est nécessaire, et donc aucun frais Stripe n'est perdu pour le commerçant, qui ne les récupère pas sur un remboursement. Le client, lui, n'est jamais débité pour une commande refusée.
-3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`zeroo.fr/commercant`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
+3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`zeeroo.fr/commercant`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
 4. **Code de retrait.** Pour que le compteur de fidélité ne s'incrémente qu'à la remise réelle, chaque commande porte un code court (ex. `K7P2`) que le client montre en caisse. Le commerçant passe la commande à « récupérée » en le saisissant ou en scannant le QR de la commande.
 5. **« Je pars maintenant » sans traçage continu (RGPD).** La position est envoyée **une seule fois**, au moment du clic. Le serveur calcule l'ETA et **ne stocke pas les coordonnées**, seulement `customer_eta_at`. Le client pourra cliquer à nouveau pour rafraîchir l'ETA.
 6. **Un compte = un commerce.** Le même compte peut aussi commander comme client : l'app propose deux espaces, avec une bascule dans « Compte ».
@@ -79,7 +79,7 @@ zeroo/
 ├── src/
 │   ├── app/                          # Expo Router : routes uniquement, écrans fins
 │   │   ├── _layout.tsx               # providers + gardes (Stack.Protected) session / espace
-│   │   ├── index.tsx                 # zeroo.fr : page d'accueil (visiteur web) ou redirection
+│   │   ├── index.tsx                 # zeeroo.fr : page d'accueil (visiteur web) ou redirection
 │   │   ├── mentions-legales.tsx, confidentialite.tsx
 │   │   ├── auth-callback.tsx         # retour des liens e-mail (confirmation, mot de passe)
 │   │   ├── choose-space.tsx          # « Commander » ou « Gérer mon commerce »
@@ -167,7 +167,7 @@ create table profiles (
 create table merchants (
   id                   uuid primary key default gen_random_uuid(),
   owner_id             uuid not null unique references profiles(id),  -- 1 compte = 1 commerce
-  slug                 text not null unique,            -- lien / QR code : zeroo.fr/m/<slug>
+  slug                 text not null unique,            -- lien / QR code : zeeroo.fr/m/<slug>
   name                 text not null,
   description          text,
   category             text not null,                   -- 'snack' | 'sandwicherie' | 'restaurant'…
@@ -362,8 +362,8 @@ Transitions autorisées :
 - Le client paie **deux paiements séparés**, chacun en charge directe Stripe Connect sans commission :
   - le repas sur le compte du restaurant ;
   - la course sur le compte du livreur.
-- Zéroo ne touche jamais l'argent. Le relevé du client porte deux lignes : le restaurant et le livreur.
-- Le livreur paie l'abonnement Zéroo (14,99 € HT par mois, 30 jours d'essai). Le restaurant ne le rémunère pas.
+- Zeeroo ne touche jamais l'argent. Le relevé du client porte deux lignes : le restaurant et le livreur.
+- Le livreur paie l'abonnement Zeeroo (14,99 € HT par mois, 30 jours d'essai). Le restaurant ne le rémunère pas.
 
 **Activation d'un livreur.** Un livreur peut se rendre disponible s'il remplit trois conditions :
 1. Son compte Stripe Connect est actif (`charges_enabled`). Stripe vérifie l'identité et l'immatriculation (SIRET, Kbis ou avis de situation INSEE selon le statut).
@@ -496,7 +496,7 @@ ORDER_ACCEPT_TIMEOUT_MINUTES=10
 | a ✅ | Expo SDK 57 + Router + TS + i18n + Supabase local + profils + auth (e-mail, Apple, Google) + choix d’espace + suppression de compte | Voir README : tests pgTAP, Jest, parcours manuel |
 | b ✅ | Création du commerce (adresse géocodée), menu (catégories, produits, options, rupture, ordre), horaires, pause, publication, commandes en temps réel avec sonnerie, transitions de statut, code de retrait, CA du jour, historique, QR code | `npm run dev:order`, tests pgTAP, parcours web de bout en bout |
 | c ✅ | Recherche (proximité + nom / ville / code postal), fiche et menu publics (lien du QR code), panier avec options, commande via `create_order()` (sans paiement), suivi temps réel, historique | pgTAP + `npm run e2e` (client et commerçant dans deux navigateurs) |
-| d ✅ | Stripe Connect (inscription + webhooks), PaymentSheet (mobile) et Checkout (web), pré-autorisation puis capture à l'acceptation, refus / annulation / expiration sans débit, abonnement Billing avec essai de 30 jours (web) | pgTAP, `e2e/payments.e2e.js` contre stripe-mock, parcours web avec pages Stripe simulées ; à valider avec les clés de test du compte Zéroo |
+| d ✅ | Stripe Connect (inscription + webhooks), PaymentSheet (mobile) et Checkout (web), pré-autorisation puis capture à l'acceptation, refus / annulation / expiration sans débit, abonnement Billing avec essai de 30 jours (web) | pgTAP, `e2e/payments.e2e.js` contre stripe-mock, parcours web avec pages Stripe simulées ; à valider avec les clés de test du compte Zeeroo |
 | e ✅ | Fidélité (menus formules uniquement) : décompte au trigger, menu offert réservé à la commande et rendu en cas d'échec, commande à 0 € sans Stripe, carte client (onglet + fiche commerce), affichage commerçant | 24 tests pgTAP, `e2e/loyalty.e2e.js` |
 | f ✅ | Push Expo sur changement de statut (trigger + pg_net + `notify-order-update`), « Je pars maintenant » (`customer-departure`, Google Routes avec repli sur une estimation), conseil « lancer la préparation dans X min » | 15 tests pgTAP, `e2e/notifications.e2e.js` (faux Expo Push et Google), parcours web ; à valider sur appareil physique |
 | g ✅ | Livraison par livreur indépendant : espace livreur (profil, SIRET, Stripe Connect, abonnement 14,99 € HT, rattachement aux restaurants, disponibilité, courses, revenus), réglages de livraison du restaurant (prix, rayon, livreurs), choix retrait / livraison et adresse côté client, double paiement repas + course, codes de retrait et de livraison | pgTAP (`delivery.test.sql`), `e2e/delivery.e2e.js` contre stripe-mock |

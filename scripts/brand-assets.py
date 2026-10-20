@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Génère les fichiers de marque Zéroo dans assets/images/ : logo (clair et sombre), symbole
+Génère les fichiers de marque Zeeroo dans assets/images/ : logo (clair et sombre), symbole
 « oo », icônes iOS et Android, écran de lancement et favicon.
 
 Usage : python3 scripts/brand-assets.py   (nécessite Pillow et NumPy)

@@ -17,4 +17,4 @@ export const MERCHANT_SELECT =
   '*, is_open_now, is_paused_now, is_accepting_orders, is_payments_ready, is_subscription_active' as const;
 
 /** Lien public du commerce, cible du QR code. */
-export const merchantPublicUrl = (slug: string) => `https://zeroo.fr/m/${slug}`;
+export const merchantPublicUrl = (slug: string) => `https://zeeroo.fr/m/${slug}`;

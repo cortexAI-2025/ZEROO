@@ -54,7 +54,7 @@ run('Espace commerçant', async () => {
   await label('Mot de passe').fill('motdepasse1');
   await v(page.getByTestId('sign-in-submit')).click();
   await page.getByTestId('choose-space-merchant').click();
-  await text('Bienvenue sur Zéroo Pro').waitFor();
+  await text('Bienvenue sur Zeeroo Pro').waitFor();
   step('nouveau commerçant : écran de création du commerce');
 
   await v(page.getByTestId('merchant-submit')).click();
@@ -213,9 +213,9 @@ run('Espace commerçant', async () => {
   // QR code
   await v(page.getByRole('tab', { name: /Boutique/ })).click();
   await text('QR code à afficher').click();
-  await text(`https://zeroo.fr/m/${slug}`).waitFor();
+  await text(`https://zeeroo.fr/m/${slug}`).waitFor();
   if (!(await v(page.getByTestId('merchant-qr')).locator('svg').count())) throw new Error('qr');
-  step('QR code vers https://zeroo.fr/m/' + slug);
+  step('QR code vers https://zeeroo.fr/m/' + slug);
   await page.goBack();
 
   // Commandes en temps réel
