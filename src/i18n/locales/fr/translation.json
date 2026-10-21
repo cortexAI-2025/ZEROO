@@ -65,7 +65,12 @@
     "change": "Changer de formule",
     "changeHint": "Votre abonnement existant est modifié (jamais un second). La différence est calculée au prorata sur votre prochaine facture. Un essai gratuit en cours se poursuit.",
     "changeConfirmTitle": "Changer de formule ?",
-    "changeConfirmBody": "Nouvelle formule : {{plan}} à {{ht}} HT. Votre abonnement actuel est remplacé, sans double prélèvement."
+    "changeConfirmBody": "Nouvelle formule : {{plan}} à {{ht}} HT. Votre abonnement actuel est remplacé, sans double prélèvement.",
+    "upsell": {
+      "title": "Fonction de la formule Pro",
+      "body": "Passez en Pro depuis l'onglet Boutique : votre abonnement est modifié, sans double prélèvement.",
+      "action": "Voir les formules"
+    }
   },
   "auth": {
     "tagline": "Commandez, payez, récupérez. Sans attendre.",
@@ -795,7 +800,9 @@
         "modes": "Choisissez le retrait, la livraison, ou les deux.",
         "items": "Choisissez au moins un produit.",
         "prices": "Chaque prix promotionnel doit être renseigné et inférieur au prix habituel."
-      }
+      },
+      "proFeature": "Happy Hours : des prix réduits sur des créneaux choisis, avec quota.",
+      "keptWhenNotPro": "Vos offres sont conservées, mais elles ne s'appliquent plus tant que la formule Pro n'est pas active."
     },
     "closures": {
       "title": "Fermetures exceptionnelles",
@@ -916,9 +923,62 @@
       "basketHint": "Sur 7 jours",
       "chart": "Ventes par jour",
       "noCommission": "0 % de commission : tout est versé sur votre compte.",
-      "topItems": "Meilleures ventes (30 jours)",
+      "topItems": "Meilleures ventes (7 jours)",
       "noSales": "Pas encore de ventes sur la période.",
-      "rating": "Note et avis"
+      "rating": "Note et avis",
+      "advanced": {
+        "title": "Statistiques avancées (30 jours)",
+        "proFeature": "Statistiques avancées : période étendue, heures de pointe, clients fidèles, modes de commande.",
+        "orders": "Commandes",
+        "revenue": "Chiffre d'affaires",
+        "basket": "Panier moyen",
+        "lost": "Refusées, expirées ou annulées",
+        "pickup": "Retrait",
+        "delivery": "Livraison",
+        "scheduled": "Précommandes",
+        "group": "Commandes groupées",
+        "customers": "Clients",
+        "returning": "dont clients fidèles (2 commandes ou plus)",
+        "happyHour": "Unités vendues en Happy Hour",
+        "peakHours": "Heures de pointe",
+        "hourLine": "{{hour}} h : {{orders}} commande(s)",
+        "topItems": "Meilleures ventes (30 jours)",
+        "none": "Pas encore de commandes sur la période."
+      }
+    },
+    "groupOrders": {
+      "title": "Commandes groupées entreprises",
+      "rowSubtitle": "Formule Pro · repas d'équipe, événements",
+      "proFeature": "Commandes groupées entreprises : repas d'équipe et événements, avec délai et montant minimaux.",
+      "hint": "Une entreprise commande pour son équipe, à l'avance. Le règlement se fait directement avec vous, comme toute autre commande : ZeeRoo ne perçoit rien.",
+      "enabled": "Accepter les commandes groupées",
+      "leadHours": "Délai minimal avant le repas",
+      "leadHoursValue": "{{count}} h",
+      "minHeadcount": "Convives minimum",
+      "minTotal": "Montant minimal",
+      "noMinimum": "Aucun minimum",
+      "save": "Enregistrer"
+    },
+    "marketing": {
+      "title": "Campagne marketing mensuelle",
+      "rowSubtitle": "Formule Pro · mise en avant sur les réseaux ZeeRoo",
+      "proFeature": "Campagne marketing mensuelle : une publication de votre établissement sur les réseaux sociaux officiels de ZeeRoo, chaque mois.",
+      "hint": "Chaque mois, à la date anniversaire de votre abonnement, ZeeRoo prépare une publication pour votre établissement. L'équipe ZeeRoo la relit puis la programme : rien n'est publié sans validation. Aucun frais en plus.",
+      "consent": "J'accepte que ZeeRoo publie mon nom, ma photo et mon lien de commande sur ses réseaux sociaux",
+      "consentHint": "Vous pouvez retirer votre accord à tout moment : les publications non programmées sont alors annulées.",
+      "empty": "Aucune campagne pour le moment. La première est préparée à la prochaine échéance, une fois votre accord donné.",
+      "caption": "Texte de la publication",
+      "saveCaption": "Enregistrer le texte",
+      "cycle": "Échéance du {{date}}",
+      "scheduledFor": "Publication prévue le {{date}}",
+      "statuses": {
+        "pending_review": "En attente de validation",
+        "scheduled": "Programmée",
+        "published": "Publiée",
+        "failed": "Échec de publication",
+        "rejected": "Refusée",
+        "cancelled": "Annulée"
+      }
     }
   },
   "account": {

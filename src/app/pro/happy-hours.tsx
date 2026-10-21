@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, QueryState, Screen, SwitchRow } from '@/components/ui';
+import { ProUpsell } from '@/features/billing/ProUpsell';
+import { useMerchantPlan } from '@/features/billing/useMerchantPlan';
 import type { HappyHour } from '@/features/happyhour/api';
 import { useHappyHourActions, useHappyHours } from '@/features/happyhour/hooks';
 import { groupSlots, describeWeekdays } from '@/features/menu/slots';
@@ -18,6 +20,18 @@ export default function HappyHoursScreen() {
   const merchant = useCurrentMerchant();
   const offers = useHappyHours(merchant.id);
   const actions = useHappyHourActions(merchant.id);
+  const plan = useMerchantPlan(merchant.id);
+
+  if (!plan.isLoading && !plan.has('happy_hours')) {
+    return (
+      <Screen scroll>
+        <ProUpsell feature={t('merchant.happyHours.proFeature')} />
+        {offers.data && offers.data.length > 0 ? (
+          <AppText variant="muted">{t('merchant.happyHours.keptWhenNotPro')}</AppText>
+        ) : null}
+      </Screen>
+    );
+  }
 
   if (!offers.data)
     return <QueryState error={offers.error} onRetry={() => void offers.refetch()} />;

@@ -68,6 +68,11 @@ export type MerchantPatch = Pick<
   | 'delivery_fee_cents'
   | 'delivery_radius_m'
   | 'accepts_cash_pickup'
+  | 'group_orders_enabled'
+  | 'group_min_lead_hours'
+  | 'group_min_headcount'
+  | 'group_min_total_cents'
+  | 'marketing_consent'
 >;
 
 export async function updateMerchant(id: string, patch: MerchantPatch) {
@@ -131,9 +136,39 @@ export async function fetchSalesByDay(merchantId: string, days = 7) {
   return data;
 }
 
-/** Produits les plus vendus sur 30 jours. */
-export async function fetchTopItems(merchantId: string) {
-  const { data, error } = await supabase.rpc('merchant_top_items', { p_merchant_id: merchantId });
+/** Produits les plus vendus : 7 jours en Start, davantage en Pro (règle appliquée par la base). */
+export async function fetchTopItems(merchantId: string, days = 7) {
+  const { data, error } = await supabase.rpc('merchant_top_items', {
+    p_merchant_id: merchantId,
+    p_days: days,
+  });
   if (error) throw error;
   return data;
+}
+
+export type AdvancedStats = {
+  period_days: number;
+  orders_count: number;
+  revenue_cents: number;
+  average_basket_cents: number;
+  cancelled_or_refused_count: number;
+  pickup_orders: number;
+  delivery_orders: number;
+  scheduled_orders: number;
+  group_orders: number;
+  unique_customers: number;
+  returning_customers: number;
+  happy_hour_units: number;
+  peak_hours: { hour: number; orders: number }[];
+  top_items: { name: string; quantity: number; revenue_cents: number }[];
+};
+
+/** Statistiques avancées (formule Pro, refusées par la base sinon). */
+export async function fetchAdvancedStats(merchantId: string, days = 30) {
+  const { data, error } = await supabase.rpc('merchant_advanced_stats', {
+    p_merchant_id: merchantId,
+    p_days: days,
+  });
+  if (error) throw error;
+  return data as unknown as AdvancedStats;
 }

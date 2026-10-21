@@ -184,6 +184,18 @@ export default function ShopScreen() {
           onPress={() => router.push('/pro/baskets')}
         />
         <ListRow
+          testID="group-orders-settings"
+          title={t('merchant.groupOrders.title')}
+          subtitle={t('merchant.groupOrders.rowSubtitle')}
+          onPress={() => router.push('/pro/group-orders')}
+        />
+        <ListRow
+          testID="marketing-settings"
+          title={t('merchant.marketing.title')}
+          subtitle={t('merchant.marketing.rowSubtitle')}
+          onPress={() => router.push('/pro/marketing')}
+        />
+        <ListRow
           testID="happy-hours-settings"
           title={t('merchant.happyHours.title')}
           onPress={() => router.push('/pro/happy-hours')}

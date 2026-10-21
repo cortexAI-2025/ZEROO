@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, BarChart, Card, ListRow, Screen, Stars } from '@/components/ui';
+import { ProUpsell } from '@/features/billing/ProUpsell';
+import { useMerchantPlan } from '@/features/billing/useMerchantPlan';
 import {
+  useAdvancedStats,
   useCurrentMerchant,
   useSalesByDay,
   useTodaySummary,
@@ -27,6 +30,8 @@ export default function MerchantStatsScreen() {
   const top = useTopItems(merchant.id);
   const rating = useMerchantRatings([merchant.id]).data?.get(merchant.id);
   const reviews = useMerchantReviews(merchant.id);
+  const plan = useMerchantPlan(merchant.id);
+  const advanced = useAdvancedStats(merchant.id, plan.has('advanced_stats'));
   useRefreshOnFocus(today.refetch);
   useRefreshOnFocus(sales.refetch);
   useRefreshOnFocus(top.refetch);
@@ -91,6 +96,48 @@ export default function MerchantStatsScreen() {
           ))
         )}
       </Card>
+
+      {plan.has('advanced_stats') ? (
+        <Card testID="advanced-stats">
+          <AppText variant="subtitle">{t('merchant.stats.advanced.title')}</AppText>
+          {advanced.data && advanced.data.orders_count > 0 ? (
+            <>
+              <AppText>
+                {t('merchant.stats.advanced.orders')} : {advanced.data.orders_count} ·{' '}
+                {t('merchant.stats.advanced.revenue')} : {formatCents(advanced.data.revenue_cents)}{' '}
+                · {t('merchant.stats.advanced.basket')} :{' '}
+                {formatCents(advanced.data.average_basket_cents)}
+              </AppText>
+              <AppText>
+                {t('merchant.stats.advanced.pickup')} : {advanced.data.pickup_orders} ·{' '}
+                {t('merchant.stats.advanced.delivery')} : {advanced.data.delivery_orders} ·{' '}
+                {t('merchant.stats.advanced.scheduled')} : {advanced.data.scheduled_orders} ·{' '}
+                {t('merchant.stats.advanced.group')} : {advanced.data.group_orders}
+              </AppText>
+              <AppText>
+                {t('merchant.stats.advanced.customers')} : {advanced.data.unique_customers} (
+                {t('merchant.stats.advanced.returning')} : {advanced.data.returning_customers})
+              </AppText>
+              <AppText variant="muted">
+                {t('merchant.stats.advanced.lost')} : {advanced.data.cancelled_or_refused_count} ·{' '}
+                {t('merchant.stats.advanced.happyHour')} : {advanced.data.happy_hour_units}
+              </AppText>
+              <AppText variant="subtitle">{t('merchant.stats.advanced.peakHours')}</AppText>
+              <BarChart
+                bars={advanced.data.peak_hours.map((h) => ({
+                  label: `${h.hour}h`,
+                  value: h.orders,
+                }))}
+                format={(n) => String(n)}
+              />
+            </>
+          ) : (
+            <AppText variant="muted">{t('merchant.stats.advanced.none')}</AppText>
+          )}
+        </Card>
+      ) : plan.isLoading ? null : (
+        <ProUpsell feature={t('merchant.stats.advanced.proFeature')} />
+      )}
 
       <Card testID="merchant-rating">
         <AppText variant="subtitle">{t('merchant.stats.rating')}</AppText>
