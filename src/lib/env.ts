@@ -9,6 +9,8 @@ const schema = z.object({
   functionsUrl: z.url().optional(),
   googleWebClientId: z.string().optional(),
   googleIosClientId: z.string().optional(),
+  // Fond de carte de l'annuaire (web) : tuiles {z}/{x}/{y}. Défaut : OpenStreetMap (usage modéré).
+  mapTilesUrl: z.string().default('https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
   // Fournisseurs de connexion activés dans Supabase (Authentication > Providers), pour le web.
   oauthProviders: z
     .string()
@@ -31,6 +33,7 @@ const parsed = schema.safeParse({
   functionsUrl: process.env.EXPO_PUBLIC_FUNCTIONS_URL || undefined,
   googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || undefined,
   googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || undefined,
+  mapTilesUrl: process.env.EXPO_PUBLIC_MAP_TILES_URL || undefined,
   oauthProviders: process.env.EXPO_PUBLIC_OAUTH_PROVIDERS || undefined,
 });
 

@@ -37,3 +37,8 @@ Projet `zeroo` → Settings → Domains → ajouter `app.zeeroo.fr` ; un déploi
 - `app` : `CNAME → cname.vercel-dns.com`.
 - La vitrine `zeeroo.fr` est servie par GitHub Pages (`zeroo_mainpage`) ; sa page `404.html` redirige `/m/<slug>` et les pages de l'application vers `app.zeeroo.fr` en conservant chemin et paramètres.
 - **Anciens QR** `zeroo.online/m/<slug>` : aucun code ne peut les rediriger tant que l'ancien domaine pointe ailleurs. Configurer chez IONOS une **redirection HTTP permanente (301) de `zeroo.online/*` vers `https://zeeroo.fr/$1`**, ou héberger l'ancien domaine sur le même site. Le domaine `zeeroo.online` est réservé aux démonstrations commerciales et ne sert pas à l'application.
+
+## 6. Carte de l'annuaire
+
+- **Web** : Leaflet avec les tuiles OpenStreetMap par défaut. La politique d'usage d'OpenStreetMap limite le trafic important : en production, définir `EXPO_PUBLIC_MAP_TILES_URL` (variable Vercel) avec un fournisseur de tuiles (MapTiler, Stadia Maps…) et sa clé.
+- **iOS / Android** : carte intégrée **non livrée**. À faire si souhaité : `npx expo install expo-maps`, créer une clé « Maps SDK for Android » dans Google Cloud (`android.config.googleMaps.apiKey` dans `app.config.ts`), puis un build de développement (`eas build --profile development`).

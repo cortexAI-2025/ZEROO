@@ -2,15 +2,25 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppText, Badge, Card, QueryState, Screen } from '@/components/ui';
+import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
 import { ACTIVE_STATUSES } from '@/features/merchant-orders/types';
 import type { CustomerOrder } from '@/features/orders/api';
 import { useMyOrders } from '@/features/orders/hooks';
+import { useReorder } from '@/features/orders/useReorder';
 import { formatDay, formatTime } from '@/lib/dates';
 import { formatCents } from '@/lib/money';
 import { spacing } from '@/theme';
 
-function OrderRow({ order }: { order: CustomerOrder }) {
+function OrderRow({
+  order,
+  onReorder,
+  reordering,
+}: {
+  order: CustomerOrder;
+  /** Absent : pas de bouton (commande en cours). */
+  onReorder?: (order: CustomerOrder) => void;
+  reordering?: boolean;
+}) {
   const { t } = useTranslation();
   const tone =
     order.status === 'ready' || order.status === 'collected' || order.status === 'delivered'
@@ -34,6 +44,15 @@ function OrderRow({ order }: { order: CustomerOrder }) {
           {formatCents(order.total_cents + order.delivery_fee_cents)}
           {order.fulfillment === 'delivery' ? ' · 🛵' : ''}
         </AppText>
+        {onReorder ? (
+          <Button
+            testID={`reorder-${order.id}`}
+            variant="secondary"
+            title={t('client.order.reorder')}
+            loading={reordering}
+            onPress={() => onReorder(order)}
+          />
+        ) : null}
       </Card>
     </Pressable>
   );
@@ -42,6 +61,7 @@ function OrderRow({ order }: { order: CustomerOrder }) {
 export default function OrdersScreen() {
   const { t } = useTranslation();
   const orders = useMyOrders();
+  const { reorder, busyId, message } = useReorder();
   if (!orders.data)
     return <QueryState error={orders.error} onRetry={() => void orders.refetch()} />;
 
@@ -62,8 +82,14 @@ export default function OrdersScreen() {
         <OrderRow key={o.id} order={o} />
       ))}
       {past.length > 0 ? <AppText variant="subtitle">{t('client.orders.past')}</AppText> : null}
+      {message ? <AppText variant="error">{message}</AppText> : null}
       {past.map((o) => (
-        <OrderRow key={o.id} order={o} />
+        <OrderRow
+          key={o.id}
+          order={o}
+          onReorder={(order) => void reorder(order)}
+          reordering={busyId === o.id}
+        />
       ))}
     </Screen>
   );
