@@ -79,6 +79,28 @@ export async function fetchMissions() {
   return data as Mission[];
 }
 
+export interface CourierStop {
+  stop_no: number;
+  kind: 'pickup' | 'dropoff';
+  order_id: string;
+  label: string | null;
+  eta: string;
+}
+
+/** Tournée du livreur : arrêts numérotés, avec une heure estimée (jamais un engagement). */
+export async function fetchStops() {
+  const { data, error } = await supabase.rpc('courier_stops');
+  if (error) throw error;
+  return data as CourierStop[];
+}
+
+/** Heure de livraison estimée de la commande du client connecté (arrondie aux 5 minutes). */
+export async function fetchDeliveryEta(orderId: string) {
+  const { data, error } = await supabase.rpc('order_delivery_eta', { p_order_id: orderId });
+  if (error) throw error;
+  return data as string | null;
+}
+
 /** Le premier livreur qui accepte obtient la course ; les autres reçoivent mission_unavailable. */
 export async function acceptMission(orderId: string) {
   const { error } = await supabase.rpc('courier_accept_mission', { p_order_id: orderId });

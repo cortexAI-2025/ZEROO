@@ -10,6 +10,7 @@ import { NotificationsPrompt } from '@/features/notifications/NotificationsPromp
 import { cancelMyOrder, cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
 import { CourierBadge, useOrderCourier } from '@/features/orders/CourierBadge';
 import { DepartureCard } from '@/features/orders/DepartureCard';
+import { useDeliveryEta } from '@/features/courier/hooks';
 import { useOrder } from '@/features/orders/hooks';
 import { PaymentCard } from '@/features/orders/PaymentCard';
 import { showsAddress } from '@/features/merchant/modes';
@@ -37,6 +38,11 @@ export default function OrderScreen() {
   const { id, paid } = useLocalSearchParams<{ id: string; paid?: string }>();
   const query = useOrder(id);
   const order = query.data;
+  const eta = useDeliveryEta(
+    id,
+    order?.fulfillment === 'delivery' &&
+      ['accepted', 'preparing', 'ready', 'out_for_delivery'].includes(order.status),
+  );
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   // Lien de paiement du livreur (paiement de la livraison par carte).
@@ -172,6 +178,11 @@ export default function OrderScreen() {
 
       <Card testID="order-status">
         <AppText variant={failed ? 'error' : 'subtitle'}>{statusText}</AppText>
+        {eta.data ? (
+          <AppText variant="muted" testID="delivery-eta">
+            {t('client.order.status.deliveryEta', { time: formatTime(eta.data) })}
+          </AppText>
+        ) : null}
         {order.refusal_reason ? (
           <AppText variant="muted">
             {t('client.order.reason', { reason: order.refusal_reason })}
