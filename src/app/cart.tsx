@@ -11,6 +11,7 @@ import { useAddresses } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useDeliveryQuote, useMerchantDeliverySettings } from '@/features/cart/delivery';
 import { repriceLines } from '@/features/cart/reprice';
+import { SchedulePicker } from '@/features/cart/SchedulePicker';
 import { cartDiscountCents, isValidDeliveryPhone, useCart } from '@/features/cart/store';
 import { fetchMerchantPage } from '@/features/discover/api';
 import { formatDistance } from '@/features/discover/location';
@@ -54,10 +55,14 @@ export default function CartScreen() {
     setDeliveryPhone,
     deliveryInstructions,
     setDeliveryInstructions,
+    scheduledFor,
+    setScheduledFor,
+    group,
+    setGroup,
   } = useCart();
   const deliverySettings = useMerchantDeliverySettings(merchant?.id).data;
   // Modes réellement proposés (revérifiés côté serveur à la commande) : retrait, livraison, ou les deux.
-  const modes = orderModes(deliverySettings);
+  const modes = orderModes(deliverySettings, !!scheduledFor);
   const mode = deliverySettings ? resolveMode(fulfillment, modes) : null;
   const isDelivery = mode === 'delivery';
   const hasPickup = modes.includes('pickup');
@@ -84,6 +89,7 @@ export default function CartScreen() {
   const { offers, refetch: refetchOffers } = useActiveOffers(
     merchant?.id,
     mode === 'delivery' ? 'delivery' : 'pickup',
+    scheduledFor,
   );
   const previousOffers = useRef(offers);
   const [notices, setNotices] = useState<OfferChange[]>([]);
@@ -102,7 +108,11 @@ export default function CartScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers]);
 
-  const quoteQuery = useDeliveryQuote(isDelivery ? merchant?.id : undefined, deliveryAddress);
+  const quoteQuery = useDeliveryQuote(
+    isDelivery ? merchant?.id : undefined,
+    deliveryAddress,
+    scheduledFor,
+  );
   const quote = isDelivery ? quoteQuery.data : undefined;
   const card = useLoyaltyCard(merchant?.id);
   const rewardsAvailable = card?.rewards_available ?? 0;
@@ -125,8 +135,15 @@ export default function CartScreen() {
   // Sans lien de paiement, le restaurant n'encaisse qu'en espèces au comptoir.
   const canPayByCard = !!deliverySettings?.payment_link;
   const cashMeal = canPayCashAtCounter && (mealCash || !canPayByCard);
+  // Commande groupée : entreprise, effectif et montant minimal ; le serveur revérifie tout.
+  const groupReady =
+    !group ||
+    (group.companyName.trim().length >= 2 &&
+      group.headcount >= (deliverySettings?.group_min_headcount ?? 2) &&
+      total >= (deliverySettings?.group_min_total_cents ?? 0));
   const deliveryReady =
     mode !== null &&
+    groupReady &&
     (!isDelivery ||
       (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone)));
   const order = async () => {
@@ -143,6 +160,8 @@ export default function CartScreen() {
         offers,
         mealPayment: cashMeal ? 'cash' : 'card',
         deliveryPayment: isDelivery && rideCash ? 'cash' : 'card',
+        scheduledFor,
+        group,
         delivery:
           isDelivery && deliveryAddress
             ? {
@@ -296,6 +315,24 @@ export default function CartScreen() {
         title={t('client.cart.continueShopping')}
         onPress={() => router.push({ pathname: '/m/[slug]', params: { slug: merchant.slug } })}
       />
+
+      {deliverySettings ? (
+        <SchedulePicker
+          merchantId={merchant.id}
+          merchant={deliverySettings}
+          scheduledFor={scheduledFor}
+          onSchedule={setScheduledFor}
+          group={group}
+          onGroup={setGroup}
+        />
+      ) : null}
+      {group && total < (deliverySettings?.group_min_total_cents ?? 0) ? (
+        <AppText variant="error" testID="group-minimum">
+          {t('client.schedule.groupMinimum', {
+            amount: formatCents(deliverySettings?.group_min_total_cents ?? 0),
+          })}
+        </AppText>
+      ) : null}
 
       {deliverySettings && mode === null ? (
         <Card testID="no-order-mode">
@@ -477,6 +514,19 @@ export default function CartScreen() {
             : t('client.cart.paymentInfo')}
       </AppText>
       {isDelivery ? <AppText variant="muted">{t('client.cart.twoPayments')}</AppText> : null}
+      {scheduledFor ? (
+        <AppText variant="muted" testID="cart-scheduled">
+          {t('client.schedule.summary', {
+            date: new Date(scheduledFor).toLocaleString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+          })}
+        </AppText>
+      ) : null}
       <AppText variant="muted">{t('client.cart.noFees')}</AppText>
 
       {error ? <AppText variant="error">{error}</AppText> : null}

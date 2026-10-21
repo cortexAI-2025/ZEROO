@@ -8,7 +8,7 @@ import { formatDistance } from '@/features/discover/location';
 import { cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
 import { confirmMealPayment } from '@/features/payments/pay';
 import { confirmAsync } from '@/lib/confirm';
-import { formatTime } from '@/lib/dates';
+import { formatDay, formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
 import { prepAdvice } from '@/lib/prepTiming';
@@ -84,6 +84,20 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
             })
           : t('merchant.orders.readyAt', { time: formatTime(order.estimated_ready_at) })}
       </AppText>
+
+      {order.scheduled_for ? (
+        <AppText variant="link" testID={`scheduled-${order.pickup_code}`}>
+          {t('merchant.orders.scheduled', {
+            day: formatDay(order.scheduled_for),
+            time: formatTime(order.scheduled_for),
+          })}
+        </AppText>
+      ) : null}
+      {order.is_group_order ? (
+        <AppText variant="link" testID={`group-${order.pickup_code}`}>
+          {t('merchant.orders.group', { company: order.company_name, count: order.headcount })}
+        </AppText>
+      ) : null}
 
       {isDelivery ? (
         <>

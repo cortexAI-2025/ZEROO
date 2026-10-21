@@ -18,6 +18,10 @@ type Body = {
   mealPayment?: 'card' | 'cash';
   /** Livraison : carte via le lien du livreur ou espèces remises au livreur. */
   deliveryPayment?: 'card' | 'cash';
+  /** Précommande : instant ISO. Absent : dès que possible. */
+  scheduledFor?: string;
+  /** Commande groupée entreprise (formule Pro de l'établissement). */
+  group?: { companyName: string; headcount: number };
   /** Absent : retrait sur place. */
   delivery?: {
     addressLine: string;
@@ -76,6 +80,10 @@ export const handler = handle(async (req) => {
         : null,
       p_meal_payment: mealPayment,
       p_delivery_payment: body.deliveryPayment ?? 'card',
+      p_scheduled_for: body.scheduledFor ?? null,
+      p_group: body.group
+        ? { company_name: body.group.companyName, headcount: body.group.headcount }
+        : null,
     }),
   ) as OrderRow;
 

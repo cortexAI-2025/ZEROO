@@ -36,6 +36,9 @@ export type DeliveryDetails = DeliveryAddress & { phone: string; instructions: s
 
 export type Fulfillment = 'pickup' | 'delivery';
 
+/** Commande groupée entreprise (formule Pro de l'établissement). */
+export type GroupOrder = { companyName: string; headcount: number };
+
 const memory = new Map<string, string>();
 const memoryStorage = {
   getItem: (key: string) => memory.get(key) ?? null,
@@ -54,6 +57,9 @@ type CartState = {
   deliveryAddress: DeliveryAddress | null;
   deliveryPhone: string;
   deliveryInstructions: string;
+  /** Précommande : instant choisi (ISO), ou null pour « dès que possible ». */
+  scheduledFor: string | null;
+  group: GroupOrder | null;
   /** Ajoute une ligne ; renvoie false si le panier contient déjà un autre commerce. */
   add: (
     merchant: CartMerchant,
@@ -69,6 +75,8 @@ type CartState = {
   setDeliveryAddress: (address: DeliveryAddress) => void;
   setDeliveryPhone: (phone: string) => void;
   setDeliveryInstructions: (instructions: string) => void;
+  setScheduledFor: (scheduledFor: string | null) => void;
+  setGroup: (group: GroupOrder | null) => void;
   clear: () => void;
 };
 
@@ -113,6 +121,8 @@ export const useCart = create<CartState>()(
       deliveryAddress: null,
       deliveryPhone: '',
       deliveryInstructions: '',
+      scheduledFor: null,
+      group: null,
       add: (merchant, line, options) => {
         const state = get();
         if (
@@ -134,6 +144,8 @@ export const useCart = create<CartState>()(
           merchant,
           note: sameMerchant ? state.note : '',
           rewardLineKey: sameMerchant ? state.rewardLineKey : null,
+          scheduledFor: sameMerchant ? state.scheduledFor : null,
+          group: sameMerchant ? state.group : null,
           lines: existing
             ? lines.map((l) =>
                 l.key === key ? { ...l, quantity: Math.min(50, l.quantity + line.quantity) } : l,
@@ -165,8 +177,20 @@ export const useCart = create<CartState>()(
       setDeliveryAddress: (deliveryAddress) => set({ deliveryAddress }),
       setDeliveryPhone: (deliveryPhone) => set({ deliveryPhone }),
       setDeliveryInstructions: (deliveryInstructions) => set({ deliveryInstructions }),
+      // Une commande groupée est toujours programmée : décocher la précommande l'annule aussi.
+      setScheduledFor: (scheduledFor) =>
+        set((state) => ({ scheduledFor, group: scheduledFor ? state.group : null })),
+      setGroup: (group) => set({ group }),
       clear: () =>
-        set({ merchant: null, lines: [], note: '', rewardLineKey: null, fulfillment: 'pickup' }),
+        set({
+          merchant: null,
+          lines: [],
+          note: '',
+          rewardLineKey: null,
+          fulfillment: 'pickup',
+          scheduledFor: null,
+          group: null,
+        }),
     }),
     {
       name: 'zeroo.cart',

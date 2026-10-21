@@ -4,10 +4,15 @@ import type { Tables } from '@/types/database';
 import type { Offer, OfferMode } from './types';
 
 /** Offres en vigueur maintenant pour le mode de commande (la meilleure par produit). */
-export async function fetchActiveOffers(merchantId: string, mode: OfferMode): Promise<Offer[]> {
+export async function fetchActiveOffers(
+  merchantId: string,
+  mode: OfferMode,
+  at?: string | null,
+): Promise<Offer[]> {
   const { data, error } = await supabase.rpc('active_happy_hours', {
     p_merchant_id: merchantId,
     p_mode: mode,
+    ...(at ? { p_at: at } : {}),
   });
   if (error) throw error;
   return data;

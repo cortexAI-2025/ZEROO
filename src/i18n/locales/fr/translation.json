@@ -380,7 +380,9 @@
       "reorderNothing": "Ces produits ne sont plus disponibles : consultez le menu du restaurant.",
       "reorderSkipped_one": "{{count}} produit n'est plus disponible et n'a pas été ajouté.",
       "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés.",
-      "yourCourier": "votre livreur"
+      "yourCourier": "votre livreur",
+      "scheduled": "Commande programmée pour {{day}} à {{time}}.",
+      "group": "Commande groupée · {{company}} · {{count}} convives"
     },
     "loyalty": {
       "title": "Mes cartes de fidélité",
@@ -464,6 +466,20 @@
         "meal": "{{name}} a bien reçu vos {{price}}.",
         "delivery": "{{name}} a bien reçu vos {{price}} pour la livraison."
       }
+    },
+    "schedule": {
+      "title": "Quand ?",
+      "asap": "Dès que possible",
+      "later": "Programmer à un autre moment",
+      "asapHint": "L'établissement prépare votre commande dès qu'il l'accepte.",
+      "hint": "Créneaux pendant les horaires d'ouverture, au moins le temps de préparation à l'avance. Les offres Happy Hour se calculent à l'heure choisie.",
+      "none": "Aucun créneau n'est disponible dans les 14 prochains jours.",
+      "group": "Commande groupée entreprise",
+      "company": "Nom de l'entreprise",
+      "headcount": "Nombre de convives (minimum {{min}})",
+      "groupHint": "Une commande groupée se passe au moins {{hours}} h à l'avance. Elle est réglée directement à l'établissement.",
+      "groupMinimum": "Montant minimal d'une commande groupée : {{amount}}.",
+      "summary": "Commande programmée : {{date}}."
     }
   },
   "baskets": {
@@ -623,7 +639,9 @@
         "confirm": "Paiement reçu",
         "received": "Repas payé · {{price}}",
         "cash": "Repas {{price}} : à encaisser en espèces au comptoir."
-      }
+      },
+      "scheduled": "Précommande : à préparer pour {{day}} à {{time}}",
+      "group": "Commande groupée · {{company}} · {{count}} convives"
     },
     "menu": {
       "title": "Menu",
@@ -1562,5 +1580,21 @@
       "test": "Ouvrir ma page de paiement",
       "hint": "Choisissez une page où le client saisit lui-même le montant. Vous confirmez chaque paiement reçu dans l'appli."
     }
+  },
+  "admin": {
+    "title": "Administration ZeeRoo",
+    "hint": "Campagnes marketing des établissements Pro : relire le texte, choisir le jour (trois établissements au plus par jour), puis enregistrer le résultat de chaque publication. ZeeRoo ne publie pas automatiquement : aucune connexion à un réseau social n'est configurée.",
+    "empty": "Aucune campagne dans cet état.",
+    "date": "Jour de publication (AAAA-MM-JJ)",
+    "approve": "Valider et programmer",
+    "reject": "Refuser",
+    "postUrl": "Lien de la publication",
+    "failureReason": "Motif de l'échec",
+    "markPublished": "Publiée",
+    "markFailed": "Échec",
+    "requeue": "Reprogrammer",
+    "attempts_one": "{{count}} tentative",
+    "attempts_other": "{{count}} tentatives",
+    "open": "Administration"
   }
 }

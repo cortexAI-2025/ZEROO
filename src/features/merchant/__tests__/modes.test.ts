@@ -63,3 +63,15 @@ describe('showsAddress', () => {
     expect(showsAddress(null)).toBe(false);
   });
 });
+
+describe('orderModes : précommande', () => {
+  it("la livraison programmée n'exige pas de livreur en ligne maintenant", () => {
+    const f = { offers_pickup: true, offers_delivery: true, delivery_available_now: false };
+    expect(orderModes(f)).toEqual(['pickup']);
+    expect(orderModes(f, true)).toEqual(['pickup', 'delivery']);
+  });
+  it('sans livraison activée, jamais de livraison programmée', () => {
+    const f = { offers_pickup: true, offers_delivery: false, delivery_available_now: false };
+    expect(orderModes(f, true)).toEqual(['pickup']);
+  });
+});

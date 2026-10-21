@@ -624,3 +624,42 @@ begin
   return v_order;
 end;
 $function$;
+
+-- Devis de livraison : pour une précommande, un livreur rattaché et autorisé à cette heure suffit (pas besoin qu'il soit en ligne maintenant).
+drop function public.merchant_delivery_quote(uuid, double precision, double precision);
+CREATE OR REPLACE FUNCTION public.merchant_delivery_quote(p_merchant_id uuid, p_latitude double precision, p_longitude double precision, p_scheduled_for timestamp with time zone DEFAULT NULL::timestamp with time zone)
+ RETURNS TABLE(available boolean, reason text, fee_cents integer, distance_m integer)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_merchant public.merchants;
+  v_distance int;
+begin
+  select * into v_merchant from public.merchants where id = p_merchant_id and is_published;
+  if v_merchant.id is null or not v_merchant.delivery_enabled or not public.has_delivery_option(v_merchant) then
+    return query select false, 'delivery_unavailable'::text, null::int, null::int;
+    return;
+  end if;
+  v_distance := round(extensions.st_distance(
+    public.merchant_point(v_merchant.id),
+    extensions.st_setsrid(extensions.st_makepoint(p_longitude, p_latitude), 4326)::extensions.geography
+  ))::int;
+  if v_distance > v_merchant.delivery_radius_m then
+    return query select false, 'delivery_out_of_range'::text, v_merchant.delivery_fee_cents, v_distance;
+  elsif p_scheduled_for is null and not exists (select 1 from public.available_couriers(p_merchant_id)) then
+    return query select false, 'no_courier_available'::text, v_merchant.delivery_fee_cents, v_distance;
+  elsif p_scheduled_for is not null and not exists (
+    select 1 from public.merchant_couriers l
+    where l.merchant_id = p_merchant_id and l.status = 'approved'
+      and public.is_courier_active(l.courier_id)
+      and public.courier_can_deliver_at(l.courier_id, p_scheduled_for)
+  ) then
+    return query select false, 'no_courier_available'::text, v_merchant.delivery_fee_cents, v_distance;
+  else
+    return query select true, null::text, v_merchant.delivery_fee_cents, v_distance;
+  end if;
+end;
+$function$;
+grant execute on function public.merchant_delivery_quote(uuid, double precision, double precision, timestamptz) to anon, authenticated, service_role;

@@ -314,6 +314,19 @@ export default function OrderScreen() {
             <AppText>{formatCents(item.line_total_cents)}</AppText>
           </View>
         ))}
+        {order.scheduled_for ? (
+          <AppText variant="link" testID="order-scheduled">
+            {t('client.order.scheduled', {
+              day: formatDay(order.scheduled_for),
+              time: formatTime(order.scheduled_for),
+            })}
+          </AppText>
+        ) : null}
+        {order.is_group_order ? (
+          <AppText variant="muted">
+            {t('client.order.group', { company: order.company_name, count: order.headcount })}
+          </AppText>
+        ) : null}
         {order.customer_note ? <AppText variant="muted">« {order.customer_note} »</AppText> : null}
         {order.discount_cents > 0 ? (
           <View style={styles.line}>
