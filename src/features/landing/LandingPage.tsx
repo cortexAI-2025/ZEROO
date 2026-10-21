@@ -301,7 +301,7 @@ export function LandingPage() {
       {/* Tarif */}
       <Section title={t('landing.pricing.title')} testID="landing-pricing">
         <View style={styles.planRow}>
-          {(['start', 'pro', 'courier'] as const).map((plan) => {
+          {(['start', 'pro', 'courier_start', 'courier_pro'] as const).map((plan) => {
             const month = formatPrice(plan, 'month');
             const year = formatPrice(plan, 'year');
             return (
@@ -313,7 +313,7 @@ export function LandingPage() {
                   { borderColor: colors.brand, backgroundColor: colors.background },
                 ]}>
                 <AppText variant="muted" style={styles.center}>
-                  {plan === 'courier'
+                  {plan.startsWith('courier')
                     ? t('landing.pricing.couriers')
                     : t('landing.pricing.restaurants')}
                 </AppText>
