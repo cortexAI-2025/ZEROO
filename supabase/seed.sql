@@ -114,9 +114,9 @@ where id = '80000000-0000-0000-0000-000000000001';
 insert into public.courier_stripe_accounts (courier_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)
 values ('80000000-0000-0000-0000-000000000001', 'acct_demo_karim', true, true, true);
 
-insert into public.courier_subscriptions (courier_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used)
+insert into public.courier_subscriptions (courier_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used, plan)
 values ('80000000-0000-0000-0000-000000000001', 'cus_demo_karim', 'sub_demo_karim', 'trialing',
-        now() + interval '30 days', true);
+        now() + interval '30 days', true, 'pro');
 
 insert into public.merchant_couriers (merchant_id, courier_id, status, decided_at)
 values ('30000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', 'approved', now());

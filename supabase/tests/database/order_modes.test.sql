@@ -83,23 +83,22 @@ select lives_ok(
                                 pg_temp.bowl(), null, pg_temp.addr()) $$,
   'livraison acceptée par la dark kitchen');
 
--- Retour à Start : la livraison s'arrête (déclencheur existant) et le serveur refuse toute commande.
-update public.subscriptions set plan = 'start' where merchant_id = 'd0000000-0000-0000-0000-000000000001';
-select ok(not (select delivery_enabled from public.merchants where slug = 'cuisine-fantome'),
-          'retour à Start : la livraison est coupée');
+-- Abonnement résilié : le réglage est conservé, mais le serveur refuse toute commande.
+update public.subscriptions set status = 'canceled' where merchant_id = 'd0000000-0000-0000-0000-000000000001';
+select ok((select delivery_enabled from public.merchants where slug = 'cuisine-fantome'),
+          'résiliation : le réglage de livraison est conservé');
 select throws_ok(
   $$ select public.create_order('20000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',
                                 pg_temp.bowl(), null, pg_temp.addr()) $$,
   'merchant_not_accepting', 'plus aucune commande possible sans mode actif');
 
--- La formule est revérifiée à la commande, même si l'indicateur de livraison est resté activé.
-alter table public.merchants disable trigger merchants_check_delivery_option;  -- simule un indicateur resté activé
+-- Formule Start : la livraison est incluse. L'abonnement est revérifié à chaque commande.
+update public.subscriptions set status = 'active', plan = 'start' where merchant_id = 'd0000000-0000-0000-0000-000000000001';
 update public.merchants set delivery_enabled = true, offers_pickup = true where id = 'd0000000-0000-0000-0000-000000000001';
-alter table public.merchants enable trigger merchants_check_delivery_option;
-select throws_ok(
+select lives_ok(
   $$ select public.create_order('20000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',
                                 pg_temp.bowl(), null, pg_temp.addr()) $$,
-  'delivery_unavailable', 'livraison refusée hors formule Pro, indicateur périmé ou non');
+  'formule Start : la livraison est acceptée');
 select lives_ok(
   $$ select public.create_order('20000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',
                                 pg_temp.bowl()) $$,
@@ -108,6 +107,7 @@ select lives_ok(
 -- -----------------------------------------------------------------------------
 -- Réglages par le propriétaire
 -- -----------------------------------------------------------------------------
+update public.merchants set delivery_enabled = false where id = 'd0000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000001');
 select throws_ok($$ update public.merchants set offers_pickup = false where id = 'd0000000-0000-0000-0000-000000000001' $$,

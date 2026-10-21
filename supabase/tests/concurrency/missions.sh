@@ -27,8 +27,8 @@ begin
     values (v_id, v_user, 'Livreur ' || n, '06 00 00 00 0' || n, 'auto_entrepreneur', siret, 'scooter',
             'https://paypal.me/conc' || n, true);
     update public.couriers set available_until = now() + interval '1 day' where id = v_id;
-    insert into public.courier_subscriptions (courier_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used)
-    values (v_id, 'cus_conc' || n, 'sub_conc' || n, 'trialing', now() + interval '30 days', true);
+    insert into public.courier_subscriptions (courier_id, stripe_customer_id, stripe_subscription_id, status, trial_end, trial_used, plan)
+    values (v_id, 'cus_conc' || n, 'sub_conc' || n, 'trialing', now() + interval '30 days', true, 'pro');
     insert into public.merchant_couriers (merchant_id, courier_id, status, decided_at)
     values ('$SAMIR', v_id, 'approved', now());
   end loop;

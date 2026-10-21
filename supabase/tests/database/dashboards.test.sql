@@ -150,17 +150,20 @@ reset role;
 -- ---------------------------------------------------------------------------------------
 select ok((select public.has_delivery_option(m) from public.merchants m where id = '30000000-0000-0000-0000-000000000001'),
   'Chez Samir a la formule Pro');
+create temporary table prior_sub as select status from public.subscriptions where merchant_id = '30000000-0000-0000-0000-000000000001';
 update public.subscriptions set plan = 'start' where merchant_id = '30000000-0000-0000-0000-000000000001';
-select is((select delivery_enabled from public.merchants where id = '30000000-0000-0000-0000-000000000001'), false,
-  'retour à Start : la livraison s''arrête');
+select is((select delivery_enabled from public.merchants where id = '30000000-0000-0000-0000-000000000001'), true,
+  'formule Start : la livraison est incluse et reste activée');
+update public.subscriptions set status = 'canceled' where merchant_id = '30000000-0000-0000-0000-000000000001';
 select is((select reason from public.merchant_delivery_quote('30000000-0000-0000-0000-000000000001', 48.87, 2.34)),
-  'delivery_unavailable', 'plus de devis de livraison');
+  'delivery_unavailable', 'abonnement résilié : plus de devis de livraison');
+update public.merchants set delivery_enabled = false where id = '30000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
 select throws_ok($$ update public.merchants set delivery_enabled = true where id = '30000000-0000-0000-0000-000000000001' $$,
-  'P0001', 'delivery_requires_pro', 'la livraison demande la formule Pro');
+  'P0001', 'delivery_requires_subscription', 'la livraison demande un abonnement valide');
 reset role;
-update public.subscriptions set plan = 'pro' where merchant_id = '30000000-0000-0000-0000-000000000001';
+update public.subscriptions set plan = 'pro', status = (select status from prior_sub) where merchant_id = '30000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
 select lives_ok($$ update public.merchants set delivery_enabled = true where id = '30000000-0000-0000-0000-000000000001' $$,
