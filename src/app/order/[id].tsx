@@ -323,6 +323,15 @@ export default function OrderScreen() {
               {item.is_loyalty_reward ? (
                 <AppText variant="link">🎁 {t('client.loyalty.rewardApplied')}</AppText>
               ) : null}
+              {item.happy_hour_name && item.regular_unit_cents !== null ? (
+                <AppText variant="link" testID={`order-offer-${item.name}`}>
+                  {t('happyHour.applied', {
+                    name: item.happy_hour_name,
+                    price: formatCents(item.unit_price_cents),
+                    regular: formatCents(item.regular_unit_cents),
+                  })}
+                </AppText>
+              ) : null}
             </View>
             <AppText>{formatCents(item.line_total_cents)}</AppText>
           </View>

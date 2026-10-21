@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { cartTotalWithOffers } from '@/features/happyhour/pricing';
+import type { OffersByItem } from '@/features/happyhour/types';
+
 import type { ChosenOption } from './pricing';
 
 export type CartLine = {
@@ -58,6 +61,8 @@ type CartState = {
     options?: { replace?: boolean },
   ) => boolean;
   setQuantity: (key: string, quantity: number) => void;
+  /** Remplace les lignes (remise au prix de la carte actuelle). */
+  setLines: (lines: CartLine[]) => void;
   setNote: (note: string) => void;
   setRewardLine: (key: string | null) => void;
   setFulfillment: (fulfillment: Fulfillment) => void;
@@ -85,10 +90,14 @@ const MIN_CHARGE_CENTS = 50;
  * Remise du menu offert, estimée comme create_order() la calculera : prix de base d'un
  * menu de la ligne choisie (suppléments dus), ou tout le panier si le reste < 0,50 €.
  */
-export function cartDiscountCents(lines: CartLine[], rewardLineKey: string | null): number {
+export function cartDiscountCents(
+  lines: CartLine[],
+  rewardLineKey: string | null,
+  offers?: OffersByItem,
+): number {
   const line = lines.find((l) => l.key === rewardLineKey && l.isLoyaltyMenu);
   if (!line) return 0;
-  const total = cartTotalCents(lines);
+  const total = cartTotalWithOffers(lines, offers, rewardLineKey);
   return total - line.basePriceCents < MIN_CHARGE_CENTS ? total : line.basePriceCents;
 }
 
@@ -142,6 +151,13 @@ export const useCart = create<CartState>()(
               : state.lines.map((l) =>
                   l.key === key ? { ...l, quantity: Math.min(50, quantity) } : l,
                 ),
+        })),
+      setLines: (lines) =>
+        set((state) => ({
+          lines,
+          rewardLineKey: lines.some((l) => l.key === state.rewardLineKey)
+            ? state.rewardLineKey
+            : null,
         })),
       setNote: (note) => set({ note }),
       setRewardLine: (key) => set({ rewardLineKey: key }),

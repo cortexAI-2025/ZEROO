@@ -529,6 +529,136 @@ export type Database = {
           },
         ];
       };
+      happy_hour_items: {
+        Row: {
+          happy_hour_id: string;
+          item_id: string;
+          merchant_id: string;
+          promo_price_cents: number | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          happy_hour_id: string;
+          item_id: string;
+          merchant_id: string;
+          promo_price_cents?: number | null;
+        };
+        Update: {
+          happy_hour_id?: string;
+          item_id?: string;
+          merchant_id?: string;
+          promo_price_cents?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'happy_hour_items_happy_hour_id_merchant_id_fkey';
+            columns: ['happy_hour_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'happy_hours';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+          {
+            foreignKeyName: 'happy_hour_items_item_id_merchant_id_fkey';
+            columns: ['item_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_items';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+        ];
+      };
+      happy_hour_slots: {
+        Row: {
+          ends_at: string;
+          happy_hour_id: string;
+          id: string;
+          merchant_id: string;
+          starts_at: string;
+          weekday: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          ends_at: string;
+          happy_hour_id: string;
+          id?: string;
+          merchant_id: string;
+          starts_at: string;
+          weekday: number;
+        };
+        Update: {
+          ends_at?: string;
+          happy_hour_id?: string;
+          id?: string;
+          merchant_id?: string;
+          starts_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'happy_hour_slots_happy_hour_id_merchant_id_fkey';
+            columns: ['happy_hour_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'happy_hours';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+        ];
+      };
+      happy_hours: {
+        Row: {
+          applies_to_delivery: boolean;
+          applies_to_pickup: boolean;
+          created_at: string;
+          discount_type: string;
+          ends_on: string | null;
+          id: string;
+          is_active: boolean;
+          merchant_id: string;
+          name: string;
+          percent_off: number | null;
+          quantity_limit: number | null;
+          quantity_used: number;
+          starts_on: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          applies_to_delivery?: boolean;
+          applies_to_pickup?: boolean;
+          created_at?: string;
+          discount_type: string;
+          ends_on?: string | null;
+          id?: string;
+          is_active?: boolean;
+          merchant_id: string;
+          name: string;
+          percent_off?: number | null;
+          quantity_limit?: number | null;
+          quantity_used?: number;
+          starts_on?: string | null;
+        };
+        Update: {
+          applies_to_delivery?: boolean;
+          applies_to_pickup?: boolean;
+          created_at?: string;
+          discount_type?: string;
+          ends_on?: string | null;
+          id?: string;
+          is_active?: boolean;
+          merchant_id?: string;
+          name?: string;
+          percent_off?: number | null;
+          quantity_limit?: number | null;
+          quantity_used?: number;
+          starts_on?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'happy_hours_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       menu_item_slots: {
         Row: {
           ends_at: string;
@@ -711,12 +841,14 @@ export type Database = {
           is_subscription_active: boolean | null;
           has_delivery_option: boolean | null;
           delivery_available_now: boolean | null;
+          has_happy_hour_now: boolean | null;
           has_order_mode: boolean | null;
           offers_delivery: boolean | null;
         };
         ComputedFields:
           | 'delivery_available_now'
           | 'has_delivery_option'
+          | 'has_happy_hour_now'
           | 'has_order_mode'
           | 'offers_delivery'
           | 'is_accepting_orders'
@@ -804,6 +936,8 @@ export type Database = {
       };
       order_items: {
         Row: {
+          happy_hour_id: string | null;
+          happy_hour_name: string | null;
           id: string;
           is_loyalty_menu: boolean;
           is_loyalty_reward: boolean;
@@ -813,10 +947,13 @@ export type Database = {
           options: NonNullable<Json>;
           order_id: string;
           quantity: number;
+          regular_unit_cents: number | null;
           unit_price_cents: number;
         };
         ComputedFields: never;
         Insert: {
+          happy_hour_id?: string | null;
+          happy_hour_name?: string | null;
           id?: string;
           is_loyalty_menu?: boolean;
           is_loyalty_reward?: boolean;
@@ -826,9 +963,12 @@ export type Database = {
           options?: NonNullable<Json>;
           order_id: string;
           quantity: number;
+          regular_unit_cents?: number | null;
           unit_price_cents: number;
         };
         Update: {
+          happy_hour_id?: string | null;
+          happy_hour_name?: string | null;
           id?: string;
           is_loyalty_menu?: boolean;
           is_loyalty_reward?: boolean;
@@ -838,6 +978,7 @@ export type Database = {
           options?: NonNullable<Json>;
           order_id?: string;
           quantity?: number;
+          regular_unit_cents?: number | null;
           unit_price_cents?: number;
         };
         Relationships: [
@@ -1731,6 +1872,36 @@ export type Database = {
         Args: { p_from: string; p_merchant_id: string; p_reason?: string; p_to: string };
         Returns: Database['public']['Tables']['merchant_closures']['Row'];
       };
+      active_happy_hours: {
+        Args: { p_at?: string; p_merchant_id: string; p_mode: string };
+        Returns: {
+          ends_at: string;
+          happy_hour_id: string;
+          item_id: string;
+          name: string;
+          promo_cents: number;
+          quantity_remaining: number | null;
+          regular_cents: number;
+        }[];
+      };
+      has_happy_hour_now: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      save_happy_hour: {
+        Args: { p_data: Json; p_id: string | null; p_merchant_id: string };
+        Returns: Database['public']['Tables']['happy_hours']['Row'];
+      };
+      set_happy_hour_active: {
+        Args: { p_active: boolean; p_id: string };
+        Returns: Database['public']['Tables']['happy_hours']['Row'];
+      };
+      delete_happy_hour: { Args: { p_id: string }; Returns: undefined };
       is_in_slot: {
         Args: { p_at?: string; p_item_id: string };
         Returns: boolean;

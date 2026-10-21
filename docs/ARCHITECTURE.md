@@ -500,6 +500,21 @@ Migration `20261013150000_pro_verification.sql`.
 - **Horaires** : plusieurs plages par jour et passage de minuit (déjà gérés) ; **fermetures exceptionnelles** (`merchant_closures`, jours entiers en heure de l'établissement via `add_closure`) prioritaires sur les horaires et affichées sur la fiche publique.
 - **Cohérence** : un produit n'est commandable que si l'établissement est ouvert (horaires, fermetures, pause, abonnement, mode actif) **et** que le produit est dans son créneau **et** disponible. La disponibilité des livreurs est indépendante des horaires (24 h/24, § 3.9).
 
+### 3.11 Happy Hours (23 octobre 2026)
+
+Promotions programmées, **incluses dans Start et Pro, sans commission**. Ce n'est pas une offre anti-gaspi.
+
+- **Modèle** : `happy_hours` (nom, `discount_type` `percent` ou `price`, validité, retrait/livraison, quota, activation), `happy_hour_slots` (jours + plages, passage de minuit, comme les horaires), `happy_hour_items` (produits ou formules visés, prix promotionnel pour une offre « prix »). Écriture par `save_happy_hour` / `set_happy_hour_active` / `delete_happy_hour` uniquement (validation côté serveur : produit du commerce, vraie réduction) ; lecture publique si le commerce est publié.
+- **Règles de prix, côté serveur seulement** (`active_happy_hours` + `create_order`) :
+  - **une offre par produit, jamais cumulée** ; en cas de chevauchement, le prix le plus bas gagne, puis l'offre la plus ancienne, puis le plus petit identifiant ;
+  - la réduction porte sur le **prix du produit, pas sur les suppléments** ; une offre qui ne réduit pas le prix n'est pas retenue ;
+  - le **menu offert de la fidélité reste au plein tarif** (il remplace l'offre) ;
+  - **quota** : verrou sur l'offre, deux commandes simultanées ne dépassent jamais le stock (vérifié avec deux sessions SQL). Au-delà du stock restant, le reste de la ligne est au **tarif habituel** ; la commande refusée, expirée ou annulée rend son stock ;
+  - **prix annoncé** : le client envoie le total qu'il a vu pour chaque ligne (`expected_total_cents`). S'il a changé (offre terminée, stock épuisé, prix modifié) la commande est refusée (`price_changed`) et le panier est relu ; rien n'est facturé à l'insu du client ;
+  - **prix conservé dans la commande** : `order_items.unit_price_cents` (appliqué), `regular_unit_cents` (tarif habituel), `happy_hour_id`, `happy_hour_name`.
+- **Côté client** : badge « Happy Hour », prix promotionnel, tarif habituel barré (le prix pratiqué hors offre), heure de fin, stock restant, sur la fiche et dans le panier ; une offre qui se termine pendant la préparation du panier est signalée. Colonne calculée `has_happy_hour_now` pour le filtre de l'annuaire.
+- **Affichage des réductions** : le « prix habituel » affiché est le tarif de la carte. Le commerçant doit pratiquer réellement ce prix hors de l'offre ; l'éditeur le rappelle. La conformité réglementaire (par exemple la règle du prix de référence sur 30 jours pour les annonces de réduction) reste à faire valider par le titulaire avant mise en production.
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

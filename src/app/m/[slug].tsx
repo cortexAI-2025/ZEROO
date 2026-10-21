@@ -6,6 +6,8 @@ import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'reac
 
 import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
 import { CartBar } from '@/features/cart/CartBar';
+import { useActiveOffers } from '@/features/happyhour/hooks';
+import { OfferPrice } from '@/features/happyhour/OfferPrice';
 import { ItemSheet } from '@/features/cart/ItemSheet';
 import { directionsUrl, formatDistance } from '@/features/discover/location';
 import { useMerchantPage } from '@/features/discover/hooks';
@@ -63,6 +65,9 @@ export default function MerchantPageScreen() {
   const { session } = useAuth();
   const card = useLoyaltyCard(page.data?.merchant.id);
   const now = useNow(60_000);
+  // Offres Happy Hour du mode de commande par défaut (retrait, sinon livraison).
+  const offerMode = page.data?.merchant.offers_pickup === false ? 'delivery' : 'pickup';
+  const { offers } = useActiveOffers(page.data?.merchant.id, offerMode);
 
   if (page.data === null) {
     return (
@@ -242,7 +247,11 @@ export default function MerchantPageScreen() {
                     {item.description ? (
                       <AppText variant="muted">{item.description}</AppText>
                     ) : null}
-                    <AppText variant="muted">{formatCents(item.price_cents)}</AppText>
+                    {offers.get(item.id) ? (
+                      <OfferPrice offer={offers.get(item.id)!} />
+                    ) : (
+                      <AppText variant="muted">{formatCents(item.price_cents)}</AppText>
+                    )}
                     {serviceHours ? (
                       <AppText variant="muted" testID={`service-hours-${item.name}`}>
                         {t('client.merchant.servedAt', { hours: serviceHours })}
@@ -265,6 +274,7 @@ export default function MerchantPageScreen() {
       {selected ? (
         <ItemSheet
           item={selected}
+          offer={offers.get(selected.id)}
           merchant={{ id: merchant.id, slug: merchant.slug, name: merchant.name }}
           onClose={() => setSelected(null)}
         />

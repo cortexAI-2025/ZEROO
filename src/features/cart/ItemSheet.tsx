@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText, Button } from '@/components/ui';
+import { OfferPrice } from '@/features/happyhour/OfferPrice';
+import { priceLine } from '@/features/happyhour/pricing';
+import type { Offer } from '@/features/happyhour/types';
 import type { MenuItem, MenuOptionGroup } from '@/features/menu/types';
 import { confirmAsync } from '@/lib/confirm';
 import { formatCents } from '@/lib/money';
@@ -25,10 +28,10 @@ function groupRule(group: MenuOptionGroup, t: TFunction) {
   return t('client.item.chooseBetween', { min: group.min_select, max: group.max_select });
 }
 
-type Props = { item: MenuItem; merchant: CartMerchant; onClose: () => void };
+type Props = { item: MenuItem; merchant: CartMerchant; offer?: Offer; onClose: () => void };
 
 /** Choix des options et de la quantité, puis ajout au panier. */
-export function ItemSheet({ item, merchant, onClose }: Props) {
+export function ItemSheet({ item, merchant, offer, onClose }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const add = useCart((s) => s.add);
@@ -38,6 +41,8 @@ export function ItemSheet({ item, merchant, onClose }: Props) {
 
   const issues = selectionIssues(item, selection);
   const unit = unitPriceCents(item, selection);
+  // Prix annoncé : l'offre Happy Hour s'applique dans la limite de son stock, suppléments au plein tarif.
+  const total = priceLine({ unitPriceCents: unit, quantity, offer }).totalCents;
   const firstMissing = item.menu_option_groups.find((g) => g.id === issues[0]?.groupId);
 
   const onAdd = async () => {
@@ -75,7 +80,11 @@ export function ItemSheet({ item, merchant, onClose }: Props) {
         <ScrollView contentContainerStyle={styles.content}>
           <AppText variant="title">{item.name}</AppText>
           {item.description ? <AppText variant="muted">{item.description}</AppText> : null}
-          <AppText variant="subtitle">{formatCents(item.price_cents)}</AppText>
+          {offer ? (
+            <OfferPrice offer={offer} />
+          ) : (
+            <AppText variant="subtitle">{formatCents(item.price_cents)}</AppText>
+          )}
 
           {item.menu_option_groups.map((group) => {
             const missing = showIssues && issues.some((i) => i.groupId === group.id);
@@ -157,7 +166,7 @@ export function ItemSheet({ item, merchant, onClose }: Props) {
           ) : null}
           <Button
             testID="item-add"
-            title={t('client.item.add', { price: formatCents(unit * quantity) })}
+            title={t('client.item.add', { price: formatCents(total) })}
             onPress={() => void onAdd()}
           />
         </View>
