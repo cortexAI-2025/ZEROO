@@ -529,6 +529,87 @@ export type Database = {
           },
         ];
       };
+      basket_reservations: {
+        Row: {
+          basket_id: string;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          collected_at: string | null;
+          created_at: string;
+          customer_id: string | null;
+          customer_name: string | null;
+          id: string;
+          merchant_id: string;
+          pickup_code: string;
+          quantity: number;
+          status: string;
+          unit_price_cents: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          basket_id: string;
+          id?: string;
+          merchant_id: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Update: { status?: string };
+        Relationships: [
+          {
+            foreignKeyName: 'basket_reservations_basket_id_merchant_id_fkey';
+            columns: ['basket_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'surprise_baskets';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+          {
+            foreignKeyName: 'basket_reservations_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      surprise_baskets: {
+        Row: {
+          allergens: string[];
+          allergens_confirmed: boolean;
+          contents: string | null;
+          created_at: string;
+          estimated_value_cents: number | null;
+          id: string;
+          is_active: boolean;
+          is_reservable: boolean | null;
+          is_surprise: boolean;
+          merchant_id: string;
+          pickup_ends_at: string;
+          pickup_starts_at: string;
+          price_cents: number;
+          quantity_reserved: number;
+          quantity_total: number;
+          title: string;
+        };
+        ComputedFields: 'is_reservable';
+        Insert: {
+          merchant_id: string;
+          pickup_ends_at: string;
+          pickup_starts_at: string;
+          price_cents: number;
+          quantity_total: number;
+          title: string;
+        };
+        Update: { is_active?: boolean };
+        Relationships: [
+          {
+            foreignKeyName: 'surprise_baskets_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       happy_hour_items: {
         Row: {
           happy_hour_id: string;
@@ -1925,6 +2006,35 @@ export type Database = {
         Returns: Database['public']['Tables']['happy_hours']['Row'];
       };
       delete_happy_hour: { Args: { p_id: string }; Returns: undefined };
+      is_reservable: {
+        Args: {
+          b: Omit<
+            Database['public']['Tables']['surprise_baskets']['Row'],
+            Database['public']['Tables']['surprise_baskets']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      save_basket: {
+        Args: { p_data: Json; p_id: string | null; p_merchant_id: string };
+        Returns: Database['public']['Tables']['surprise_baskets']['Row'];
+      };
+      set_basket_active: {
+        Args: { p_active: boolean; p_id: string };
+        Returns: Database['public']['Tables']['surprise_baskets']['Row'];
+      };
+      reserve_basket: {
+        Args: { p_basket_id: string; p_quantity?: number };
+        Returns: Database['public']['Tables']['basket_reservations']['Row'];
+      };
+      cancel_basket_reservation: {
+        Args: { p_id: string };
+        Returns: Database['public']['Tables']['basket_reservations']['Row'];
+      };
+      collect_basket_reservation: {
+        Args: { p_code: string; p_id: string };
+        Returns: Database['public']['Tables']['basket_reservations']['Row'];
+      };
       is_in_slot: {
         Args: { p_at?: string; p_item_id: string };
         Returns: boolean;
