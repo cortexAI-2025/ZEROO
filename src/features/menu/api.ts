@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import type { TablesInsert, TablesUpdate } from '@/types/database';
 
+import type { ItemSlot } from './slots';
 import type { MenuCategory } from './types';
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
@@ -9,7 +10,9 @@ const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - 
 export async function fetchMenu(merchantId: string): Promise<MenuCategory[]> {
   const { data, error } = await supabase
     .from('menu_categories')
-    .select('*, menu_items(*, menu_option_groups(*, menu_options(*)))')
+    .select(
+      '*, menu_items(*, is_in_slot_now, menu_item_slots(*), menu_option_groups(*, menu_options(*)))',
+    )
     .eq('merchant_id', merchantId);
   if (error) throw error;
 
@@ -52,6 +55,12 @@ export async function insertItem(values: TablesInsert<'menu_items'>) {
 
 export async function updateItem(id: string, patch: TablesUpdate<'menu_items'>) {
   const { error } = await supabase.from('menu_items').update(patch).eq('id', id);
+  if (error) throw error;
+}
+
+/** Remplace tous les créneaux d'un produit (liste vide : servi pendant toute l'ouverture). */
+export async function setItemSlots(itemId: string, slots: ItemSlot[]) {
+  const { error } = await supabase.rpc('set_item_slots', { p_item_id: itemId, p_slots: slots });
   if (error) throw error;
 }
 

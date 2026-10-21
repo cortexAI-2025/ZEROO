@@ -491,6 +491,15 @@ Migration `20261013150000_pro_verification.sql`.
 - **Une seule prise en charge** : `for update skip locked` sur la commande + verrou sur la ligne du livreur ; vérifié avec deux sessions SQL simultanées (`supabase/tests/concurrency/missions.sh`).
 - **Mission que personne ne prend** : `orders.delivery_unclaimed_at` est posé par `flag_unclaimed_missions()` (tâche pg_cron chaque minute) 15 minutes après l'acceptation par le restaurant. Le client et le restaurant sont prévenus (notification `mission_unclaimed`) et peuvent annuler (`cancel_unclaimed_delivery`). **Aucun remboursement n'est simulé** : le repas est payé directement au restaurant (lien de paiement), le remboursement éventuel se règle entre eux ; une récompense fidélité utilisée est rendue.
 
+### 3.10 Formules, créneaux de menu, horaires de jour et de nuit (22 octobre 2026)
+
+- **Formule** : `menu_items.is_formula`. Une formule est un produit dont les composants sont des **groupes d'options obligatoires** (`min_select ≥ 1`, système existant) ; le prix est celui du produit plus les suppléments choisis, validé par `create_order`. Le professionnel décide quelles formules comptent pour la fidélité (`is_loyalty_menu`).
+- **Moments** : `menu_items.meal_periods` ⊂ {`breakfast`, `lunch`, `dinner`, `night`}. Dans l'app, choisir un moment crée les créneaux types (petit déjeuner 06:00–11:00, déjeuner 11:00–15:00, dîner 18:00–23:00, nuit 22:00–04:00) via `set_item_slots` ; l'écran prévient si un moment tombe hors des horaires d'ouverture.
+- **Créneaux** : `menu_item_slots` (jour ISO, début, fin ; fin < début = passe minuit). Sans créneau, le produit est servi pendant toute l'ouverture. `is_in_slot(item, instant)` évalue dans le fuseau de l'établissement ; `create_order` refuse un produit hors créneau (`item_out_of_slot`) ; la fiche publique grise le produit et affiche ses heures de service (colonne calculée `is_in_slot_now`).
+- **Fenêtre hebdomadaire commune** : `time_in_window` sert aux horaires, aux créneaux de menu et servira aux promotions (même règle, passage de minuit : le soir, puis le lendemain matin ; le dimanche déborde sur le lundi).
+- **Horaires** : plusieurs plages par jour et passage de minuit (déjà gérés) ; **fermetures exceptionnelles** (`merchant_closures`, jours entiers en heure de l'établissement via `add_closure`) prioritaires sur les horaires et affichées sur la fiche publique.
+- **Cohérence** : un produit n'est commandable que si l'établissement est ouvert (horaires, fermetures, pause, abonnement, mode actif) **et** que le produit est dans son créneau **et** disponible. La disponibilité des livreurs est indépendante des horaires (24 h/24, § 3.9).
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

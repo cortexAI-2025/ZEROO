@@ -158,7 +158,14 @@
       "noMode": "Cet établissement ne prend pas de commande pour le moment.",
       "pickupInstructions": "Consignes de retrait",
       "deliveryOnly": "Livraison uniquement : pas de retrait sur place.",
-      "deliveryPaused": "Livraison momentanément indisponible."
+      "deliveryPaused": "Livraison momentanément indisponible.",
+      "formula": "Formule",
+      "outOfSlot": "Hors horaires de service",
+      "servedAt": "Servi : {{hours}}",
+      "everyDay": "tous les jours",
+      "closureRange": "du {{from}} au {{to}}",
+      "closureActive": "Fermeture exceptionnelle {{range}} : vous pouvez consulter la carte, pas commander.",
+      "closureUpcoming": "Fermeture exceptionnelle à venir {{range}}"
     },
     "item": {
       "required": "Obligatoire",
@@ -515,6 +522,12 @@
       "categoryActive": "Visible des clients",
       "deleteCategoryConfirm": "Supprimer la catégorie « {{name}} » et tous ses produits ?",
       "emptyCategory": "Aucun produit dans cette catégorie.",
+      "periods": {
+        "breakfast": "Petit déjeuner",
+        "lunch": "Déjeuner",
+        "dinner": "Dîner",
+        "night": "Repas de nuit"
+      },
       "item": {
         "newTitle": "Nouveau produit",
         "editTitle": "Modifier le produit",
@@ -527,6 +540,12 @@
         "available": "Disponible aujourd'hui",
         "loyaltyMenu": "Menu formule (compte pour la fidélité)",
         "loyaltyMenuHint": "Cochez uniquement les menus formules : 9 achetés chez vous = le 10e offert à votre client. Les produits au détail ne comptent pas.",
+        "formula": "Formule (composants à choisir)",
+        "formulaHint": "Ex. sandwich + boisson + dessert. Ajoutez ensuite des groupes d'options obligatoires (Boisson, Dessert…) : le prix de la formule est le prix du produit plus les suppléments choisis. Une formule peut compter pour la fidélité.",
+        "periods": "Moment de la journée",
+        "periodsAllDay": "Servi pendant toute votre ouverture. Choisissez un ou plusieurs moments pour limiter les heures de service.",
+        "periodsHint": "Servi seulement : {{windows}}, tous les jours. Hors de ces heures, le produit n'est plus commandable.",
+        "periodOutsideOpening": "Le créneau « {{period}} » ne tombe dans aucune de vos plages d'ouverture : ce produit ne serait jamais commandable.",
         "deleteConfirm": "Supprimer « {{name}} » ?",
         "options": "Options",
         "optionsHint": "Ex. « Sauce » (1 au choix) ou « Suppléments » (0 à 3).",
@@ -543,6 +562,19 @@
         "newOptionDefault": "Nouvelle option",
         "deleteGroupConfirm": "Supprimer le groupe « {{name}} » ?"
       }
+    },
+    "closures": {
+      "title": "Fermetures exceptionnelles",
+      "hint": "Congés, travaux, jour férié : sur ces jours entiers, votre commerce n'accepte aucune commande, quels que soient vos horaires habituels.",
+      "empty": "Aucune fermeture prévue.",
+      "range": "Du {{from}} au {{to}}",
+      "add": "Ajouter une fermeture",
+      "from": "Premier jour fermé (JJ/MM/AAAA)",
+      "to": "Dernier jour fermé (facultatif)",
+      "toPlaceholder": "Même jour si vide",
+      "reason": "Motif (facultatif, visible des clients)",
+      "save": "Ajouter la fermeture",
+      "invalid": "Dates invalides : saisissez-les sous la forme JJ/MM/AAAA, la dernière après la première."
     },
     "shop": {
       "title": "Ma boutique",
@@ -688,6 +720,8 @@
     "deliveryUnavailable": "Ce restaurant ne livre pas pour le moment.",
     "deliveryOutOfRange": "Cette adresse est hors de la zone de livraison du restaurant.",
     "noCourierAvailable": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait.",
+    "invalidClosure": "Dates de fermeture invalides (un an maximum, la fin après le début).",
+    "itemOutOfSlot": "Un produit du panier n'est pas servi à cette heure. Retirez-le ou réessayez pendant ses heures de service.",
     "invalidDeliveryAddress": "Adresse de livraison incomplète : choisissez-la dans la liste.",
     "invalidDeliveryPhone": "Indiquez un numéro de téléphone valide pour le livreur.",
     "invalidDeliveryCode": "Code de livraison incorrect. Demandez au client son code à 4 chiffres.",

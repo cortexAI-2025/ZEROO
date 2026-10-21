@@ -12,12 +12,15 @@ import { useMerchantPage } from '@/features/discover/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
+import { slotsLabel } from '@/features/menu/slotLabel';
 import type { MenuItem } from '@/features/menu/types';
+import { formatFrenchDate } from '@/features/merchant/dates';
 import { shortTime, WEEKDAYS } from '@/features/merchant/hours';
 import { deliveryPausedNow, showsAddress } from '@/features/merchant/modes';
 import type { MerchantCategory, OpeningHour } from '@/features/merchant/types';
 import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
+import { useNow } from '@/lib/useNow';
 import { radius, spacing, useThemeColors } from '@/theme';
 
 const isoWeekday = () => ((new Date().getDay() + 6) % 7) + 1;
@@ -59,6 +62,7 @@ export default function MerchantPageScreen() {
   const [showHours, setShowHours] = useState(false);
   const { session } = useAuth();
   const card = useLoyaltyCard(page.data?.merchant.id);
+  const now = useNow(60_000);
 
   if (page.data === null) {
     return (
@@ -72,6 +76,18 @@ export default function MerchantPageScreen() {
   const { merchant, menu } = page.data;
   const canOrder = !!merchant.is_accepting_orders;
   const hasAddress = showsAddress(merchant);
+  // Fermeture exceptionnelle en cours ou annoncée (la fin est exclusive : minuit du lendemain).
+  const nowMs = now;
+  const closure = merchant.merchant_closures
+    .filter((c) => Date.parse(c.ends_at) > nowMs)
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0];
+  const closureActive = !!closure && Date.parse(closure.starts_at) <= nowMs;
+  const closureRange = closure
+    ? t('client.merchant.closureRange', {
+        from: formatFrenchDate(closure.starts_at),
+        to: formatFrenchDate(new Date(Date.parse(closure.ends_at) - 1).toISOString()),
+      })
+    : '';
 
   return (
     <View style={[styles.flex, { backgroundColor: colors.background }]}>
@@ -173,39 +189,75 @@ export default function MerchantPageScreen() {
             <AppText>
               {!merchant.has_order_mode
                 ? t('client.merchant.noMode')
-                : merchant.is_open_now
-                  ? t('client.merchant.pausedBanner')
-                  : t('client.merchant.closedBanner')}
+                : closureActive
+                  ? t('client.merchant.closureActive', { range: closureRange })
+                  : merchant.is_open_now
+                    ? t('client.merchant.pausedBanner')
+                    : t('client.merchant.closedBanner')}
             </AppText>
+            {closureActive && closure?.reason ? (
+              <AppText variant="muted">{closure.reason}</AppText>
+            ) : null}
           </Card>
+        ) : null}
+        {closure && !closureActive ? (
+          <AppText variant="muted" testID="closure-upcoming">
+            {t('client.merchant.closureUpcoming', { range: closureRange })}
+            {closure.reason ? ` · ${closure.reason}` : ''}
+          </AppText>
         ) : null}
 
         {menu.map((category) => (
           <View key={category.id} style={styles.category}>
             <AppText variant="subtitle">{category.name}</AppText>
-            {category.menu_items.map((item) => (
-              <Pressable
-                key={item.id}
-                testID={`menu-item-${item.name}`}
-                accessibilityRole="button"
-                disabled={!canOrder || !item.is_available}
-                onPress={() => setSelected(item)}
-                style={({ pressed }) => [
-                  styles.item,
-                  { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
-                ]}>
-                {item.image_url ? <Thumb url={item.image_url} size={72} label={item.name} /> : null}
-                <View style={styles.flex}>
-                  <AppText style={!item.is_available && { color: colors.textMuted }}>
-                    {item.name}
-                  </AppText>
-                  {item.description ? <AppText variant="muted">{item.description}</AppText> : null}
-                  <AppText variant="muted">{formatCents(item.price_cents)}</AppText>
-                </View>
-                {item.is_loyalty_menu ? <Badge label={t('client.merchant.loyaltyMenu')} /> : null}
-                {!item.is_available ? <Badge label={t('client.merchant.unavailable')} /> : null}
-              </Pressable>
-            ))}
+            {category.menu_items.map((item) => {
+              // Produit servi seulement à certaines heures : grisé le reste du temps.
+              const inSlot = item.is_in_slot_now !== false;
+              const serviceHours = slotsLabel(
+                item.menu_item_slots,
+                (day) =>
+                  t(`merchant.hours.days.${day as 1}`)
+                    .slice(0, 3)
+                    .toLowerCase(),
+                t('client.merchant.everyDay'),
+              );
+              return (
+                <Pressable
+                  key={item.id}
+                  testID={`menu-item-${item.name}`}
+                  accessibilityRole="button"
+                  disabled={!canOrder || !item.is_available || !inSlot}
+                  onPress={() => setSelected(item)}
+                  style={({ pressed }) => [
+                    styles.item,
+                    { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                  ]}>
+                  {item.image_url ? (
+                    <Thumb url={item.image_url} size={72} label={item.name} />
+                  ) : null}
+                  <View style={styles.flex}>
+                    <AppText style={(!item.is_available || !inSlot) && { color: colors.textMuted }}>
+                      {item.name}
+                    </AppText>
+                    {item.description ? (
+                      <AppText variant="muted">{item.description}</AppText>
+                    ) : null}
+                    <AppText variant="muted">{formatCents(item.price_cents)}</AppText>
+                    {serviceHours ? (
+                      <AppText variant="muted" testID={`service-hours-${item.name}`}>
+                        {t('client.merchant.servedAt', { hours: serviceHours })}
+                      </AppText>
+                    ) : null}
+                  </View>
+                  {item.is_formula ? <Badge label={t('client.merchant.formula')} /> : null}
+                  {item.is_loyalty_menu ? <Badge label={t('client.merchant.loyaltyMenu')} /> : null}
+                  {!item.is_available ? <Badge label={t('client.merchant.unavailable')} /> : null}
+                  {item.is_available && !inSlot ? (
+                    <Badge label={t('client.merchant.outOfSlot')} />
+                  ) : null}
+                </Pressable>
+              );
+            })}
           </View>
         ))}
       </ScrollView>

@@ -170,6 +170,11 @@ export default function ShopScreen() {
         />
         <ListRow title={t('merchant.shop.hours')} onPress={() => router.push('/pro/hours')} />
         <ListRow
+          testID="closures-settings"
+          title={t('merchant.closures.title')}
+          onPress={() => router.push('/pro/closures')}
+        />
+        <ListRow
           testID="delivery-settings"
           title={t('merchant.shop.delivery')}
           subtitle={

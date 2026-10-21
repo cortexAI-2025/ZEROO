@@ -39,7 +39,7 @@ export async function searchMerchants(query: string): Promise<MerchantSummary[]>
 export async function fetchMerchantPage(slug: string) {
   const { data: merchant, error } = await supabase
     .from('merchants')
-    .select(`${MERCHANT_SELECT}, merchant_opening_hours(*)`)
+    .select(`${MERCHANT_SELECT}, merchant_opening_hours(*), merchant_closures(*)`)
     .eq('slug', slug)
     .maybeSingle();
   if (error) throw error;
@@ -47,7 +47,9 @@ export async function fetchMerchantPage(slug: string) {
 
   const { data: categories, error: menuError } = await supabase
     .from('menu_categories')
-    .select('*, menu_items(*, menu_option_groups(*, menu_options(*)))')
+    .select(
+      '*, menu_items(*, is_in_slot_now, menu_item_slots(*), menu_option_groups(*, menu_options(*)))',
+    )
     .eq('merchant_id', merchant.id)
     .eq('is_active', true);
   if (menuError) throw menuError;

@@ -20,6 +20,7 @@ export default function MerchantLayout() {
         <Stack.Screen name="category/[id]" options={{ title: t('merchant.menu.editCategory') }} />
         <Stack.Screen name="info" options={{ title: t('merchant.shop.info') }} />
         <Stack.Screen name="hours" options={{ title: t('merchant.hours.title') }} />
+        <Stack.Screen name="closures" options={{ title: t('merchant.closures.title') }} />
         <Stack.Screen name="qr" options={{ title: t('merchant.qr.title') }} />
         <Stack.Screen name="history" options={{ title: t('merchant.orders.history') }} />
         <Stack.Screen name="stripe" options={{ title: t('merchant.billing.returnTitle') }} />
