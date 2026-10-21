@@ -172,12 +172,31 @@ Prix HT, TVA 20 % en plus. Seuls les abonnements passent par Stripe : les restau
 
 | Profil | Mensuel HT (TTC) | Annuel HT (TTC) |
 |---|---|---|
-| Restaurant Start | 19,99 € (23,99 €) | 199,99 € (239,99 €) |
-| Restaurant Pro (retrait + livraison) | 29,99 € (35,99 €) | 299,99 € (359,99 €) |
-| Livreur, formule unique | 14,99 € (17,99 €) | 149,99 € (179,99 €) |
+| Établissement Start | 19,99 € (23,99 €) | 199,99 € (239,99 €) |
+| Établissement Pro | 29,99 € (35,99 €) | 299,99 € (359,99 €) |
+| Livreur Start | 14,99 € (17,99 €) | 149,99 € (179,99 €) |
+| Livreur Pro | 24,99 € (29,99 €) | 249,99 € (299,99 €) |
 | Client | Gratuit | Gratuit |
 
-Le catalogue d'affichage est dans `src/features/billing/plans.ts` ; les prix facturés sont ceux des prix Stripe. **Les deux formules restaurant ne se distinguent pour l'instant que par le prix** : le contenu de Pro par rapport à Start reste à définir. Comparatif avec Uber Eats, Deliveroo et les solutions sans commission : [docs/COMPARATIF.md](docs/COMPARATIF.md).
+30 jours d'essai gratuit pour chaque formule. Un abonnement correspond à un établissement (pas de multisite) ou à un livreur ; les abonnements établissement et livreur sont indépendants. Aucune commission, jamais.
+
+| Fonction | Start | Pro |
+|---|---|---|
+| Click & Collect, livraison, QR code et fidélité | oui | oui |
+| Précommandes programmées | oui | oui |
+| Paniers anti-gaspi | oui | oui |
+| Happy Hours | non | oui |
+| Mini-site dans l'annuaire | non | oui |
+| Statistiques avancées | 7 jours | oui |
+| Commandes groupées entreprises | non | oui |
+| Campagne marketing mensuelle | non | oui |
+| Livreur : missions classiques | oui (une course à la fois) | oui |
+| Livreur : plusieurs courses simultanées | non | oui |
+| Livreur : livraison de nuit (22 h – 6 h) | non | oui |
+
+Les droits s'appliquent côté serveur (base de données) et seulement pour un abonnement en essai ou actif. Détail et décisions : [docs/OFFRE-COMMERCIALE.md](docs/OFFRE-COMMERCIALE.md).
+
+Le catalogue d'affichage est dans `src/features/billing/plans.ts` ; les prix facturés sont ceux des prix Stripe. Comparatif avec Uber Eats, Deliveroo et les solutions sans commission : [docs/COMPARATIF.md](docs/COMPARATIF.md).
 
 ### Configurer Stripe (mode test d'abord)
 Dans le dashboard du **compte Stripe dédié à ZeeRoo** :
@@ -185,11 +204,11 @@ Dans le dashboard du **compte Stripe dédié à ZeeRoo** :
 Stripe ne sert qu'aux abonnements (pas de Connect).
 
 1. **Profil** : nom « ZeeRoo », icône, couleur (pages d'abonnement).
-2. **Catalogue de produits** → trois produits (« ZeeRoo Restaurant Start », « ZeeRoo Restaurant Pro », « ZeeRoo Livreur »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). Copier les six identifiants `price_…` dans les variables `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_MONTH`, `_COURIER_YEAR` (voir la grille ci-dessous).
+2. **Catalogue de produits** → quatre produits (« ZeeRoo Établissement Start », « ZeeRoo Établissement Pro », « ZeeRoo Livreur Start », « ZeeRoo Livreur Pro »), chacun avec un prix récurrent **mensuel** et un prix **annuel**, **hors taxe** (« Taxe exclue du prix »). **Vérifier d'abord les prix déjà présents dans Stripe** : le code n'en crée aucun. Copier les huit identifiants `price_…` dans `STRIPE_PRICE_START_MONTH`, `_START_YEAR`, `STRIPE_PRICE_PRO_MONTH`, `_PRO_YEAR`, `STRIPE_PRICE_COURIER_START_MONTH`, `_COURIER_START_YEAR`, `STRIPE_PRICE_COURIER_PRO_MONTH`, `_COURIER_PRO_YEAR` (voir la grille ci-dessus). Les anciens `STRIPE_PRICE_COURIER_MONTH` / `_YEAR` restent acceptés pour le livreur Start.
    - **Catalogue de produits → Taux de taxe** : créer « TVA 20 % », France, **exclusif** (ajouté au prix HT). Copier `txr_…` dans `STRIPE_TAX_RATE_ID`.
    - Les factures affichent alors, par exemple pour Start mensuel, 19,99 € HT + 4,00 € de TVA = 23,99 € TTC, avec l'adresse du commerce et son numéro de TVA s'il le saisit.
    - Penser aussi à renseigner, dans les paramètres de facturation Stripe, les mentions de ZeeRoo : raison sociale, adresse, SIREN et numéro de TVA.
-3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation.
+3. **Paramètres → Facturation → Portail client** → activer le portail : changement de carte, factures, résiliation. Le changement de formule se fait dans l'app (action `change`, qui modifie l'abonnement existant avec prorata, jamais un second) ; n'activez pas dans le portail un changement de formule vers d'autres produits sans l'avoir testé.
 4. **Développeurs → Webhooks**, un point de terminaison « Votre compte » vers `https://<projet>.supabase.co/functions/v1/stripe-webhook`, événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` ; copier son secret dans `STRIPE_WEBHOOK_SECRET`.
 5. **Secrets serveur.** Ne colle jamais les clés dans le code ni dans un chat :
    ```bash
@@ -197,7 +216,8 @@ Stripe ne sert qu'aux abonnements (pas de Connect).
      STRIPE_TAX_RATE_ID=txr_… \
      STRIPE_PRICE_START_MONTH=price_… STRIPE_PRICE_START_YEAR=price_… \
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
-     STRIPE_PRICE_COURIER_MONTH=price_… STRIPE_PRICE_COURIER_YEAR=price_… \
+     STRIPE_PRICE_COURIER_START_MONTH=price_… STRIPE_PRICE_COURIER_START_YEAR=price_… \
+     STRIPE_PRICE_COURIER_PRO_MONTH=price_… STRIPE_PRICE_COURIER_PRO_YEAR=price_… \
      APP_WEB_URL=https://app.zeeroo.fr CRON_SECRET=$(openssl rand -hex 32)
    ```
 6. **Expiration automatique**, chaque minute via pg_cron. Dans l'éditeur SQL Supabase, en remettant la même valeur que `CRON_SECRET` :

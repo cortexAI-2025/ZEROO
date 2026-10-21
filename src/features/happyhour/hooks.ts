@@ -21,10 +21,14 @@ const EMPTY: OffersByItem = new Map();
  * Offres en vigueur pour un commerce et un mode de commande, relues chaque 30 s : une offre peut
  * se terminer, ou son stock s'épuiser, pendant que le client prépare son panier.
  */
-export function useActiveOffers(merchantId: string | undefined, mode: OfferMode) {
+export function useActiveOffers(
+  merchantId: string | undefined,
+  mode: OfferMode,
+  at?: string | null,
+) {
   const query = useQuery({
-    queryKey: offersKey(merchantId, mode),
-    queryFn: () => fetchActiveOffers(merchantId!, mode),
+    queryKey: [...offersKey(merchantId, mode), at ?? 'now'],
+    queryFn: () => fetchActiveOffers(merchantId!, mode, at),
     enabled: !!merchantId,
     refetchInterval: 30_000,
     select: indexOffers,

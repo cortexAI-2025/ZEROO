@@ -43,6 +43,17 @@ function merchantPlan(subscription: Stripe.Subscription): 'start' | 'pro' {
   return subscription.metadata?.plan === 'pro' ? 'pro' : 'start';
 }
 
+/** Formule du livreur : Pro (plusieurs courses, nuit) si le prix souscrit est un prix Pro, sinon Start. */
+function courierPlan(subscription: Stripe.Subscription): 'start' | 'pro' {
+  const proPrices = [
+    Deno.env.get('STRIPE_PRICE_COURIER_PRO_MONTH'),
+    Deno.env.get('STRIPE_PRICE_COURIER_PRO_YEAR'),
+  ].filter((id): id is string => !!id);
+  const priceId = subscription.items.data[0]?.price?.id;
+  if (proPrices.length > 0) return priceId && proPrices.includes(priceId) ? 'pro' : 'start';
+  return subscription.metadata?.plan === 'pro' ? 'pro' : 'start';
+}
+
 /** Abonnement d'un restaurant ou d'un livreur (même offre), retrouvé par son client Stripe. */
 async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscription) {
   const customerId =
@@ -67,7 +78,7 @@ async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscri
           current_period_end: toDate(periodEnd),
           cancel_at_period_end: subscription.cancel_at_period_end,
           trial_used: existing.trial_used || subscription.trial_end !== null,
-          ...(table === 'subscriptions' ? { plan: merchantPlan(subscription) } : {}),
+          plan: table === 'subscriptions' ? merchantPlan(subscription) : courierPlan(subscription),
         })
         .eq('stripe_customer_id', customerId),
     );

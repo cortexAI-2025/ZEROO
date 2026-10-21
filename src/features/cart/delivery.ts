@@ -12,7 +12,7 @@ export function useMerchantDeliverySettings(merchantId: string | undefined) {
       const { data, error } = await supabase
         .from('merchants')
         .select(
-          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, delivery_available_now, has_order_mode',
+          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, delivery_available_now, has_order_mode, timezone, default_prep_minutes, group_orders_enabled, group_min_lead_hours, group_min_headcount, group_min_total_cents',
         )
         .eq('id', merchantId!)
         .maybeSingle();
@@ -33,14 +33,19 @@ export type DeliveryQuote = {
 };
 
 /** Devis avant commande : adresse dans la zone et livreur disponible maintenant. */
-export function useDeliveryQuote(merchantId: string | undefined, address: DeliveryAddress | null) {
+export function useDeliveryQuote(
+  merchantId: string | undefined,
+  address: DeliveryAddress | null,
+  scheduledFor?: string | null,
+) {
   return useQuery({
-    queryKey: ['delivery-quote', merchantId, address?.latitude, address?.longitude],
+    queryKey: ['delivery-quote', merchantId, address?.latitude, address?.longitude, scheduledFor],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('merchant_delivery_quote', {
         p_merchant_id: merchantId!,
         p_latitude: address!.latitude,
         p_longitude: address!.longitude,
+        ...(scheduledFor ? { p_scheduled_for: scheduledFor } : {}),
       });
       if (error) throw error;
       return (data as DeliveryQuote[])[0];

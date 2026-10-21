@@ -13,11 +13,15 @@ type ModeFlags = {
  * d'abord, puis la livraison, seulement si un livreur peut la prendre maintenant. Reflet de
  * colonnes calculées côté serveur, qui revérifie de toute façon à la commande.
  */
-export function orderModes(flags: ModeFlags | null | undefined): OrderMode[] {
+export function orderModes(
+  flags: ModeFlags | null | undefined,
+  /** Précommande : la livraison n'exige pas de livreur en ligne maintenant (revérifié par le serveur). */
+  scheduled = false,
+): OrderMode[] {
   if (!flags) return [];
   const modes: OrderMode[] = [];
   if (flags.offers_pickup) modes.push('pickup');
-  if (flags.delivery_available_now) modes.push('delivery');
+  if (scheduled ? flags.offers_delivery : flags.delivery_available_now) modes.push('delivery');
   return modes;
 }
 

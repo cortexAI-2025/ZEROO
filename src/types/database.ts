@@ -61,6 +61,7 @@ export type Database = {
       };
       courier_subscriptions: {
         Row: {
+          plan: string;
           cancel_at_period_end: boolean;
           courier_id: string;
           current_period_end: string | null;
@@ -73,6 +74,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          plan?: string;
           cancel_at_period_end?: boolean;
           courier_id: string;
           current_period_end?: string | null;
@@ -84,6 +86,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          plan?: string;
           cancel_at_period_end?: boolean;
           courier_id?: string;
           current_period_end?: string | null;
@@ -881,8 +884,51 @@ export type Database = {
           },
         ];
       };
+      marketing_campaigns: {
+        Row: {
+          attempts: number;
+          caption: string;
+          created_at: string;
+          cycle_start: string;
+          id: string;
+          last_error: string | null;
+          merchant_id: string;
+          published_at: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          scheduled_for: string | null;
+          status: Database['public']['Enums']['marketing_campaign_status'];
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      marketing_publications: {
+        Row: {
+          attempted_at: string;
+          attempted_by: string | null;
+          campaign_id: string;
+          error: string | null;
+          id: string;
+          platform: string;
+          post_url: string | null;
+          status: string;
+        };
+        ComputedFields: never;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       merchants: {
         Row: {
+          group_orders_enabled: boolean;
+          group_min_lead_hours: number;
+          group_min_headcount: number;
+          group_min_total_cents: number;
+          marketing_consent: boolean;
+          marketing_consent_at: string | null;
           payment_link: string | null;
           photo_url: string | null;
           legal_name: string | null;
@@ -949,6 +995,12 @@ export type Database = {
           | 'is_payments_ready'
           | 'is_subscription_active';
         Insert: {
+          group_orders_enabled?: boolean;
+          group_min_lead_hours?: number;
+          group_min_headcount?: number;
+          group_min_total_cents?: number;
+          marketing_consent?: boolean;
+          marketing_consent_at?: string | null;
           payment_link?: string | null;
           photo_url?: string | null;
           legal_name?: string | null;
@@ -986,6 +1038,12 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          group_orders_enabled?: boolean;
+          group_min_lead_hours?: number;
+          group_min_headcount?: number;
+          group_min_total_cents?: number;
+          marketing_consent?: boolean;
+          marketing_consent_at?: string | null;
           payment_link?: string | null;
           photo_url?: string | null;
           legal_name?: string | null;
@@ -1161,6 +1219,10 @@ export type Database = {
       };
       orders: {
         Row: {
+          scheduled_for: string | null;
+          is_group_order: boolean;
+          company_name: string | null;
+          headcount: number | null;
           meal_payment_declared_at: string | null;
           delivery_payment_declared_at: string | null;
           delivery_unclaimed_at: string | null;
@@ -1223,6 +1285,10 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          scheduled_for?: string | null;
+          is_group_order?: boolean;
+          company_name?: string | null;
+          headcount?: number | null;
           meal_payment_declared_at?: string | null;
           delivery_payment_declared_at?: string | null;
           delivery_unclaimed_at?: string | null;
@@ -1284,6 +1350,10 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          scheduled_for?: string | null;
+          is_group_order?: boolean;
+          company_name?: string | null;
+          headcount?: number | null;
           meal_payment_declared_at?: string | null;
           delivery_payment_declared_at?: string | null;
           delivery_unclaimed_at?: string | null;
@@ -1450,6 +1520,7 @@ export type Database = {
       };
       subscriptions: {
         Row: {
+          created_at: string;
           cancel_at_period_end: boolean;
           current_period_end: string | null;
           merchant_id: string;
@@ -1463,6 +1534,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          created_at?: string;
           cancel_at_period_end?: boolean;
           current_period_end?: string | null;
           merchant_id: string;
@@ -1475,6 +1547,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          created_at?: string;
           cancel_at_period_end?: boolean;
           current_period_end?: string | null;
           merchant_id?: string;
@@ -1501,6 +1574,53 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      merchant_advanced_stats: {
+        Args: { p_days?: number; p_merchant_id: string };
+        Returns: Json;
+      };
+      is_platform_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      update_campaign_caption: {
+        Args: { p_caption: string; p_id: string };
+        Returns: Database['public']['Tables']['marketing_campaigns']['Row'];
+      };
+      admin_list_campaigns: {
+        Args: { p_status?: Database['public']['Enums']['marketing_campaign_status'] };
+        Returns: {
+          attempts: number;
+          caption: string;
+          city: string;
+          cycle_start: string;
+          id: string;
+          last_error: string | null;
+          merchant_id: string;
+          merchant_name: string;
+          merchant_slug: string;
+          published_at: string | null;
+          scheduled_for: string | null;
+          status: Database['public']['Enums']['marketing_campaign_status'];
+        }[];
+      };
+      admin_review_campaign: {
+        Args: { p_approve: boolean; p_caption?: string; p_id: string; p_scheduled_for?: string };
+        Returns: Database['public']['Tables']['marketing_campaigns']['Row'];
+      };
+      admin_record_publication: {
+        Args: {
+          p_error?: string;
+          p_id: string;
+          p_ok: boolean;
+          p_platform: string;
+          p_post_url?: string;
+        };
+        Returns: Database['public']['Tables']['marketing_campaigns']['Row'];
+      };
+      admin_requeue_campaign: {
+        Args: { p_id: string; p_scheduled_for: string };
+        Returns: Database['public']['Tables']['marketing_campaigns']['Row'];
+      };
       apply_order_transition: {
         Args: {
           p_actor: string;
@@ -2713,6 +2833,8 @@ export type Database = {
       };
     };
     Enums: {
+      marketing_campaign_status:
+        'pending_review' | 'scheduled' | 'published' | 'failed' | 'rejected' | 'cancelled';
       courier_legal_status: 'auto_entrepreneur' | 'societe';
       courier_link_status: 'pending' | 'approved' | 'rejected';
       courier_vehicle: 'bike' | 'scooter' | 'car' | 'foot';
@@ -2854,6 +2976,14 @@ export const Constants = {
   },
   public: {
     Enums: {
+      marketing_campaign_status: [
+        'pending_review',
+        'scheduled',
+        'published',
+        'failed',
+        'rejected',
+        'cancelled',
+      ],
       courier_legal_status: ['auto_entrepreneur', 'societe'],
       courier_link_status: ['pending', 'approved', 'rejected'],
       courier_vehicle: ['bike', 'scooter', 'car', 'foot'],

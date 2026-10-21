@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Card, Chip } from '@/components/ui';
+import { confirmAsync } from '@/lib/confirm';
 import { formatDay } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -10,12 +11,49 @@ import { spacing } from '@/theme';
 
 import { type BillingTarget, useBilling, useBillingActions } from './billing';
 import {
+  COURIER_FEATURES,
+  courierHasFeature,
+  effectivePlan,
+  MERCHANT_FEATURES,
+  merchantHasFeature,
+} from './entitlements';
+import {
+  COURIER_PLANS,
   formatPrice,
   type Interval,
   MERCHANT_PLANS,
   type PlanId,
+  planTier,
   yearlyMonthlyHtCents,
 } from './plans';
+
+/** Liste des fonctions de la formule choisie, avec ce qui est inclus ou non. */
+function PlanFeatures({ plan }: { plan: PlanId }) {
+  const { t } = useTranslation();
+  const tier = planTier(plan);
+  const isCourier = plan.startsWith('courier');
+  const rows = isCourier
+    ? COURIER_FEATURES.map((f) => ({
+        key: f,
+        label: t(`billing.courierFeatures.${f}`),
+        included: courierHasFeature(tier, f),
+      }))
+    : MERCHANT_FEATURES.map((f) => ({
+        key: f,
+        label: t(`billing.merchantFeatures.${f}`),
+        included: merchantHasFeature(tier, f),
+      }));
+  return (
+    <View testID={`plan-features-${plan}`} style={styles.features}>
+      {rows.map((row) => (
+        <AppText key={row.key} variant={row.included ? undefined : 'muted'}>
+          {row.included ? '✓ ' : '— '}
+          {row.label}
+        </AppText>
+      ))}
+    </View>
+  );
+}
 
 /**
  * Carte « Abonnement » (seul usage de Stripe) : onglet Boutique du restaurant, onglet Compte
@@ -28,10 +66,16 @@ export function BillingCards({ target }: { target: BillingTarget }) {
   const ns = target.role === 'merchant' ? 'merchant' : 'courier';
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [planChoice, setPlanChoice] = useState<PlanId>('start');
+  const isCourier = target.role === 'courier';
+  const [tierChoice, setTierChoice] = useState<'start' | 'pro'>('start');
   const [interval, setInterval] = useState<Interval>('month');
-  // Un livreur n'a qu'une formule ; un restaurant choisit Start ou Pro.
-  const plan: PlanId = target.role === 'courier' ? 'courier' : planChoice;
+  // Restaurant et livreur choisissent chacun entre Start et Pro (grilles différentes).
+  const plan: PlanId = isCourier
+    ? tierChoice === 'pro'
+      ? 'courier_pro'
+      : 'courier_start'
+    : tierChoice;
+  const plans = isCourier ? COURIER_PLANS : MERCHANT_PLANS;
   const price = formatPrice(plan, interval);
 
   const run = (key: string, action: () => Promise<void>) => async () => {
@@ -47,6 +91,24 @@ export function BillingCards({ target }: { target: BillingTarget }) {
   };
 
   const subscription = billing.data?.subscription ?? null;
+  const currentTier = effectivePlan(subscription);
+  const currentId: PlanId = isCourier
+    ? currentTier === 'pro'
+      ? 'courier_pro'
+      : 'courier_start'
+    : (currentTier ?? 'start');
+  const changePlan = async () => {
+    const ok = await confirmAsync({
+      title: t('billing.changeConfirmTitle'),
+      message: t('billing.changeConfirmBody', {
+        plan: t(`billing.plans.${plan}`),
+        ht: price.ht,
+      }),
+      confirmLabel: t('billing.change'),
+      cancelLabel: t('common.cancel'),
+    });
+    if (ok) await actions.changePlan(plan, interval);
+  };
   const isWeb = Platform.OS === 'web';
   const subscriptionActive =
     subscription?.status === 'trialing' || subscription?.status === 'active';
@@ -89,22 +151,19 @@ export function BillingCards({ target }: { target: BillingTarget }) {
 
         {isWeb && !subscriptionActive && subscription?.status !== 'past_due' ? (
           <>
-            {target.role === 'merchant' ? (
-              <View style={styles.chips} testID="plan-choice">
-                {MERCHANT_PLANS.map((id) => (
-                  <Chip
-                    key={id}
-                    testID={`plan-${id}`}
-                    label={t(`billing.plans.${id}`)}
-                    selected={planChoice === id}
-                    onPress={() => setPlanChoice(id)}
-                  />
-                ))}
-              </View>
-            ) : null}
-            {target.role === 'merchant' ? (
-              <AppText variant="muted">{t(`billing.planInfo.${planChoice}`)}</AppText>
-            ) : null}
+            <View style={styles.chips} testID="plan-choice">
+              {plans.map((id) => (
+                <Chip
+                  key={id}
+                  testID={`plan-${planTier(id)}`}
+                  label={t(`billing.plans.${id}`)}
+                  selected={plan === id}
+                  onPress={() => setTierChoice(planTier(id))}
+                />
+              ))}
+            </View>
+            <AppText variant="muted">{t(`billing.planInfo.${plan}`)}</AppText>
+            <PlanFeatures plan={plan} />
             <View style={styles.chips} testID="interval-choice">
               {(['month', 'year'] as const).map((id) => (
                 <Chip
@@ -144,6 +203,46 @@ export function BillingCards({ target }: { target: BillingTarget }) {
             onPress={() => void run('subscribe', () => actions.subscribe(plan, interval))()}
           />
         ) : null}
+        {isWeb && subscriptionActive ? (
+          <>
+            <AppText variant="subtitle">{t('billing.changeTitle')}</AppText>
+            <AppText variant="muted">
+              {t('billing.currentPlan', { plan: t(`billing.plans.${currentId}`) })}
+            </AppText>
+            <View style={styles.chips} testID="change-plan-choice">
+              {plans.map((id) => (
+                <Chip
+                  key={id}
+                  testID={`change-plan-${planTier(id)}`}
+                  label={t(`billing.plans.${id}`)}
+                  selected={plan === id}
+                  onPress={() => setTierChoice(planTier(id))}
+                />
+              ))}
+              {(['month', 'year'] as const).map((id) => (
+                <Chip
+                  key={id}
+                  testID={`change-interval-${id}`}
+                  label={t(`billing.intervals.${id}`)}
+                  selected={interval === id}
+                  onPress={() => setInterval(id)}
+                />
+              ))}
+            </View>
+            <AppText testID="change-price">
+              {t(`billing.price.${interval}`, { ht: price.ht, ttc: price.ttc })}
+            </AppText>
+            <PlanFeatures plan={plan} />
+            <AppText variant="muted">{t('billing.changeHint')}</AppText>
+            <Button
+              testID="change-plan"
+              variant="secondary"
+              title={t('billing.change')}
+              loading={busy === 'change'}
+              onPress={() => void run('change', changePlan)()}
+            />
+          </>
+        ) : null}
         {isWeb && subscription && subscription.status !== 'incomplete' ? (
           <Button
             variant="secondary"
@@ -160,4 +259,5 @@ export function BillingCards({ target }: { target: BillingTarget }) {
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  features: { gap: spacing.xs },
 });

@@ -7,6 +7,7 @@ import {
   fetchOpeningHours,
   fetchSalesByDay,
   fetchTodaySummary,
+  fetchAdvancedStats,
   fetchTopItems,
   type MerchantPatch,
   saveOpeningHours,
@@ -89,5 +90,14 @@ export function useTopItems(merchantId: string) {
   return useQuery({
     queryKey: merchantKeys.topItems(merchantId),
     queryFn: () => fetchTopItems(merchantId),
+  });
+}
+
+/** Statistiques avancées : appelées seulement pour un établissement Pro. */
+export function useAdvancedStats(merchantId: string, enabled: boolean, days = 30) {
+  return useQuery({
+    queryKey: ['merchant', merchantId, 'advanced-stats', days] as const,
+    queryFn: () => fetchAdvancedStats(merchantId, days),
+    enabled,
   });
 }

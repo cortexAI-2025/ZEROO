@@ -6,7 +6,7 @@ import { callFunction } from '@/lib/functions';
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
 
-import type { Interval, PlanId } from './plans';
+import { type Interval, type PlanId, planTier } from './plans';
 
 /**
  * Professionnel abonné à ZeeRoo : un restaurant ou un livreur. Stripe ne sert qu'à ces
@@ -16,10 +16,12 @@ import type { Interval, PlanId } from './plans';
 export type BillingTarget = { role: 'merchant' | 'courier'; id: string };
 
 export type BillingState = {
-  subscription: Pick<
-    Tables<'subscriptions'>,
-    'status' | 'trial_end' | 'current_period_end' | 'cancel_at_period_end' | 'trial_used'
-  > | null;
+  subscription:
+    | (Pick<
+        Tables<'subscriptions'>,
+        'status' | 'trial_end' | 'current_period_end' | 'cancel_at_period_end' | 'trial_used'
+      > & { plan: string })
+    | null;
 };
 
 export async function fetchBilling({ role, id }: BillingTarget): Promise<BillingState> {
@@ -64,11 +66,15 @@ export function useBillingActions(target: BillingTarget) {
       const { url } = await callFunction<{ url: string }>('billing', {
         action: 'checkout',
         role,
-        // Le livreur n'a qu'une formule : le serveur attend « start » pour lui.
-        plan: plan === 'courier' ? 'start' : plan,
+        plan: planTier(plan),
         interval,
       });
       await openStripePage(url);
+    },
+    /** Changement de formule ou de périodicité : modifie l'abonnement existant (jamais un second). */
+    changePlan: async (plan: PlanId, interval: Interval) => {
+      await callFunction('billing', { action: 'change', role, plan: planTier(plan), interval });
+      await reload();
     },
     manageSubscription: async () => {
       const { url } = await callFunction<{ url: string }>('billing', { action: 'portal', role });

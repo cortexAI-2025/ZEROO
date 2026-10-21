@@ -1,4 +1,4 @@
-import type { CartLine, DeliveryDetails } from '@/features/cart/store';
+import type { CartLine, DeliveryDetails, GroupOrder } from '@/features/cart/store';
 import { cartLinePricing } from '@/features/happyhour/pricing';
 import type { OffersByItem } from '@/features/happyhour/types';
 
@@ -16,6 +16,10 @@ export type PayOrderInput = {
   delivery?: DeliveryDetails;
   /** Offres Happy Hour vues par le client : le prix annoncé est revérifié par le serveur. */
   offers?: OffersByItem;
+  /** Précommande : instant choisi (ISO). Absent : dès que possible. */
+  scheduledFor?: string | null;
+  /** Commande groupée entreprise (précommande obligatoire). */
+  group?: GroupOrder | null;
 };
 
 export const orderPayload = (input: PayOrderInput) => ({
@@ -32,6 +36,10 @@ export const orderPayload = (input: PayOrderInput) => ({
   note: input.note.trim() || undefined,
   mealPayment: input.mealPayment ?? 'card',
   deliveryPayment: input.deliveryPayment ?? 'card',
+  scheduledFor: input.scheduledFor ?? undefined,
+  group: input.group
+    ? { companyName: input.group.companyName.trim(), headcount: input.group.headcount }
+    : undefined,
   delivery: input.delivery
     ? { ...input.delivery, instructions: input.delivery.instructions.trim() || undefined }
     : undefined,

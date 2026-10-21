@@ -18,6 +18,7 @@ import { useReorder } from '@/features/orders/useReorder';
 import { ReviewCard } from '@/features/reviews/ReviewCard';
 import { confirmAsync } from '@/lib/confirm';
 import { formatDay, formatTime } from '@/lib/dates';
+import { DEFAULT_TIMEZONE, formatDayIn, formatTimeIn } from '@/lib/zone';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
 import { radius, spacing, useThemeColors } from '@/theme';
@@ -163,6 +164,7 @@ export default function OrderScreen() {
   const earnedMenus = order.order_items
     .filter((i) => i.is_loyalty_menu && !i.is_loyalty_reward)
     .reduce((sum, i) => sum + i.quantity, 0);
+  const merchantZone = order.merchants?.timezone ?? DEFAULT_TIMEZONE;
   const merchant = order.merchants;
 
   return (
@@ -314,6 +316,19 @@ export default function OrderScreen() {
             <AppText>{formatCents(item.line_total_cents)}</AppText>
           </View>
         ))}
+        {order.scheduled_for ? (
+          <AppText variant="link" testID="order-scheduled">
+            {t('client.order.scheduled', {
+              day: formatDayIn(order.scheduled_for, merchantZone),
+              time: formatTimeIn(order.scheduled_for, merchantZone),
+            })}
+          </AppText>
+        ) : null}
+        {order.is_group_order ? (
+          <AppText variant="muted">
+            {t('client.order.group', { company: order.company_name, count: order.headcount })}
+          </AppText>
+        ) : null}
         {order.customer_note ? <AppText variant="muted">« {order.customer_note} »</AppText> : null}
         {order.discount_cents > 0 ? (
           <View style={styles.line}>

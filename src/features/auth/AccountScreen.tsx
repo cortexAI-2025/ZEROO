@@ -1,7 +1,10 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AppText, Button, Screen } from '@/components/ui';
+import { router } from 'expo-router';
+
+import { AppText, Button, ListRow, Screen } from '@/components/ui';
+import { useIsPlatformAdmin } from '@/features/marketing/hooks';
 import { useSpace } from '@/features/space/SpaceProvider';
 import { confirmAsync } from '@/lib/confirm';
 import { errorKey } from '@/lib/errors';
@@ -49,6 +52,7 @@ export function AccountScreen({ children }: { children?: ReactNode }) {
     if (confirmed) await run(deleteAccount);
   };
 
+  const admin = useIsPlatformAdmin();
   return (
     <Screen scroll>
       <AppText variant="title">{t('account.title')}</AppText>
@@ -56,6 +60,13 @@ export function AccountScreen({ children }: { children?: ReactNode }) {
         {t('account.signedInAs', { email: session?.user.email ?? '' })}
       </AppText>
       {children}
+      {admin.data ? (
+        <ListRow
+          testID="admin-entry"
+          title={t('admin.open')}
+          onPress={() => router.push('/admin')}
+        />
+      ) : null}
 
       {(['client', 'merchant', 'courier'] as const)
         .filter((other) => other !== space)

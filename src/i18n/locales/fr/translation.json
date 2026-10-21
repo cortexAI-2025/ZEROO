@@ -23,13 +23,16 @@
   },
   "billing": {
     "plans": {
-      "start": "Start",
-      "pro": "Pro"
+      "start": "Établissement Start",
+      "pro": "Établissement Pro",
+      "courier_start": "Livreur Start",
+      "courier_pro": "Livreur Pro"
     },
     "planInfo": {
-      "start": "Retrait sur place (click & collect).",
-      "pro": "Retrait sur place et option livraison par vos livreurs.",
-      "courier": "Pour les livreurs indépendants."
+      "start": "Click & Collect, livraison, QR code et fidélité, précommandes programmées et paniers anti-gaspi.",
+      "pro": "Tout Start, plus Happy Hours, mini-site dans l'annuaire, statistiques avancées, commandes groupées entreprises et campagne marketing mensuelle.",
+      "courier_start": "Missions de livraison classiques, une course à la fois, hors livraison de nuit.",
+      "courier_pro": "Tout Start, plus plusieurs courses simultanées et livraison de nuit."
     },
     "intervals": {
       "month": "Mensuel",
@@ -39,7 +42,35 @@
       "month": "{{ht}} HT par mois ({{ttc}} TTC)",
       "year": "{{ht}} HT par an ({{ttc}} TTC)"
     },
-    "yearlyHint": "Soit {{monthly}} HT par mois avec l'abonnement annuel."
+    "yearlyHint": "Soit {{monthly}} HT par mois avec l'abonnement annuel.",
+    "merchantFeatures": {
+      "click_collect": "Click & Collect",
+      "delivery": "Livraison",
+      "qr_loyalty": "QR code et fidélité",
+      "scheduled_orders": "Précommandes programmées",
+      "baskets": "Paniers anti-gaspi",
+      "happy_hours": "Happy Hours",
+      "minisite": "Mini-site dans l'annuaire",
+      "advanced_stats": "Statistiques avancées",
+      "group_orders": "Commandes groupées entreprises",
+      "marketing_campaign": "Campagne marketing mensuelle"
+    },
+    "courierFeatures": {
+      "classic_missions": "Missions de livraison classiques",
+      "multi_missions": "Plusieurs courses simultanées",
+      "night_delivery": "Livraison de nuit (22 h – 6 h)"
+    },
+    "changeTitle": "Changer de formule",
+    "currentPlan": "Formule actuelle : {{plan}}",
+    "change": "Changer de formule",
+    "changeHint": "Votre abonnement existant est modifié (jamais un second). La différence est calculée au prorata sur votre prochaine facture. Un essai gratuit en cours se poursuit.",
+    "changeConfirmTitle": "Changer de formule ?",
+    "changeConfirmBody": "Nouvelle formule : {{plan}} à {{ht}} HT. Votre abonnement actuel est remplacé, sans double prélèvement.",
+    "upsell": {
+      "title": "Fonction de la formule Pro",
+      "body": "Passez en Pro depuis l'onglet Boutique : votre abonnement est modifié, sans double prélèvement.",
+      "action": "Voir les formules"
+    }
   },
   "auth": {
     "tagline": "Commandez, payez, récupérez. Sans attendre.",
@@ -349,7 +380,9 @@
       "reorderNothing": "Ces produits ne sont plus disponibles : consultez le menu du restaurant.",
       "reorderSkipped_one": "{{count}} produit n'est plus disponible et n'a pas été ajouté.",
       "reorderSkipped_other": "{{count}} produits ne sont plus disponibles et n'ont pas été ajoutés.",
-      "yourCourier": "votre livreur"
+      "yourCourier": "votre livreur",
+      "scheduled": "Commande programmée pour {{day}} à {{time}}.",
+      "group": "Commande groupée · {{company}} · {{count}} convives"
     },
     "loyalty": {
       "title": "Mes cartes de fidélité",
@@ -433,6 +466,20 @@
         "meal": "{{name}} a bien reçu vos {{price}}.",
         "delivery": "{{name}} a bien reçu vos {{price}} pour la livraison."
       }
+    },
+    "schedule": {
+      "title": "Quand ?",
+      "asap": "Dès que possible",
+      "later": "Programmer à un autre moment",
+      "asapHint": "L'établissement prépare votre commande dès qu'il l'accepte.",
+      "hint": "Créneaux pendant les horaires d'ouverture, au moins le temps de préparation à l'avance. Les offres Happy Hour se calculent à l'heure choisie.",
+      "none": "Aucun créneau n'est disponible dans les 14 prochains jours.",
+      "group": "Commande groupée entreprise",
+      "company": "Nom de l'entreprise",
+      "headcount": "Nombre de convives (minimum {{min}})",
+      "groupHint": "Une commande groupée se passe au moins {{hours}} h à l'avance. Elle est réglée directement à l'établissement.",
+      "groupMinimum": "Montant minimal d'une commande groupée : {{amount}}.",
+      "summary": "Commande programmée : {{date}}."
     }
   },
   "baskets": {
@@ -592,7 +639,9 @@
         "confirm": "Paiement reçu",
         "received": "Repas payé · {{price}}",
         "cash": "Repas {{price}} : à encaisser en espèces au comptoir."
-      }
+      },
+      "scheduled": "Précommande : à préparer pour {{day}} à {{time}}",
+      "group": "Commande groupée · {{company}} · {{count}} convives"
     },
     "menu": {
       "title": "Menu",
@@ -769,7 +818,9 @@
         "modes": "Choisissez le retrait, la livraison, ou les deux.",
         "items": "Choisissez au moins un produit.",
         "prices": "Chaque prix promotionnel doit être renseigné et inférieur au prix habituel."
-      }
+      },
+      "proFeature": "Happy Hours : des prix réduits sur des créneaux choisis, avec quota.",
+      "keptWhenNotPro": "Vos offres sont conservées, mais elles ne s'appliquent plus tant que la formule Pro n'est pas active."
     },
     "closures": {
       "title": "Fermetures exceptionnelles",
@@ -836,8 +887,8 @@
     },
     "billing": {
       "subscriptionTitle": "Abonnement ZeeRoo",
-      "subscriptionNone": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "Start, retrait seulement : 19,99 € HT par mois (23,99 € TTC). Pro, avec l'option livraison : 29,99 € HT par mois (35,99 € TTC). Sans engagement et sans commission sur vos ventes.",
+      "subscriptionNone": "Start : 19,99 € HT par mois (23,99 € TTC) ou 199,99 € HT par an. Pro : 29,99 € HT par mois (35,99 € TTC) ou 299,99 € HT par an. Click & Collect et livraison dès Start ; Happy Hours, mini-site, statistiques avancées, commandes groupées et campagne marketing avec Pro. Sans commission sur vos ventes. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Start : 19,99 € HT par mois (23,99 € TTC) ou 199,99 € HT par an. Pro : 29,99 € HT par mois (35,99 € TTC) ou 299,99 € HT par an. Click & Collect et livraison dès Start ; Happy Hours, mini-site, statistiques avancées, commandes groupées et campagne marketing avec Pro. Sans commission sur vos ventes.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
@@ -876,8 +927,8 @@
       "available": "Disponible",
       "unavailable": "Indisponible",
       "courierLine": "{{vehicle}} · {{phone}}",
-      "proTitle": "Option livraison : formule Pro",
-      "proBody": "Votre formule Start comprend le retrait sur place. Passez à la formule Pro (29,99 € HT par mois) pour proposer la livraison par vos livreurs.",
+      "proTitle": "Livraison : abonnement requis",
+      "proBody": "La livraison est incluse dans les formules Start et Pro. Démarrez votre essai gratuit de 30 jours pour l'activer.",
       "proAction": "Voir mon abonnement"
     },
     "stats": {
@@ -890,9 +941,62 @@
       "basketHint": "Sur 7 jours",
       "chart": "Ventes par jour",
       "noCommission": "0 % de commission : tout est versé sur votre compte.",
-      "topItems": "Meilleures ventes (30 jours)",
+      "topItems": "Meilleures ventes (7 jours)",
       "noSales": "Pas encore de ventes sur la période.",
-      "rating": "Note et avis"
+      "rating": "Note et avis",
+      "advanced": {
+        "title": "Statistiques avancées (30 jours)",
+        "proFeature": "Statistiques avancées : période étendue, heures de pointe, clients fidèles, modes de commande.",
+        "orders": "Commandes",
+        "revenue": "Chiffre d'affaires",
+        "basket": "Panier moyen",
+        "lost": "Refusées, expirées ou annulées",
+        "pickup": "Retrait",
+        "delivery": "Livraison",
+        "scheduled": "Précommandes",
+        "group": "Commandes groupées",
+        "customers": "Clients",
+        "returning": "dont clients fidèles (2 commandes ou plus)",
+        "happyHour": "Unités vendues en Happy Hour",
+        "peakHours": "Heures de pointe",
+        "hourLine": "{{hour}} h : {{orders}} commande(s)",
+        "topItems": "Meilleures ventes (30 jours)",
+        "none": "Pas encore de commandes sur la période."
+      }
+    },
+    "groupOrders": {
+      "title": "Commandes groupées entreprises",
+      "rowSubtitle": "Formule Pro · repas d'équipe, événements",
+      "proFeature": "Commandes groupées entreprises : repas d'équipe et événements, avec délai et montant minimaux.",
+      "hint": "Une entreprise commande pour son équipe, à l'avance. Le règlement se fait directement avec vous, comme toute autre commande : ZeeRoo ne perçoit rien.",
+      "enabled": "Accepter les commandes groupées",
+      "leadHours": "Délai minimal avant le repas",
+      "leadHoursValue": "{{count}} h",
+      "minHeadcount": "Convives minimum",
+      "minTotal": "Montant minimal",
+      "noMinimum": "Aucun minimum",
+      "save": "Enregistrer"
+    },
+    "marketing": {
+      "title": "Campagne marketing mensuelle",
+      "rowSubtitle": "Formule Pro · mise en avant sur les réseaux ZeeRoo",
+      "proFeature": "Campagne marketing mensuelle : une publication de votre établissement sur les réseaux sociaux officiels de ZeeRoo, chaque mois après le premier paiement, après validation par l'équipe.",
+      "hint": "Une fois votre premier paiement effectué (jamais pendant l'essai gratuit), puis chaque mois à la date anniversaire, ZeeRoo prépare une publication pour votre établissement. L'équipe ZeeRoo la relit, la valide et la programme : rien n'est publié sans validation humaine. Aucun frais en plus.",
+      "consent": "J'accepte que ZeeRoo publie mon nom, ma photo et mon lien de commande sur ses réseaux sociaux",
+      "consentHint": "Vous pouvez retirer votre accord à tout moment : les publications non programmées sont alors annulées.",
+      "empty": "Aucune campagne pour le moment. La première est préparée après votre premier paiement, une fois votre accord donné.",
+      "caption": "Texte de la publication",
+      "saveCaption": "Enregistrer le texte",
+      "cycle": "Échéance du {{date}}",
+      "scheduledFor": "Publication prévue le {{date}}",
+      "statuses": {
+        "pending_review": "En attente de validation",
+        "scheduled": "Programmée",
+        "published": "Publiée",
+        "failed": "Échec de publication",
+        "rejected": "Refusée",
+        "cancelled": "Annulée"
+      }
     }
   },
   "account": {
@@ -980,7 +1084,24 @@
     "merchantNoPaymentLink": "Ce restaurant n'accepte pas encore la carte : choisissez le paiement en espèces au comptoir.",
     "paymentNotExpected": "Ce paiement n'est pas attendu pour le moment.",
     "invalidPaymentKind": "Type de paiement inconnu.",
-    "proVerificationRequired": "Vérifiez d'abord votre e-mail et votre numéro de téléphone."
+    "proVerificationRequired": "Vérifiez d'abord votre e-mail et votre numéro de téléphone.",
+    "deliveryRequiresSubscription": "La livraison demande un abonnement en cours (essai ou actif).",
+    "featureRequiresPro": "Cette fonction est réservée à la formule Pro.",
+    "nightRequiresPro": "Les livraisons de nuit (22 h – 6 h) sont réservées aux livreurs Pro.",
+    "invalidSchedule": "Choisissez un créneau valable : au moins le temps de préparation, et dans les 14 jours.",
+    "merchantClosedAtSlot": "L'établissement est fermé à cette heure : choisissez un autre créneau.",
+    "groupOrdersUnavailable": "Cet établissement n'accepte pas les commandes groupées.",
+    "invalidGroupOrder": "Renseignez le nom de l'entreprise et un nombre de convives suffisant.",
+    "groupLeadTime": "Une commande groupée se passe plus à l'avance : choisissez un créneau plus tardif.",
+    "groupMinimumNotReached": "Le montant minimal des commandes groupées de cet établissement n'est pas atteint.",
+    "campaignNotFound": "Campagne introuvable.",
+    "campaignLocked": "Cette campagne ne peut plus être modifiée.",
+    "invalidCaption": "Le texte doit faire entre 10 et 600 caractères.",
+    "adminRequired": "Réservé à l'équipe ZeeRoo.",
+    "campaignDayFull": "Ce jour-là, trois établissements sont déjà programmés : choisissez une autre date.",
+    "notEligible": "Cet établissement n'est plus éligible à la campagne (formule Pro, publié et consentement).",
+    "noActiveSubscription": "Aucun abonnement en cours à modifier.",
+    "planUnchanged": "C'est déjà votre formule."
   },
   "notifications": {
     "clientTitle": "Être prévenu quand c'est prêt",
@@ -1133,14 +1254,16 @@
       "ttcMonth": "soit {{ttc}} TTC par mois",
       "yearly": "ou {{ht}} HT par an ({{ttc}} TTC)",
       "plans": {
-        "start": "Start",
-        "pro": "Pro",
-        "courier": "Livreur"
+        "start": "Établissement Start",
+        "pro": "Établissement Pro",
+        "courier_start": "Livreur Start",
+        "courier_pro": "Livreur Pro"
       },
       "planInfo": {
-        "start": "Retrait sur place",
-        "pro": "Retrait + option livraison",
-        "courier": "Pour les livreurs indépendants"
+        "start": "Click & Collect, livraison, QR code, fidélité, précommandes et paniers anti-gaspi",
+        "pro": "Tout Start + Happy Hours, mini-site, statistiques avancées, commandes groupées, campagne marketing",
+        "courier_start": "Missions classiques, une course à la fois",
+        "courier_pro": "Tout Start + plusieurs courses simultanées et livraison de nuit"
       },
       "features": {
         "unlimited": "Commandes illimitées",
@@ -1165,11 +1288,11 @@
         },
         "restaurantCost": {
           "q": "Que paie le restaurant ?",
-          "a": "Un abonnement fixe, sans commission : Start (retrait) à 19,99 € HT par mois (23,99 € TTC) ou Pro, avec l'option livraison, à 29,99 € HT par mois (35,99 € TTC), moins cher en paiement annuel. Vos clients vous paient directement : seuls les frais de votre propre fournisseur de paiement s'appliquent, comme avec un terminal de paiement."
+          "a": "Un abonnement fixe, sans commission : Start à 19,99 € HT par mois (23,99 € TTC), avec Click & Collect, livraison, précommandes et paniers anti-gaspi, ou Pro à 29,99 € HT par mois (35,99 € TTC), avec en plus Happy Hours, mini-site, statistiques avancées, commandes groupées et campagne marketing mensuelle. Moins cher en paiement annuel. Vos clients vous paient directement : seuls les frais de votre propre fournisseur de paiement s'appliquent, comme avec un terminal de paiement."
         },
         "delivery": {
           "q": "Faites-vous de la livraison ?",
-          "a": "Oui, en option. Le restaurant peut proposer la livraison par un livreur indépendant rattaché à son restaurant : le client paie le repas au restaurant et la course au livreur, directement. ZeeRoo n'encaisse jamais l'argent des commandes."
+          "a": "Oui, dès la formule Start. Le restaurant propose la livraison par un livreur indépendant rattaché à son établissement : le client paie le repas au restaurant et la course au livreur, directement. ZeeRoo n'encaisse jamais l'argent des commandes."
         },
         "trial": {
           "q": "Comment fonctionne l'essai gratuit ?",
@@ -1392,8 +1515,8 @@
     },
     "billing": {
       "subscriptionTitle": "Abonnement ZeeRoo Livreur",
-      "subscriptionNone": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses. 30 jours d'essai gratuit.",
-      "subscriptionNoneUsedTrial": "14,99 € HT par mois (17,99 € TTC), ou 149,99 € HT par an (179,99 € TTC). Sans engagement et sans commission sur vos courses.",
+      "subscriptionNone": "Livreur Start : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an. Livreur Pro : 24,99 € HT par mois (29,99 € TTC) ou 249,99 € HT par an, avec plusieurs courses simultanées et la livraison de nuit. Sans commission sur vos courses. 30 jours d'essai gratuit.",
+      "subscriptionNoneUsedTrial": "Livreur Start : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an. Livreur Pro : 24,99 € HT par mois (29,99 € TTC) ou 249,99 € HT par an, avec plusieurs courses simultanées et la livraison de nuit. Sans commission sur vos courses.",
       "startTrial": "Démarrer mon essai gratuit de 30 jours",
       "subscribe": "M'abonner",
       "manage": "Gérer mon abonnement",
@@ -1457,5 +1580,21 @@
       "test": "Ouvrir ma page de paiement",
       "hint": "Choisissez une page où le client saisit lui-même le montant. Vous confirmez chaque paiement reçu dans l'appli."
     }
+  },
+  "admin": {
+    "title": "Administration ZeeRoo",
+    "hint": "Campagnes marketing des établissements Pro : relire le texte, choisir le jour (trois établissements au plus par jour), puis enregistrer le résultat de chaque publication. ZeeRoo ne publie pas automatiquement : aucune connexion à un réseau social n'est configurée.",
+    "empty": "Aucune campagne dans cet état.",
+    "date": "Jour de publication (AAAA-MM-JJ)",
+    "approve": "Valider et programmer",
+    "reject": "Refuser",
+    "postUrl": "Lien de la publication",
+    "failureReason": "Motif de l'échec",
+    "markPublished": "Publiée",
+    "markFailed": "Échec",
+    "requeue": "Reprogrammer",
+    "attempts_one": "{{count}} tentative",
+    "attempts_other": "{{count}} tentatives",
+    "open": "Administration"
   }
 }

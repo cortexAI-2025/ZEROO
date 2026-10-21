@@ -63,6 +63,7 @@ function RootNavigator() {
       <Stack.Protected guard={allow(signedIn)}>
         <Stack.Screen name="update-password" options={{ headerShown: true, title: '' }} />
         <Stack.Screen name="order/[id]" options={{ headerShown: true }} />
+        <Stack.Screen name="admin" options={{ headerShown: true }} />
       </Stack.Protected>
       <Stack.Protected guard={allow(!signedIn)}>
         <Stack.Screen name="(auth)" />
