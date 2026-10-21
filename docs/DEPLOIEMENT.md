@@ -2,6 +2,12 @@
 
 Les réglages hébergés (Supabase, Vercel, DNS) demandent un accès que l'assistant de développement n'a pas toujours. Cette page liste précisément ce qui reste à faire et comment le vérifier.
 
+## 0. Installation guidée (CLI officiel)
+
+Dans **votre** terminal, à la racine du dépôt : `npx supabase login` (connexion dans le navigateur, aucun jeton à copier), puis `scripts/deploy-production.sh --dry-run`, puis `scripts/deploy-production.sh`. Le script applique les migrations absentes de l'historique (`db push`), liste les secrets de fonctions présents ou manquants (sans les afficher) et déploie les neuf fonctions. Il ne fait ni reset ni suppression. Contrôle ensuite : `scripts/verify-production.sql` dans le SQL Editor.
+
+**Secrets Vault des tâches planifiées** (avant que les tâches ne servent) : `functions_url` = `https://rgxesocsvhgsqoehxhgt.supabase.co/functions/v1`. `cron_secret` doit être **identique** au secret de fonction `CRON_SECRET`. Sans jamais le copier dans un chat : dans le SQL Editor, `select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'cron_secret');` puis `select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret';` et collez cette valeur dans Dashboard → Edge Functions → Secrets → `CRON_SECRET`. Faites de même pour `functions_url` avec `vault.create_secret('<url>', 'functions_url')`.
+
 ## 1. Base de données Supabase
 
 Avec le CLI (recommandé) :
