@@ -25,6 +25,7 @@ export default function MerchantLayout() {
           name="happy-hour/[id]"
           options={{ title: t('merchant.happyHours.editTitle') }}
         />
+        <Stack.Screen name="minisite" options={{ title: t('merchant.minisite.title') }} />
         <Stack.Screen name="closures" options={{ title: t('merchant.closures.title') }} />
         <Stack.Screen name="qr" options={{ title: t('merchant.qr.title') }} />
         <Stack.Screen name="history" options={{ title: t('merchant.orders.history') }} />

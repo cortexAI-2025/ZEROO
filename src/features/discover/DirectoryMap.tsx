@@ -8,8 +8,14 @@ import type { MerchantSummary } from './api';
  */
 export const MAP_SUPPORTED = false;
 
+/** Repère de carte : un établissement qui accueille le public (position publique). */
+export type MapMerchant = Pick<MerchantSummary, 'slug' | 'name' | 'is_accepting_orders'> & {
+  latitude: number;
+  longitude: number;
+};
+
 export type DirectoryMapProps = {
-  merchants: (MerchantSummary & { latitude: number; longitude: number })[];
+  merchants: MapMerchant[];
   center: { latitude: number; longitude: number } | null;
   selectedSlug: string | null;
   onSelect: (slug: string) => void;

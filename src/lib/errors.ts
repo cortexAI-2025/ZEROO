@@ -25,6 +25,7 @@ const businessErrors = {
   pickup_unavailable: 'errors.pickupUnavailable',
   item_out_of_slot: 'errors.itemOutOfSlot',
   price_changed: 'errors.priceChanged',
+  minisite_requires_pro: 'errors.minisiteRequiresPro',
   invalid_happy_hour: 'errors.invalidHappyHour',
   happy_hour_not_found: 'errors.happyHourNotFound',
   invalid_closure: 'errors.invalidClosure',

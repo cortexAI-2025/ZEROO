@@ -522,6 +522,14 @@ Promotions programmées, **incluses dans Start et Pro, sans commission**. Ce n'e
 - **Favoris** (`customer_favorites`, RLS par propriétaire, supprimés avec le compte) : synchronisés entre appareils, affichés avec leur état actuel (ouvert, modes, livraison momentanément indisponible, Happy Hour). Un établissement dépublié disparaît de la liste côté client (RLS sur `merchants`), il n'est jamais présenté comme commandable.
 - **Recommander** (historique et détail d'une commande) : reconstitue le panier avec les produits, quantités et options encore disponibles, aux **prix actuels** (une promotion passée n'est jamais reprise ; l'offre en vigueur s'applique ensuite). Les produits supprimés, en rupture, hors créneau ou dont une option a disparu sont écartés **et signalés**, les prix modifiés aussi ; les horaires et le mode de commande sont revérifiés (mode de repli si besoin). Aucun paiement ni envoi : le panier s'ouvre avec un compte rendu à relire.
 
+### 3.13 Mini-site Pro et liens publics (25 octobre 2026)
+
+- **Pour tous (Start compris)** : le lien `https://zeeroo.fr/m/<slug>` ouvre la **fiche de commande** : nom, catégorie, adresse ou zone de service, horaires, fermetures exceptionnelles, menu et formules, Happy Hours en cours, modes de commande réels, commande directe, photo, itinéraire seulement si l'établissement accueille le public.
+- **Formule Pro** : personnalisation (`logo_url`, `tagline`, `about`, `accent_color`) et carte de situation (web). `merchants.has_minisite` (colonne calculée : Pro en essai ou actif). Écrire un réglage demande Pro (`minisite_requires_pro`, déclencheur) ; **effacer** reste possible. Aucune double saisie : la photo, les horaires, le menu, les Happy Hours et les modes viennent des écrans existants.
+- **Expiration de Pro** : aucune donnée supprimée, **le lien ne change pas**, la fiche repasse à la présentation Start (`siteStyle`, testé) ; les réglages sont retrouvés au retour en Pro et l'écran Mini-site le dit.
+- **Acheminement du lien** : `zeeroo.fr/m/<slug>` est servi par la vitrine (GitHub Pages) dont `404.html` renvoie vers `app.zeeroo.fr/m/<slug>` en conservant chemin, paramètres et ancre. Anciens QR `zeroo.online/m/<slug>` : règles `redirects` de `vercel.json` (voir `docs/DEPLOIEMENT.md`, domaine à ajouter chez Vercel).
+- **Limite** : l'aperçu enrichi (image, titre) lors d'un partage sur les réseaux n'est pas servi, la fiche étant rendue dans l'application après redirection.
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.
