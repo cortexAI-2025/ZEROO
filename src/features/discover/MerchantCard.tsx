@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Card, Stars } from '@/components/ui';
+import { deliveryPausedNow } from '@/features/merchant/modes';
 import type { MerchantCategory } from '@/features/merchant/types';
 import type { MerchantRating } from '@/features/reviews/api';
 import { radius, spacing, useThemeColors } from '@/theme';
@@ -74,6 +75,21 @@ export function MerchantCard({ merchant, rating, photoUrl, favorite, onToggleFav
           {merchant.city}
           {merchant.distance_m !== null ? ` · ${formatDistance(merchant.distance_m)}` : ''}
         </AppText>
+        <View style={styles.badges} testID={`modes-${merchant.slug}`}>
+          {merchant.offers_pickup ? <Badge label={t('client.merchant.modePickup')} /> : null}
+          {merchant.delivery_available_now ? (
+            <Badge label={t('client.merchant.modeDelivery')} />
+          ) : null}
+          {merchant.has_happy_hour_now ? (
+            <Badge label={t('happyHour.badge')} tone="warning" />
+          ) : null}
+        </View>
+        {deliveryPausedNow(merchant) ? (
+          <AppText variant="muted">{t('client.merchant.deliveryPaused')}</AppText>
+        ) : null}
+        {!merchant.address_line ? (
+          <AppText variant="muted">{t('client.merchant.deliveryOnly')}</AppText>
+        ) : null}
         {rating ? (
           <View style={styles.row}>
             <Stars value={rating.average} />
@@ -90,6 +106,7 @@ export function MerchantCard({ merchant, rating, photoUrl, favorite, onToggleFav
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   flex: { flex: 1 },
   cover: { width: '100%', aspectRatio: 21 / 9, borderRadius: radius.md },
 });

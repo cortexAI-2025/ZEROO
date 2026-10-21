@@ -124,19 +124,51 @@
       "account": "Compte",
       "loyalty": "Fidélité"
     },
+    "reorder": {
+      "title": "Votre panier a été reconstitué",
+      "intro": "Rien n'est payé ni envoyé. Relisez le panier : prix, produits et mode de commande d'aujourd'hui.",
+      "reasons": {
+        "unavailable": "« {{name}} » n'est plus disponible : il n'a pas été repris.",
+        "out_of_slot": "« {{name}} » n'est pas servi à cette heure : il n'a pas été repris.",
+        "option_missing": "Une option de « {{name}} » n'existe plus : il n'a pas été repris.",
+        "price_changed": "Le prix de « {{name}} » a changé : {{from}} → {{to}}."
+      },
+      "closed": "{{name}} n'accepte pas de commande en ce moment : vous pourrez commander à sa réouverture.",
+      "mode": {
+        "delivery": "La livraison n'est plus proposée en ce moment : le panier est prévu en retrait.",
+        "pickup": "Le retrait n'est plus proposé : le panier est prévu en livraison."
+      }
+    },
     "explore": {
-      "title": "Commander à emporter",
+      "title": "Commander à emporter ou livré",
       "searchLabel": "Rechercher un commerce",
       "searchPlaceholder": "Nom, ville ou code postal",
       "useLocation": "Utiliser ma position",
       "locationHint": "Votre position sert uniquement à trouver les commerces proches. Elle n'est pas enregistrée.",
-      "locationDenied": "Localisation refusée. Vous pouvez chercher par ville ou code postal, ou l'autoriser dans les réglages.",
-      "locationFailed": "Impossible d'obtenir votre position. Cherchez par ville ou code postal.",
+      "locationDenied": "Localisation refusée. Cherchez autour d'une adresse, par ville ou code postal, ou autorisez-la dans les réglages.",
+      "locationFailed": "Impossible d'obtenir votre position. Cherchez autour d'une adresse, par ville ou code postal.",
       "nearbyTitle": "Autour de vous",
       "resultsTitle": "Résultats",
       "noNearby": "Aucun commerce ZeeRoo dans un rayon de 10 km pour l'instant.",
       "noResults": "Aucun commerce trouvé.",
-      "locating": "Localisation…"
+      "locating": "Localisation…",
+      "addressLabel": "Autour d'une adresse",
+      "addressHint": "Pas de géolocalisation ? Indiquez une adresse : seuls les établissements proches de cette adresse sont listés. Elle n'est pas enregistrée.",
+      "aroundAddress": "Autour de {{address}}",
+      "viewList": "Liste",
+      "viewMap": "Carte",
+      "mapNote": "Les établissements sans accueil du public (dark kitchens) ne sont pas placés sur la carte ; ils restent dans la liste, avec leur zone de service.",
+      "count_one": "{{count}} établissement",
+      "count_other": "{{count}} établissements",
+      "noMatch": "Aucun établissement ne correspond à ces filtres.",
+      "clearFilters": "Effacer les filtres",
+      "filters": {
+        "all": "Toutes les catégories",
+        "openNow": "Ouvert maintenant",
+        "pickup": "Retrait",
+        "delivery": "Livraison disponible",
+        "happyHour": "Happy Hour"
+      }
     },
     "merchant": {
       "notFound": "Ce commerce est introuvable ou n'est plus disponible.",
@@ -264,7 +296,8 @@
       },
       "reason": "Motif : {{reason}}",
       "items": "Détail",
-      "orderAgain": "Commander à nouveau",
+      "orderAgain": "Recommander",
+      "reorder": "Recommander",
       "placedAt": "Passée le {{date}} à {{time}}",
       "cancel": "Annuler ma commande",
       "cancelConfirmTitle": "Annuler la commande ?",

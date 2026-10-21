@@ -25,6 +25,7 @@ import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { AddressField } from '@/features/merchant/AddressField';
 import { deliveryPausedNow, orderModes, resolveMode } from '@/features/merchant/modes';
 import { customerOrderKeys } from '@/features/orders/hooks';
+import { useReorderReport } from '@/features/orders/reorderReport';
 import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -86,6 +87,8 @@ export default function CartScreen() {
   );
   const previousOffers = useRef(offers);
   const [notices, setNotices] = useState<OfferChange[]>([]);
+  const reorderReport = useReorderReport((s) => s.report);
+  const setReorderReport = useReorderReport((s) => s.setReport);
   useEffect(() => {
     // Une offre qui se termine (ou change de prix) pendant que le client prépare son panier :
     // on le dit, plutôt que de modifier le total en silence.
@@ -186,6 +189,37 @@ export default function CartScreen() {
     <Screen scroll>
       <Stack.Screen options={{ title: t('client.cart.title'), headerShown: true }} />
       <AppText variant="title">{merchant.name}</AppText>
+
+      {reorderReport ? (
+        <Card testID="reorder-report">
+          <AppText variant="subtitle">{t('client.reorder.title')}</AppText>
+          <AppText variant="muted">{t('client.reorder.intro')}</AppText>
+          {reorderReport.issues.map((issue, i) => (
+            <AppText key={`${issue.name}-${i}`} variant="error">
+              {t(`client.reorder.reasons.${issue.reason}`, {
+                name: issue.name,
+                from: formatCents(issue.fromCents ?? 0),
+                to: formatCents(issue.toCents ?? 0),
+              })}
+            </AppText>
+          ))}
+          {reorderReport.unavailableNow ? (
+            <AppText variant="error">
+              {t('client.reorder.closed', { name: reorderReport.merchantName })}
+            </AppText>
+          ) : null}
+          {reorderReport.modeChangedFrom ? (
+            <AppText variant="error">
+              {t(`client.reorder.mode.${reorderReport.modeChangedFrom}`)}
+            </AppText>
+          ) : null}
+          <Button
+            variant="ghost"
+            title={t('client.cart.dismissNotice')}
+            onPress={() => setReorderReport(null)}
+          />
+        </Card>
+      ) : null}
 
       {notices.length > 0 ? (
         <Card testID="offer-notices">

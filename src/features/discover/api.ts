@@ -15,6 +15,14 @@ export type MerchantSummary = {
   is_accepting_orders: boolean;
   offers_pickup: boolean;
   offers_delivery: boolean;
+  /** Livraison proposée et un livreur peut la prendre maintenant. */
+  delivery_available_now: boolean;
+  has_happy_hour_now: boolean;
+  /** Moments de repas servis : 'breakfast' | 'lunch' | 'dinner' | 'night'. */
+  meal_periods: string[];
+  /** Position sur la carte ; `null` pour un établissement sans accueil du public. */
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export async function fetchNearbyMerchants(

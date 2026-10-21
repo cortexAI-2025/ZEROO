@@ -65,7 +65,7 @@ export async function fetchFavoriteMerchants(userId: string): Promise<MerchantSu
   const { data, error } = await supabase
     .from('customer_favorites')
     .select(
-      'created_at, merchants(id, slug, name, category, address_line, city, offers_pickup, is_open_now, is_accepting_orders, offers_delivery)',
+      'created_at, merchants(id, slug, name, category, address_line, city, latitude, longitude, offers_pickup, is_open_now, is_accepting_orders, offers_delivery, delivery_available_now, has_happy_hour_now)',
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -85,6 +85,11 @@ export async function fetchFavoriteMerchants(userId: string): Promise<MerchantSu
             is_accepting_orders: !!f.merchants.is_accepting_orders,
             offers_pickup: f.merchants.offers_pickup,
             offers_delivery: !!f.merchants.offers_delivery,
+            delivery_available_now: !!f.merchants.delivery_available_now,
+            has_happy_hour_now: !!f.merchants.has_happy_hour_now,
+            meal_periods: [],
+            latitude: f.merchants.offers_pickup ? f.merchants.latitude : null,
+            longitude: f.merchants.offers_pickup ? f.merchants.longitude : null,
           },
         ]
       : [],

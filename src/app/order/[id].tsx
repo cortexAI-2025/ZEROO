@@ -5,7 +5,6 @@ import { Linking, Platform, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Card, QueryState, Screen } from '@/components/ui';
 import { useCart } from '@/features/cart/store';
-import { fetchMerchantPage } from '@/features/discover/api';
 import { directionsUrl } from '@/features/discover/location';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { cancelMyOrder, cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
@@ -14,7 +13,7 @@ import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
 import { PaymentCard } from '@/features/orders/PaymentCard';
 import { showsAddress } from '@/features/merchant/modes';
-import { rebuildLines } from '@/features/orders/reorder';
+import { useReorder } from '@/features/orders/useReorder';
 import { ReviewCard } from '@/features/reviews/ReviewCard';
 import { confirmAsync } from '@/lib/confirm';
 import { formatDay, formatTime } from '@/lib/dates';
@@ -43,8 +42,6 @@ export default function OrderScreen() {
   // Lien de paiement du livreur (paiement de la livraison par carte).
   const orderCourier = useOrderCourier(id, order?.courier_name ?? null);
   const [cancellingMission, setCancellingMission] = useState(false);
-  const [reordering, setReordering] = useState(false);
-  const [reorderNote, setReorderNote] = useState<string | null>(null);
 
   // Retour de Stripe Checkout (web) après paiement : le panier a été commandé.
   const merchantId = order?.merchant_id;
@@ -53,40 +50,10 @@ export default function OrderScreen() {
       useCart.getState().clear();
   }, [paid, merchantId]);
 
-  // « Commander à nouveau » : les produits encore à la carte reviennent dans le panier.
-  const reorder = async () => {
-    if (!order?.merchants) return;
-    setReorderNote(null);
-    setReordering(true);
-    try {
-      const page = await fetchMerchantPage(order.merchants.slug);
-      const { lines, skipped } = page
-        ? rebuildLines(order.order_items, page.menu)
-        : { lines: [], skipped: order.order_items.length };
-      if (!page || lines.length === 0) {
-        setReorderNote(t('client.order.reorderNothing'));
-        return;
-      }
-      const cart = useCart.getState();
-      const target = { id: page.merchant.id, slug: page.merchant.slug, name: page.merchant.name };
-      if (cart.merchant && cart.merchant.id !== target.id && cart.lines.length > 0) {
-        const replace = await confirmAsync({
-          title: t('client.cart.replaceTitle'),
-          message: t('client.cart.replaceBody', { name: cart.merchant.name }),
-          confirmLabel: t('client.cart.replaceAction'),
-          cancelLabel: t('common.cancel'),
-        });
-        if (!replace) return;
-      }
-      lines.forEach((line, i) => cart.add(target, line, { replace: i === 0 }));
-      if (skipped > 0) setReorderNote(t('client.order.reorderSkipped', { count: skipped }));
-      router.push('/cart');
-    } catch (e) {
-      setReorderNote(t(errorKey(e)));
-    } finally {
-      setReordering(false);
-    }
-  };
+  // « Recommander » : voir useReorder (compte rendu affiché dans le panier).
+  const { reorder: reorderOrder, busyId, message: reorderNote } = useReorder();
+  const reordering = busyId === id;
+  const reorder = () => (order ? reorderOrder(order) : Promise.resolve());
 
   const cancel = async () => {
     const ok = await confirmAsync({
