@@ -530,6 +530,18 @@ Promotions programmées, **incluses dans Start et Pro, sans commission**. Ce n'e
 - **Acheminement du lien** : `zeeroo.fr/m/<slug>` est servi par la vitrine (GitHub Pages) dont `404.html` renvoie vers `app.zeeroo.fr/m/<slug>` en conservant chemin, paramètres et ancre. Anciens QR `zeroo.online/m/<slug>` : règles `redirects` de `vercel.json` (voir `docs/DEPLOIEMENT.md`, domaine à ajouter chez Vercel).
 - **Limite** : l'aperçu enrichi (image, titre) lors d'un partage sur les réseaux n'est pas servi, la fiche étant rendue dans l'application après redirection.
 
+### 3.14 Paniers anti-gaspi (26 octobre 2026)
+
+Fonction **complémentaire**, incluse dans Start et Pro, placée après la carte sur la fiche : jamais le positionnement principal.
+
+- **Modèle** : `surprise_baskets` (titre, contenu connu ou **panier surprise**, prix, valeur estimée facultative, nombre de paniers, **allergènes** parmi les 14 réglementaires + certification de l'exactitude, créneau de retrait de 12 h maximum, activation) et `basket_reservations` (client, quantité 1 à 3, prix figé, code de retrait, statut `reserved` / `collected` / `cancelled` / `expired`). Écriture par fonctions seulement (`save_basket`, `set_basket_active`, `reserve_basket`, `cancel_basket_reservation`, `collect_basket_reservation`) ; lecture publique des offres ouvertes d'un commerce publié.
+- **Paiement** : **sur place, au retrait**, directement au commerçant. Aucun paiement en ligne, aucun remboursement à gérer, rien n'est encaissé par ZeeRoo.
+- **Stock protégé** : verrou sur le panier ; deux réservations simultanées ne dépassent jamais le stock (vérifié avec deux sessions SQL). Limite de 3 paniers actifs par client et par offre.
+- **Annulation** : le client jusqu'au début du créneau, le commerçant à tout moment avant la remise ; le stock est libéré.
+- **Fermeture automatique** : `is_reservable` (colonne calculée) est faux dès la fin du créneau ; les réservations non retirées expirent 30 minutes après (tâche pg_cron, `expire_basket_reservations`). Le stock d'une offre terminée n'est pas remis en vente.
+- **Informations alimentaires** : allergènes déclarés affichés ; un panier surprise affiche en plus une mise en garde (composition variable, demander au commerçant en cas d'allergie). L'offre ne peut pas être proposée sans certification de l'exactitude (`allergens_confirmed`).
+- **RGPD** : le nom du client est effacé avec son compte (réservation conservée, anonymisée).
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

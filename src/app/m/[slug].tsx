@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
+import { BasketsSection } from '@/features/baskets/BasketsSection';
 import { CartBar } from '@/features/cart/CartBar';
 import { DirectoryMap, MAP_SUPPORTED } from '@/features/discover/DirectoryMap';
 import { useActiveOffers } from '@/features/happyhour/hooks';
@@ -348,6 +349,7 @@ export default function MerchantPageScreen() {
             })}
           </View>
         ))}
+        <BasketsSection merchantId={merchant.id} />
       </ScrollView>
       <CartBar />
       {selected ? (

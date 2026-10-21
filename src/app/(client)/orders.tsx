@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
+import { MyReservations } from '@/features/baskets/MyReservations';
 import { ACTIVE_STATUSES } from '@/features/merchant-orders/types';
 import type { CustomerOrder } from '@/features/orders/api';
 import { useMyOrders } from '@/features/orders/hooks';
@@ -77,6 +78,7 @@ export default function OrdersScreen() {
       {orders.data.length === 0 ? (
         <AppText variant="muted">{t('client.orders.empty')}</AppText>
       ) : null}
+      <MyReservations />
       {active.length > 0 ? <AppText variant="subtitle">{t('client.orders.active')}</AppText> : null}
       {active.map((o) => (
         <OrderRow key={o.id} order={o} />

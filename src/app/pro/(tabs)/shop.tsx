@@ -178,6 +178,12 @@ export default function ShopScreen() {
           onPress={() => router.push('/pro/minisite')}
         />
         <ListRow
+          testID="baskets-settings"
+          title={t('merchant.baskets.title')}
+          subtitle={t('merchant.baskets.rowSubtitle')}
+          onPress={() => router.push('/pro/baskets')}
+        />
+        <ListRow
           testID="happy-hours-settings"
           title={t('merchant.happyHours.title')}
           onPress={() => router.push('/pro/happy-hours')}
