@@ -20,7 +20,7 @@ export type CustomerOrder = Order & {
 };
 
 const CUSTOMER_ORDER_SELECT =
-  '*, order_items(*), merchants(name, slug, address_line, city, latitude, longitude, phone, payment_link, offers_pickup, pickup_instructions)';
+  '*, order_items(*), merchants(name, slug, address_line:merchant_address_line, city, latitude:merchant_latitude, longitude:merchant_longitude, phone, payment_link, offers_pickup, pickup_instructions)';
 
 /**
  * Livraison que personne ne prend (signalée après 15 minutes) : annulation par le client ou par

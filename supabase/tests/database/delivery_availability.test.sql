@@ -27,8 +27,9 @@ insert into public.subscriptions (merchant_id, stripe_customer_id, stripe_subscr
 values ('d0000000-0000-0000-0000-000000000001', 'cus_fantome', 'sub_fantome', 'active', 'pro');
 update public.merchants set delivery_enabled = true where id = 'd0000000-0000-0000-0000-000000000001';
 -- Groupage : la dark kitchen doit être proche de Chez Samir pour que Karim cumule les deux courses.
-update public.merchants d set latitude = s.latitude, longitude = s.longitude
-from public.merchants s where d.id = 'd0000000-0000-0000-0000-000000000001' and s.slug = 'chez-samir';
+update public.merchant_locations d set latitude = s.latitude, longitude = s.longitude
+from public.merchant_locations s
+where d.merchant_id = 'd0000000-0000-0000-0000-000000000001' and s.merchant_id = '30000000-0000-0000-0000-000000000001';
 update public.merchants set offers_pickup = false where id = 'd0000000-0000-0000-0000-000000000001';
 insert into public.merchant_couriers (merchant_id, courier_id, status, decided_at)
 values ('d0000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', 'approved', now());

@@ -481,7 +481,8 @@ Migration `20261013150000_pro_verification.sql`.
 - `create_order` refuse un retrait non proposé (`pickup_unavailable`) et revérifie la formule Pro pour la livraison. Couper le retrait suppose une livraison active (`order_mode_required`).
 - `merchants.pickup_instructions` (300 caractères) : consignes affichées sur la fiche et sur la commande.
 - Annuaire public (`nearby_merchants`, `search_merchants`) : pour un établissement **sans retrait**, l'adresse est omise, la recherche par code postal ne le trouve pas et la distance est calculée sur une grille d'environ 1 km, arrondie à 500 m.
-- **Limite connue** : la table `merchants` reste lisible par l'API publique (colonnes `address_line`, `latitude`, `longitude`). Le masquage porte sur l'annuaire, les fiches et les listes de l'application. Une séparation des colonnes d'adresse (table privée) est prévue si ce niveau de confidentialité est exigé.
+- **Adresse précise (corrigé le 28 octobre 2026)** : elle vit dans la table fermée `merchant_locations` (aucun droit pour `anon` / `authenticated`). L'API publique ne la renvoie jamais ; les colonnes `address_line`, `latitude`, `longitude` de `merchants` restent vides (un déclencheur redirige les écritures). L'app lit `address_line:merchant_address_line` (et latitude / longitude), colonnes calculées qui ne rendent la valeur qu'à un établissement qui accueille du public (retrait), à son propriétaire et aux livreurs qu'il a acceptés. Les fonctions de l'annuaire, des distances, de l'attribution et du groupage lisent la vraie valeur côté serveur. `postal_code` et `city` restent publics (zone de service). Fonction `customer-departure` à redéployer.
+- **Annuaire public** : `/decouvrir` (sans compte) ; la connexion n'est demandée que pour commander ou enregistrer un favori.
 
 ### 3.9 Disponibilité de livraison fiable (21 octobre 2026)
 

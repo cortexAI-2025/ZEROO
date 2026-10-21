@@ -408,13 +408,16 @@ export default function OrderScreen() {
               <AppText>{merchant.pickup_instructions}</AppText>
             </Card>
           ) : null}
-          {!isDelivery && showsAddress(merchant) ? (
+          {!isDelivery &&
+          showsAddress(merchant) &&
+          merchant.latitude != null &&
+          merchant.longitude != null ? (
             <Button
               variant="secondary"
               title={t('client.merchant.directions')}
               onPress={() =>
                 void Linking.openURL(
-                  directionsUrl(Platform.OS, merchant.latitude, merchant.longitude),
+                  directionsUrl(Platform.OS, merchant.latitude ?? 0, merchant.longitude ?? 0),
                 )
               }
             />

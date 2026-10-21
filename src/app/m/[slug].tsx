@@ -188,7 +188,7 @@ export default function MerchantPageScreen() {
               title={t('client.merchant.directions')}
               onPress={() =>
                 void Linking.openURL(
-                  directionsUrl(Platform.OS, merchant.latitude, merchant.longitude),
+                  directionsUrl(Platform.OS, merchant.latitude ?? 0, merchant.longitude ?? 0),
                 )
               }
             />
@@ -241,8 +241,8 @@ export default function MerchantPageScreen() {
                 slug: merchant.slug,
                 name: merchant.name,
                 is_accepting_orders: !!merchant.is_accepting_orders,
-                latitude: merchant.latitude,
-                longitude: merchant.longitude,
+                latitude: merchant.latitude ?? 0,
+                longitude: merchant.longitude ?? 0,
               },
             ]}
             center={null}

@@ -142,6 +142,12 @@ export function LandingPage() {
         onPress={() => start('client')}
       />
       <Button
+        testID="landing-cta-discover"
+        variant="secondary"
+        title={t('landing.hero.ctaDiscover')}
+        onPress={() => router.push('/decouvrir')}
+      />
+      <Button
         testID="landing-cta-restaurant"
         variant="secondary"
         title={t('landing.hero.ctaRestaurant')}

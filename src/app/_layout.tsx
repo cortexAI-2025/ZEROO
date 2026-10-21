@@ -72,6 +72,8 @@ function RootNavigator() {
           et prépare son panier ; la connexion n'est demandée qu'au moment de commander. */}
       <Stack.Screen name="m/[slug]" options={{ headerShown: true, title: '' }} />
       <Stack.Screen name="cart" options={{ headerShown: true }} />
+      {/* Annuaire public : on découvre les établissements sans compte. */}
+      <Stack.Screen name="decouvrir" options={{ headerShown: true, title: '' }} />
     </Stack>
   );
 }
