@@ -36,6 +36,13 @@ describe('vercel.json : anciens liens zeroo.online', () => {
     expect(redirects.every((r) => (r.has ?? []).some((h) => h.type === 'host'))).toBe(true);
   });
 
+  it('ne touche jamais zeeroo.online (démonstrations commerciales) : seul l’ancien zeroo.online est redirigé', () => {
+    const hosts = redirects.flatMap((r) => (r.has ?? []).map((h) => h.value));
+    expect(hosts).not.toContain('zeeroo.online');
+    expect(hosts).not.toContain('www.zeeroo.online');
+    expect(new Set(hosts)).toEqual(new Set(['zeroo.online', 'www.zeroo.online']));
+  });
+
   it('conserve la réécriture de l’application monopage', () => {
     expect(config.rewrites).toEqual([{ source: '/(.*)', destination: '/index.html' }]);
   });
