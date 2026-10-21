@@ -12,7 +12,9 @@ import {
   fetchDeliveredRuns,
   fetchEarnings,
   fetchEarningsByDay,
+  fetchDeliveryEta,
   fetchMissions,
+  fetchStops,
   fetchMyCourier,
   fetchMyLinks,
   leaveMerchant,
@@ -150,5 +152,25 @@ export function useSetCourierPaymentLink(courierId: string) {
   return useMutation({
     mutationFn: (link: string | null) => setCourierPaymentLink(courierId, link),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: courierKeys.all }),
+  });
+}
+
+/** Tournée du livreur (arrêts et heures estimées) ; rafraîchie avec les courses. */
+export function useCourierStops(courierId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['courier', courierId, 'stops'] as const,
+    queryFn: fetchStops,
+    enabled: !!courierId && enabled,
+    refetchInterval: 60_000,
+  });
+}
+
+/** Heure de livraison estimée annoncée au client pour sa commande. */
+export function useDeliveryEta(orderId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['orders', orderId, 'eta'] as const,
+    queryFn: () => fetchDeliveryEta(orderId as string),
+    enabled: !!orderId && enabled,
+    refetchInterval: 60_000,
   });
 }

@@ -1574,6 +1574,22 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      courier_stops: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          stop_no: number;
+          kind: string;
+          order_id: string;
+          label: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          eta: string;
+        }[];
+      };
+      order_delivery_eta: {
+        Args: { p_order_id: string };
+        Returns: string | null;
+      };
       available_missions: {
         Args: Record<PropertyKey, never>;
         Returns: {

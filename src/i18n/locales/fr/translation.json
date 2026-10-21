@@ -313,6 +313,7 @@
         "delivered": "Commande livrée. Bon appétit !",
         "placedDelivery": "En attente de confirmation du restaurant…",
         "acceptedDelivery": "Acceptée : {{courier}} livrera votre commande.",
+        "deliveryEta": "Livraison estimée vers {{time}} (indicatif, pas un engagement).",
         "acceptedDeliveryNoCourier": "Acceptée : le restaurant prépare votre commande, un livreur va la prendre."
       },
       "reason": "Motif : {{reason}}",
@@ -958,6 +959,7 @@
     "courierHasActiveDelivery": "Terminez votre course en cours avant de supprimer votre compte.",
     "courierSubscriptionActive": "Résiliez d'abord votre abonnement livreur (onglet Compte, « Gérer mon abonnement »).",
     "invalidPlan": "Cette formule d'abonnement n'est pas disponible.",
+    "missionNotCompatible": "Cette course n'est pas compatible avec votre livraison en cours (restaurants, adresses ou heures de préparation trop éloignés).",
     "missionUnavailable": "Cette mission n'est plus disponible : un autre livreur l'a prise.",
     "missionLocked": "Cette mission est déjà payée ou en cours : elle ne peut plus être abandonnée.",
     "courierAtCapacity": "Vous avez déjà 2 livraisons en cours.",
@@ -1287,6 +1289,11 @@
       "siretInvalid": "SIRET invalide : 14 chiffres, vérifiez votre saisie."
     },
     "runs": {
+      "tourTitle": "Votre tournée",
+      "tourHint": "Heures estimées (indicatives) : trajet moyen selon votre véhicule + 3 min par arrêt.",
+      "tourPickup": "Retrait · {{name}}",
+      "tourDropoff": "Livraison · {{city}}",
+      "tourStop": "Arrêt {{no}} · vers {{time}}",
       "title": "Mes courses",
       "available": "Je suis disponible",
       "availableHint": "Vous recevez les missions des restaurants qui vous ont accepté.",

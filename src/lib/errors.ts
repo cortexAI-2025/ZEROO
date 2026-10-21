@@ -45,6 +45,7 @@ const businessErrors = {
   invalid_delivery_address: 'errors.invalidDeliveryAddress',
   invalid_delivery_phone: 'errors.invalidDeliveryPhone',
   mission_unavailable: 'errors.missionUnavailable',
+  mission_not_compatible: 'errors.missionNotCompatible',
   mission_locked: 'errors.missionLocked',
   courier_at_capacity: 'errors.courierAtCapacity',
   courier_unavailable: 'errors.courierUnavailable',

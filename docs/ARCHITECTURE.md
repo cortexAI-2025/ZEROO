@@ -566,6 +566,19 @@ Realtime : on publie `orders` (et `loyalty_cards`). La RLS filtre les événemen
 - Suppression de compte (exigée par Apple et Google) : RPC `delete_my_account()` (étape a), qui supprime l'utilisateur ; profil, tokens et cartes de fidélité suivent par cascade. Les commandes sont **anonymisées** (`customer_id = null`) et non supprimées, à cause des obligations comptables du commerçant. Pour un propriétaire de commerce, `delete_my_account()` refuse explicitement (`merchant_owner_cannot_delete`). À l'étape (d), une Edge Function clôturera d'abord le commerce et résiliera l'abonnement Stripe.
 - Données minimales : nom d'affichage optionnel, téléphone optionnel.
 
+### 3.15 Livraisons groupées, première version (27 octobre 2026)
+
+Un livreur garde la limite de 2 livraisons simultanées. La deuxième n'est prise que si `missions_compatible()` l'accepte (contrôle serveur dans `courier_accept_mission`, erreur `mission_not_compatible`, et filtre dans `available_missions`) :
+
+- retraits : même restaurant ou restaurants à 1 km au plus ;
+- livraisons : adresses à 2 km au plus ;
+- préparations : heures de fin de préparation à 15 minutes au plus d'écart ;
+- la première course ne doit pas être déjà `out_for_delivery`.
+
+Chaque commande garde son statut, son code de livraison, son client et son prix de course : **aucune remise ni répartition financière inventée**, aucune coordonnée d'un client partagée avec un autre. `courier_stops()` donne la tournée (retraits groupés par restaurant, puis livraisons de proche en proche) ; `order_delivery_eta()` donne au client l'heure estimée de **sa** commande, arrondie aux 5 minutes.
+
+Limites assumées : estimation par vitesse moyenne du véhicule (5/15/20/25 km/h) + 3 minutes par arrêt, sans géolocalisation en direct du livreur ni calcul d'itinéraire routier ; ordre des livraisons par plus proche voisin (pas d'optimisation exacte) ; les seuils sont des constantes SQL (`grouping_max_*`), à ajuster sur retour terrain.
+
 ## 4. Variables d'environnement prévues
 
 ```

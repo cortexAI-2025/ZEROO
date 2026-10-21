@@ -7,6 +7,7 @@ import { useBilling } from '@/features/billing/billing';
 import {
   useActiveRuns,
   useCourierActions,
+  useCourierStops,
   useCurrentCourier,
   useMissions,
   useMyLinks,
@@ -15,6 +16,7 @@ import { MissionCard } from '@/features/courier/MissionCard';
 import { useCourierPresence } from '@/features/courier/presence';
 import { RunCard } from '@/features/courier/RunCard';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
+import { formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { useRefreshOnFocus } from '@/lib/useRefreshOnFocus';
 import { spacing } from '@/theme';
@@ -25,6 +27,7 @@ export default function CourierRunsScreen() {
   const courier = useCurrentCourier();
   const runs = useActiveRuns(courier.id);
   const missions = useMissions(courier.id);
+  const stops = useCourierStops(courier.id, (runs.data?.length ?? 0) > 0);
   const links = useMyLinks(courier.id);
   const billing = useBilling({ role: 'courier', id: courier.id });
   const actions = useCourierActions();
@@ -89,6 +92,22 @@ export default function CourierRunsScreen() {
             <MissionCard key={mission.order_id} mission={mission} />
           ))}
         </>
+      ) : null}
+
+      {(stops.data?.length ?? 0) > 1 ? (
+        <Card testID="courier-tour">
+          <AppText variant="subtitle">{t('courier.runs.tourTitle')}</AppText>
+          {stops.data?.map((s) => (
+            <AppText key={`${s.kind}-${s.order_id}`}>
+              {s.kind === 'pickup'
+                ? t('courier.runs.tourPickup', { name: s.label })
+                : t('courier.runs.tourDropoff', { city: s.label })}
+              {' · '}
+              {t('courier.runs.tourStop', { no: s.stop_no, time: formatTime(s.eta) })}
+            </AppText>
+          ))}
+          <AppText variant="muted">{t('courier.runs.tourHint')}</AppText>
+        </Card>
       ) : null}
 
       {runs.data ? (
