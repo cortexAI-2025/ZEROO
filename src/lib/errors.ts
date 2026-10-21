@@ -23,6 +23,8 @@ const businessErrors = {
   no_reward_available: 'errors.noRewardAvailable',
   payment_action_required: 'errors.invalidTransition',
   pickup_unavailable: 'errors.pickupUnavailable',
+  item_out_of_slot: 'errors.itemOutOfSlot',
+  invalid_closure: 'errors.invalidClosure',
   order_mode_required: 'errors.orderModeRequired',
   delivery_unavailable: 'errors.deliveryUnavailable',
   delivery_out_of_range: 'errors.deliveryOutOfRange',

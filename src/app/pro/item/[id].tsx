@@ -4,12 +4,25 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Chip, QueryState, Screen, SwitchRow, TextField } from '@/components/ui';
-import { useCurrentMerchant } from '@/features/merchant/hooks';
-import { deleteItem, insertItem, nextPosition, updateItem } from '@/features/menu/api';
+import { useCurrentMerchant, useOpeningHours } from '@/features/merchant/hooks';
+import {
+  deleteItem,
+  insertItem,
+  nextPosition,
+  setItemSlots,
+  updateItem,
+} from '@/features/menu/api';
 import { useMenu, useMenuMutation } from '@/features/menu/hooks';
 import { photoPaths } from '@/features/photos/api';
 import { PhotoField } from '@/features/photos/PhotoField';
 import { OptionGroupsEditor } from '@/features/menu/OptionGroupsEditor';
+import {
+  MEAL_PERIOD_WINDOWS,
+  MEAL_PERIODS,
+  type MealPeriod,
+  slotsForPeriods,
+  slotWithinOpening,
+} from '@/features/menu/slots';
 import type { MenuCategory, MenuItem } from '@/features/menu/types';
 import { confirmAsync } from '@/lib/confirm';
 import { errorKey } from '@/lib/errors';
@@ -33,6 +46,22 @@ function ItemForm({
   const [categoryId, setCategoryId] = useState(item?.category_id ?? initialCategoryId);
   const [isAvailable, setIsAvailable] = useState(item?.is_available ?? true);
   const [isLoyaltyMenu, setIsLoyaltyMenu] = useState(item?.is_loyalty_menu ?? false);
+  const [isFormula, setIsFormula] = useState(item?.is_formula ?? false);
+  const initialPeriods = (item?.meal_periods ?? []).filter((p): p is MealPeriod =>
+    (MEAL_PERIODS as readonly string[]).includes(p),
+  );
+  const [periods, setPeriods] = useState<MealPeriod[]>(initialPeriods);
+  const hours = useOpeningHours(merchant.id).data ?? [];
+  const periodsChanged =
+    periods.length !== initialPeriods.length || periods.some((p) => !initialPeriods.includes(p));
+  const togglePeriod = (period: MealPeriod) =>
+    setPeriods((current) =>
+      current.includes(period) ? current.filter((p) => p !== period) : [...current, period],
+    );
+  // Un moment dont aucun créneau ne tombe dans les horaires d'ouverture ne serait jamais commandable.
+  const outsideOpening = hours.length
+    ? periods.filter((p) => !slotsForPeriods([p]).some((s) => slotWithinOpening(s, hours)))
+    : [];
   const [submitted, setSubmitted] = useState(false);
 
   const priceCents = parsePriceToCents(price);
@@ -48,6 +77,8 @@ function ItemForm({
       category_id: categoryId,
       is_available: isAvailable,
       is_loyalty_menu: isLoyaltyMenu,
+      is_formula: isFormula,
+      meal_periods: periods,
     };
     if (item) {
       // Changement de catégorie : le produit passe en fin de liste.
@@ -57,14 +88,18 @@ function ItemForm({
         item.id,
         moved ? { ...values, position: nextPosition(target?.menu_items ?? []) } : values,
       );
+      // Les créneaux suivent les moments choisis ; ceux définis autrement sont conservés.
+      if (periodsChanged) await setItemSlots(item.id, slotsForPeriods(periods));
       return item.id;
     }
     const target = categories.find((c) => c.id === categoryId);
-    return insertItem({
+    const newId = await insertItem({
       ...values,
       merchant_id: merchant.id,
       position: nextPosition(target?.menu_items ?? []),
     });
+    if (periods.length > 0) await setItemSlots(newId, slotsForPeriods(periods));
+    return newId;
   });
   const itemId = item?.id;
   const itemName = item?.name ?? '';
@@ -159,6 +194,44 @@ function ItemForm({
         value={isLoyaltyMenu}
         onValueChange={setIsLoyaltyMenu}
       />
+      <SwitchRow
+        testID="item-formula"
+        label={t('merchant.menu.item.formula')}
+        hint={t('merchant.menu.item.formulaHint')}
+        value={isFormula}
+        onValueChange={setIsFormula}
+      />
+      <AppText variant="muted">{t('merchant.menu.item.periods')}</AppText>
+      <View style={styles.chips}>
+        {MEAL_PERIODS.map((period) => (
+          <Chip
+            key={period}
+            testID={`period-${period}`}
+            label={t(`merchant.menu.periods.${period}`)}
+            selected={periods.includes(period)}
+            onPress={() => togglePeriod(period)}
+          />
+        ))}
+      </View>
+      <AppText variant="muted">
+        {periods.length === 0
+          ? t('merchant.menu.item.periodsAllDay')
+          : t('merchant.menu.item.periodsHint', {
+              windows: periods
+                .map(
+                  (p) =>
+                    `${t(`merchant.menu.periods.${p}`)} ${MEAL_PERIOD_WINDOWS[p].start}–${MEAL_PERIOD_WINDOWS[p].end}`,
+                )
+                .join(', '),
+            })}
+      </AppText>
+      {outsideOpening.map((p) => (
+        <AppText key={p} variant="error" testID={`period-warning-${p}`}>
+          {t('merchant.menu.item.periodOutsideOpening', {
+            period: t(`merchant.menu.periods.${p}`),
+          })}
+        </AppText>
+      ))}
       {error ? <AppText variant="error">{t(errorKey(error))}</AppText> : null}
       <Button
         testID="item-save"

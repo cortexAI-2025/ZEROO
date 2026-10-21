@@ -337,14 +337,17 @@ export type Database = {
           id: string;
           image_url: string | null;
           is_available: boolean;
+          is_formula: boolean;
+          is_in_slot_now: boolean | null;
           is_loyalty_menu: boolean;
+          meal_periods: string[];
           merchant_id: string;
           name: string;
           position: number;
           price_cents: number;
           updated_at: string;
         };
-        ComputedFields: never;
+        ComputedFields: 'is_in_slot_now';
         Insert: {
           category_id: string;
           created_at?: string;
@@ -352,7 +355,9 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           is_available?: boolean;
+          is_formula?: boolean;
           is_loyalty_menu?: boolean;
+          meal_periods?: string[];
           merchant_id: string;
           name: string;
           position?: number;
@@ -366,7 +371,9 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           is_available?: boolean;
+          is_formula?: boolean;
           is_loyalty_menu?: boolean;
+          meal_periods?: string[];
           merchant_id?: string;
           name?: string;
           position?: number;
@@ -515,6 +522,78 @@ export type Database = {
           },
           {
             foreignKeyName: 'merchant_couriers_merchant_id_fkey';
+            columns: ['merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'merchants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_item_slots: {
+        Row: {
+          ends_at: string;
+          id: string;
+          item_id: string;
+          merchant_id: string;
+          starts_at: string;
+          weekday: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          ends_at: string;
+          id?: string;
+          item_id: string;
+          merchant_id: string;
+          starts_at: string;
+          weekday: number;
+        };
+        Update: {
+          ends_at?: string;
+          id?: string;
+          item_id?: string;
+          merchant_id?: string;
+          starts_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_item_slots_item_id_merchant_id_fkey';
+            columns: ['item_id', 'merchant_id'];
+            isOneToOne: false;
+            referencedRelation: 'menu_items';
+            referencedColumns: ['id', 'merchant_id'];
+          },
+        ];
+      };
+      merchant_closures: {
+        Row: {
+          created_at: string;
+          ends_at: string;
+          id: string;
+          merchant_id: string;
+          reason: string | null;
+          starts_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          ends_at: string;
+          id?: string;
+          merchant_id: string;
+          reason?: string | null;
+          starts_at: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_at?: string;
+          id?: string;
+          merchant_id?: string;
+          reason?: string | null;
+          starts_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'merchant_closures_merchant_id_fkey';
             columns: ['merchant_id'];
             isOneToOne: false;
             referencedRelation: 'merchants';
@@ -1647,6 +1726,27 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      add_closure: {
+        Args: { p_from: string; p_merchant_id: string; p_reason?: string; p_to: string };
+        Returns: Database['public']['Tables']['merchant_closures']['Row'];
+      };
+      is_in_slot: {
+        Args: { p_at?: string; p_item_id: string };
+        Returns: boolean;
+      };
+      is_in_slot_now: {
+        Args: {
+          i: Omit<
+            Database['public']['Tables']['menu_items']['Row'],
+            Database['public']['Tables']['menu_items']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      set_item_slots: {
+        Args: { p_item_id: string; p_slots: Json };
+        Returns: Database['public']['Tables']['menu_item_slots']['Row'][];
       };
       is_online: {
         Args: {

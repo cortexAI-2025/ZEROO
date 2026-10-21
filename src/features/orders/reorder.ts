@@ -22,7 +22,7 @@ export function rebuildLines(
   let skipped = 0;
   for (const past of items) {
     const item = past.menu_item_id ? byId.get(past.menu_item_id) : undefined;
-    if (!item || !item.is_available) {
+    if (!item || !item.is_available || item.is_in_slot_now === false) {
       skipped += 1;
       continue;
     }
