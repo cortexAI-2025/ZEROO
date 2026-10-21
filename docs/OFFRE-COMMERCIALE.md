@@ -28,26 +28,27 @@ courses sont payés directement aux professionnels ; ZeeRoo ne facture que ses a
 | Mini-site dans l'annuaire | existant (Pro) | inchangé | `has_minisite` | pgTAP `minisite` |
 | Statistiques avancées | partiel (stats de base) | Start : 7 jours ; Pro : période étendue + heures de pointe, clients fidèles, modes, Happy Hour | `merchant_advanced_stats`, `merchant_sales_by_day`, `merchant_top_items` | pgTAP `advanced_stats`, `plans` |
 | Commandes groupées entreprises | **manquant** | précommande + entreprise + convives, délai/effectif/montant minimaux réglés par l'établissement ; payée directement, sans facturation ZeeRoo | `create_order(p_group)`, `merchants.group_*` | pgTAP `scheduled_orders` |
-| Campagne marketing mensuelle | **manquant** | file de campagnes à la date anniversaire de l'abonnement Pro, consentement obligatoire, validation et programmation par l'équipe (3 par jour), historique et échecs | `enqueue_due_marketing_campaigns` (pg_cron), RPC `admin_*` | pgTAP `marketing` |
+| Campagne marketing mensuelle | **manquant** | file de campagnes à l'anniversaire du premier paiement Pro, consentement obligatoire, validation humaine et programmation par l'équipe (3 par jour), historique et échecs | `enqueue_due_marketing_campaigns` (pg_cron), RPC `admin_*` | pgTAP `marketing` |
 | Livreur Start : missions classiques | existant | une course à la fois, hors nuit | `courier_capacity`, `courier_can_deliver_at` | pgTAP `plans` |
 | Livreur Pro : plusieurs courses, nuit | **manquant** | jusqu'à 2 courses groupées compatibles ; livraison de nuit (22 h – 6 h, Paris) | idem + `missions_compatible` | pgTAP `plans`, `grouped_deliveries` |
 | Facturation | existant (3 prix) | 4 prix (livreur Start/Pro), changement de formule sur l'abonnement existant (prorata), garde anti-double abonnement y compris impayé et retard de webhook | fonction `billing`, webhook | revue + build (non testé contre Stripe) |
 
-## Décisions prises (à valider)
+## Décisions (arbitrées)
 
-- **Campagne et essai** : la première campagne est créée à l'ouverture de l'abonnement (essai compris), puis
-  chaque mois à la date anniversaire, y compris pour un abonnement annuel. Sans consentement
-  (`merchants.marketing_consent`), rien n'est créé : le nom et la photo ne sont jamais publiés sans accord.
-- **Pas de publication automatique** : aucune connexion à un réseau social n'est configurée. L'équipe
-  enregistre le résultat de chaque publication (réussie ou en échec, 5 tentatives au plus). Un futur
-  connecteur écrira dans la même table d'historique.
-- **Administrateurs** : table `platform_admins`, **aucune ligne créée par migration**. Ajout manuel, par exemple
-  `insert into public.platform_admins (user_id) select id from auth.users where email = '…';` (SQL Editor).
-- **Précommande** : acceptation du restaurant sous 10 minutes comme toute commande ; une fois acceptée, la
-  commande est « prête à l'heure choisie ». Heure de l'appareil supposée égale à celle de l'établissement.
-- **Nuit** : 22 h – 6 h, heure de Paris, évaluée sur l'heure de préparation prévue. Un établissement dont
-  seuls des livreurs Start sont rattachés n'a pas de livraison la nuit.
-- **Impayé** : pas de période de grâce ; les droits cessent dès que le statut n'est plus essai/actif.
+| Sujet | Décision | Application |
+|---|---|---|
+| Campagne et essai | **Contractuelle après le premier paiement**, jamais pendant l'essai | `merchant_marketing_eligible` exige un abonnement Pro `active` avec `first_paid_at` (daté par déclencheur au premier passage à « actif ») ; cycles = anniversaire du premier paiement, y compris abonnement annuel |
+| Livraison de nuit | **Validé : 22 h – 6 h, heure de Paris** | `is_night_delivery`, `courier_can_deliver_at` |
+| Deux courses simultanées (Pro) | **Validé pour la V1** (Start : une) | `courier_capacity` |
+| Impayé | **Suspension des droits, conservation des données** | seuls `trialing` / `active` ouvrent des droits ; rien n'est supprimé |
+| Précommandes | **Toujours dans le fuseau de l'établissement** (`merchants.timezone`) | base : `is_merchant_open`, `is_in_slot`, `active_happy_hours` ; app : `src/lib/zone.ts`, créneaux et affichages (panier, commande, restaurant) |
+| Publication marketing | **Validation humaine obligatoire** | contrainte `CHECK` : pas de campagne programmée/publiée/en échec sans `reviewed_by` ; texte validé non modifiable par l'établissement ; aucune connexion automatique aux réseaux |
+
+Autres choix : sans consentement (`merchants.marketing_consent`), aucune campagne n'est créée ; l'équipe enregistre le
+résultat de chaque publication (5 tentatives au plus) ; `platform_admins` n'est alimentée par aucune migration
+(`insert into public.platform_admins (user_id) select id from auth.users where email = '…';` dans le SQL Editor) ;
+une précommande est acceptée par le restaurant sous 10 minutes comme toute commande, puis « prête à l'heure choisie ».
+Limite connue : un premier « actif » à 0 € (code promo intégral) compterait comme premier paiement.
 
 ## Reste à faire (hors code)
 

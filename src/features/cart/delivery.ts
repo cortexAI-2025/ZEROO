@@ -12,7 +12,7 @@ export function useMerchantDeliverySettings(merchantId: string | undefined) {
       const { data, error } = await supabase
         .from('merchants')
         .select(
-          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, delivery_available_now, has_order_mode, default_prep_minutes, group_orders_enabled, group_min_lead_hours, group_min_headcount, group_min_total_cents',
+          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, delivery_available_now, has_order_mode, timezone, default_prep_minutes, group_orders_enabled, group_min_lead_hours, group_min_headcount, group_min_total_cents',
         )
         .eq('id', merchantId!)
         .maybeSingle();

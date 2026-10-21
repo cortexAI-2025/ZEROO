@@ -29,6 +29,7 @@ import { customerOrderKeys } from '@/features/orders/hooks';
 import { useReorderReport } from '@/features/orders/reorderReport';
 import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
+import { DEFAULT_TIMEZONE, formatDateTimeIn } from '@/lib/zone';
 import { formatCents } from '@/lib/money';
 import { spacing, useThemeColors } from '@/theme';
 
@@ -517,13 +518,7 @@ export default function CartScreen() {
       {scheduledFor ? (
         <AppText variant="muted" testID="cart-scheduled">
           {t('client.schedule.summary', {
-            date: new Date(scheduledFor).toLocaleString('fr-FR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
+            date: formatDateTimeIn(scheduledFor, deliverySettings?.timezone ?? DEFAULT_TIMEZONE),
           })}
         </AppText>
       ) : null}

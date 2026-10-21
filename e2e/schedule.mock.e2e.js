@@ -34,6 +34,7 @@ const settings = (group) => ({
   delivery_available_now: false,
   has_order_mode: true,
   default_prep_minutes: 15,
+  timezone: 'Europe/Paris',
   group_orders_enabled: group,
   group_min_lead_hours: 24,
   group_min_headcount: 5,

@@ -1,8 +1,10 @@
+import { type ZonedParts, zonedDay, zonedParts, zonedToInstant } from '@/lib/zone';
+
 /**
  * Précommandes programmées : créneaux proposés au client. Même logique d'ouverture que la base
- * (`time_in_window` : une plage qui passe minuit déborde sur le lendemain) ; le serveur revérifie
- * toujours le créneau (horaires, fermetures, délai de préparation). Heure de l'appareil, supposée
- * être celle de l'établissement (Europe/Paris).
+ * (`time_in_window` : une plage qui passe minuit déborde sur le lendemain), **dans le fuseau horaire de
+ * l'établissement** (jamais celui de l'appareil). Le serveur revérifie toujours le créneau (horaires,
+ * fermetures, créneaux de menu, délai de préparation).
  */
 export type HoursRow = { weekday: number; opens_at: string; closes_at: string };
 export type ClosureRow = { starts_at: string; ends_at: string };
@@ -15,9 +17,6 @@ const toMinutes = (time: string) => {
   return h * 60 + m;
 };
 
-/** Jour ISO : 1 = lundi … 7 = dimanche. */
-const isoWeekday = (date: Date) => ((date.getDay() + 6) % 7) + 1;
-
 /** Cette plage couvre-t-elle (jour, minutes depuis minuit) ? Voir time_in_window en base. */
 function inWindow(row: HoursRow, weekday: number, minutes: number) {
   const opens = toMinutes(row.opens_at);
@@ -27,17 +26,21 @@ function inWindow(row: HoursRow, weekday: number, minutes: number) {
   return (row.weekday === weekday && minutes >= opens) || (next === weekday && minutes < closes);
 }
 
-export function isOpenAt(hours: HoursRow[], closures: ClosureRow[], date: Date) {
-  const minutes = date.getHours() * 60 + date.getMinutes();
-  const weekday = isoWeekday(date);
-  if (!hours.some((h) => inWindow(h, weekday, minutes))) return false;
+export function isOpenAt(hours: HoursRow[], closures: ClosureRow[], date: Date, timeZone: string) {
+  const p: ZonedParts = zonedParts(date, timeZone);
+  if (!hours.some((h) => inWindow(h, p.weekday, p.hour * 60 + p.minute))) return false;
   const ts = date.getTime();
   return !closures.some((c) => ts >= Date.parse(c.starts_at) && ts < Date.parse(c.ends_at));
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
-const dayKey = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+/** Jour calendaire (AAAA-MM-JJ) décalé de `offset` jours, par arithmétique pure sur la date. */
+function addDays(day: string, offset: number) {
+  const [y, m, d] = day.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d + offset));
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+}
 
 export type ScheduleDay = { day: string; times: string[] };
 
@@ -47,31 +50,38 @@ export function scheduleOptions(input: {
   closures: ClosureRow[];
   now: Date;
   leadMinutes: number;
+  timeZone: string;
   maxDays?: number;
 }): ScheduleDay[] {
-  const { hours, closures, now, leadMinutes } = input;
+  const { hours, closures, now, leadMinutes, timeZone } = input;
+  const maxDays = input.maxDays ?? MAX_DAYS_AHEAD;
   const earliest = now.getTime() + leadMinutes * 60_000;
-  const horizon = now.getTime() + (input.maxDays ?? MAX_DAYS_AHEAD) * 86_400_000;
+  const horizon = now.getTime() + maxDays * 86_400_000;
+  const today = zonedDay(now, timeZone);
   const days: ScheduleDay[] = [];
-  for (let d = 0; d <= (input.maxDays ?? MAX_DAYS_AHEAD); d++) {
-    const base = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
+  for (let d = 0; d <= maxDays; d++) {
+    const day = addDays(today, d);
     const times: string[] = [];
     for (let m = 0; m < 24 * 60; m += STEP_MINUTES) {
-      const slot = new Date(base.getFullYear(), base.getMonth(), base.getDate(), 0, m);
-      if (slot.getTime() < earliest || slot.getTime() > horizon) continue;
-      if (isOpenAt(hours, closures, slot))
-        times.push(`${pad(slot.getHours())}:${pad(slot.getMinutes())}`);
+      const time = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+      const slot = zonedToInstant(day, time, timeZone);
+      if (!slot || slot.getTime() < earliest || slot.getTime() > horizon) continue;
+      if (isOpenAt(hours, closures, slot, timeZone)) times.push(time);
     }
-    if (times.length > 0) days.push({ day: dayKey(base), times });
+    if (times.length > 0) days.push({ day, times });
   }
   return days;
 }
 
-/** « 2026-10-22 » + « 12:30 » → instant ISO (heure locale de l'appareil). */
-export function slotToIso(day: string, time: string) {
-  const [y, mo, d] = day.split('-').map(Number);
-  const [h, mi] = time.split(':').map(Number);
-  return new Date(y, mo - 1, d, h, mi).toISOString();
+/** « 2026-10-22 » + « 12:30 » (heure de l'établissement) → instant ISO, ou null si cette heure n'existe pas. */
+export function slotToIso(day: string, time: string, timeZone: string): string | null {
+  return zonedToInstant(day, time, timeZone)?.toISOString() ?? null;
+}
+
+/** Instant ISO → jour et heure de l'établissement (inverse de slotToIso). */
+export function isoToSlot(iso: string, timeZone: string) {
+  const p = zonedParts(new Date(iso), timeZone);
+  return { day: zonedDay(new Date(iso), timeZone), time: `${pad(p.hour)}:${pad(p.minute)}` };
 }
 
 /** Délai minimal d'une précommande (même règle que scheduled_min_lead_minutes en base). */
@@ -80,9 +90,3 @@ export const scheduleLeadMinutes = (defaultPrepMinutes: number) =>
 
 /** Commande groupée : délai minimal fixé par l'établissement (en heures). */
 export const groupLeadMinutes = (hours: number) => hours * 60;
-
-/** Instant ISO → jour et heure locale (inverse de slotToIso). */
-export function isoToSlot(iso: string) {
-  const date = new Date(iso);
-  return { day: dayKey(date), time: `${pad(date.getHours())}:${pad(date.getMinutes())}` };
-}

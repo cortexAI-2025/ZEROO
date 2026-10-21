@@ -1,9 +1,12 @@
 -- Campagne marketing mensuelle des établissements Pro (une seule fonctionnalité, pas de facturation en plus).
 --
--- Principe : à chaque échéance mensuelle de son abonnement (date anniversaire, essai compris), un
--- établissement Pro qui a donné son accord reçoit une campagne en file d'attente : une publication
--- promotionnelle sur les réseaux officiels de ZeeRoo. Une personne de l'administration valide le texte,
--- choisit le jour (3 établissements au plus par jour), puis enregistre le résultat de chaque publication.
+-- Principe : la campagne est contractuelle **après le premier paiement** de l'abonnement Pro (jamais pendant
+-- l'essai gratuit). À chaque échéance mensuelle suivante (date anniversaire du premier paiement), un
+-- établissement Pro dont l'abonnement est actif et qui a donné son accord reçoit une campagne en file d'attente :
+-- une publication promotionnelle sur les réseaux officiels de ZeeRoo. **Validation humaine obligatoire** : une
+-- personne de l'administration relit le texte, choisit le jour (3 établissements au plus par jour), puis
+-- enregistre le résultat de chaque publication. Rien ne peut être programmé ni publié sans cette validation
+-- (contrainte en base : `reviewed_by` obligatoire dès que la campagne est programmée).
 -- ZeeRoo ne publie PAS automatiquement : aucun accès aux plateformes sociales n'est configuré ici ;
 -- l'historique (`marketing_publications`) est prêt à recevoir les retours d'un futur connecteur.
 -- L'établissement doit avoir consenti (`marketing_consent`) : son nom et sa photo ne sont jamais publiés sans accord.
@@ -40,6 +43,21 @@ create trigger merchants_stamp_marketing_consent
   for each row when (new.marketing_consent is distinct from old.marketing_consent)
   execute function public.stamp_marketing_consent();
 
+-- Date du premier paiement de l'abonnement (premier passage à « actif », donc après l'essai).
+alter table public.subscriptions add column first_paid_at timestamptz;
+create or replace function public.stamp_first_paid_at()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if new.status = 'active' and new.first_paid_at is null then
+    new.first_paid_at := now();
+  end if;
+  return new;
+end;
+$$;
+create trigger subscriptions_stamp_first_paid_at
+  before insert or update of status on public.subscriptions
+  for each row execute function public.stamp_first_paid_at();
+
 create type public.marketing_campaign_status as enum
   ('pending_review', 'scheduled', 'published', 'failed', 'rejected', 'cancelled');
 
@@ -57,7 +75,9 @@ create table public.marketing_campaigns (
   reviewed_at  timestamptz,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now(),
-  unique (merchant_id, cycle_start)
+  unique (merchant_id, cycle_start),
+  -- Validation humaine obligatoire : pas de campagne programmée, publiée ou en échec sans relecteur.
+  check (status not in ('scheduled', 'published', 'failed') or (reviewed_by is not null and reviewed_at is not null))
 );
 create index marketing_campaigns_status_idx on public.marketing_campaigns (status, scheduled_for);
 create trigger marketing_campaigns_set_updated_at
@@ -89,12 +109,15 @@ create policy "marketing_publications: lecture par le propriétaire"
   using (exists (select 1 from public.marketing_campaigns c
                  where c.id = campaign_id and public.is_merchant_owner(c.merchant_id)));
 
--- Établissement éligible : Pro (essai ou actif), publié, avec consentement.
+-- Établissement éligible : Pro, abonnement actif **après un premier paiement** (pas pendant l'essai),
+-- publié, avec consentement.
 create or replace function public.merchant_marketing_eligible(p_merchant_id uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.merchants m
                  where m.id = p_merchant_id and m.is_published and m.marketing_consent)
-     and public.merchant_has_pro(p_merchant_id);
+     and exists (select 1 from public.subscriptions s
+                 where s.merchant_id = p_merchant_id and s.plan = 'pro' and s.status = 'active'
+                   and s.first_paid_at is not null);
 $$;
 revoke execute on function public.merchant_marketing_eligible from public, anon, authenticated;
 
@@ -112,7 +135,7 @@ begin
            m.name, m.slug, m.city, m.category
     from public.merchants m
     join public.subscriptions s on s.merchant_id = m.id
-    cross join lateral (select (s.created_at at time zone 'Europe/Paris')::date as anchor,
+    cross join lateral (select (s.first_paid_at at time zone 'Europe/Paris')::date as anchor,
                                (now() at time zone 'Europe/Paris')::date as today) a
     where public.merchant_marketing_eligible(m.id)
   ), ins as (
@@ -138,14 +161,15 @@ grant execute on function public.enqueue_due_marketing_campaigns to service_role
 
 select cron.schedule('marketing-campaigns', '15 6 * * *', $$select public.enqueue_due_marketing_campaigns()$$);
 
--- L'établissement relit et corrige le texte tant qu'il n'est pas programmé.
+-- L'établissement relit et corrige le texte tant qu'il n'est pas validé.
 create or replace function public.update_campaign_caption(p_id uuid, p_caption text)
 returns public.marketing_campaigns language plpgsql security definer set search_path = '' as $$
 declare v public.marketing_campaigns;
 begin
   select * into v from public.marketing_campaigns where id = p_id and public.is_merchant_owner(merchant_id) for update;
   if v.id is null then raise exception 'campaign_not_found' using errcode = 'P0002'; end if;
-  if v.status not in ('pending_review', 'failed') then
+  -- Le texte relu par l'équipe ne change plus : seul un texte en attente de validation se corrige.
+  if v.status <> 'pending_review' then
     raise exception 'campaign_locked' using errcode = '22023';
   end if;
   if char_length(trim(coalesce(p_caption, ''))) not between 10 and 600 then

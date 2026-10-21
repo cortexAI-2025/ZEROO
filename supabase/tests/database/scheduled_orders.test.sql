@@ -1,5 +1,5 @@
 begin;
-select plan(25);
+select plan(27);
 
 delete from public.orders;
 update public.couriers set last_assigned_at = null;
@@ -112,6 +112,14 @@ set local role authenticated;
 select ok(exists (select 1 from public.available_missions() m where m.order_id = (select id from o where key = 'last')),
           '45 minutes avant l''heure : mission proposée');
 reset role;
+
+-- Fuseau de l'établissement : les horaires s'évaluent à l'heure locale de l'établissement, jamais celle du client
+update public.merchants set timezone = 'America/Martinique' where id = '30000000-0000-0000-0000-000000000001';
+select is(pg_temp.try_order((((current_date + 3) + time '12:30')::timestamp at time zone 'America/Martinique')), 'ok',
+          '12 h 30 heure de Martinique pendant les horaires locaux : acceptée');
+select is(pg_temp.try_order((((current_date + 3) + time '12:30')::timestamp at time zone 'Europe/Paris')), 'merchant_closed_at_slot',
+          'la même heure lue à Paris tombe hors des horaires locaux : refusée');
+update public.merchants set timezone = 'Europe/Paris' where id = '30000000-0000-0000-0000-000000000001';
 
 -- Commandes groupées (Pro)
 update public.subscriptions set plan = 'start' where merchant_id = '30000000-0000-0000-0000-000000000001';

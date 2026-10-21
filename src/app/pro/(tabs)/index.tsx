@@ -150,6 +150,7 @@ export default function MerchantOrdersScreen() {
                     key={order.id}
                     order={order}
                     defaultPrepMinutes={merchant.default_prep_minutes}
+                    timezone={merchant.timezone}
                     onChange={async (change) => {
                       await setStatus.mutateAsync(change);
                     }}

@@ -8,7 +8,8 @@ import { formatDistance } from '@/features/discover/location';
 import { cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
 import { confirmMealPayment } from '@/features/payments/pay';
 import { confirmAsync } from '@/lib/confirm';
-import { formatDay, formatTime } from '@/lib/dates';
+import { formatTime } from '@/lib/dates';
+import { DEFAULT_TIMEZONE, formatDayIn, formatTimeIn } from '@/lib/zone';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
 import { prepAdvice } from '@/lib/prepTiming';
@@ -23,11 +24,14 @@ const REFUSAL_REASONS = ['outOfStock', 'tooBusy', 'closingSoon', 'other'] as con
 type Props = {
   order: Order;
   defaultPrepMinutes: number;
+  /** Fuseau de l'établissement : les précommandes s'y lisent. */
+  timezone?: string;
   onChange: (change: StatusChange) => Promise<void>;
 };
 
-export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
+export function OrderCard({ order, defaultPrepMinutes, timezone, onChange }: Props) {
   const { t } = useTranslation();
+  const zone = timezone ?? DEFAULT_TIMEZONE;
   const [prepMinutes, setPrepMinutes] = useState(defaultPrepMinutes);
   const [refusing, setRefusing] = useState(false);
   const [pickupCode, setPickupCode] = useState('');
@@ -88,8 +92,8 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
       {order.scheduled_for ? (
         <AppText variant="link" testID={`scheduled-${order.pickup_code}`}>
           {t('merchant.orders.scheduled', {
-            day: formatDay(order.scheduled_for),
-            time: formatTime(order.scheduled_for),
+            day: formatDayIn(order.scheduled_for, zone),
+            time: formatTimeIn(order.scheduled_for, zone),
           })}
         </AppText>
       ) : null}

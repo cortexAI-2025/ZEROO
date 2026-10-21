@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(31);
 
 -- Contexte (seed) : « Chez Samir » (Pro). Un second établissement (Start) et un administrateur.
 delete from public.orders;
@@ -16,8 +16,8 @@ insert into public.platform_admins (user_id) values ('ad000000-0000-0000-0000-00
 create function pg_temp.as_user(p_id uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_id, 'role', 'authenticated')::text, true);
 $$;
--- Chez Samir : abonnement créé il y a 5 jours.
-update public.subscriptions set plan = 'pro', status = 'active', created_at = now() - interval '5 days'
+-- Chez Samir : Pro en essai gratuit (aucun paiement encore).
+update public.subscriptions set plan = 'pro', status = 'trialing', first_paid_at = null
 where merchant_id = '30000000-0000-0000-0000-000000000001';
 update public.merchants set is_published = true where id = '30000000-0000-0000-0000-000000000001';
 
@@ -31,7 +31,13 @@ select ok((select marketing_consent_at is not null from public.merchants where i
           'le consentement est daté');
 reset role;
 
-select is(public.enqueue_due_marketing_campaigns(), 1, 'Pro + consentement : une campagne');
+select is(public.enqueue_due_marketing_campaigns(), 0, 'essai gratuit : aucune campagne, même avec consentement');
+-- Premier paiement il y a 5 jours (passage à « actif »)
+update public.subscriptions set status = 'active', first_paid_at = now() - interval '5 days'
+where merchant_id = '30000000-0000-0000-0000-000000000001';
+select ok((select first_paid_at is not null from public.subscriptions where merchant_id = 'd0000000-0000-0000-0000-000000000001'),
+          'le premier paiement est daté automatiquement');
+select is(public.enqueue_due_marketing_campaigns(), 1, 'Pro actif après premier paiement + consentement : une campagne');
 select is((select status::text from public.marketing_campaigns where merchant_id = '30000000-0000-0000-0000-000000000001'),
           'pending_review', 'en attente de validation');
 select ok((select caption like '%chez-samir%' from public.marketing_campaigns where merchant_id = '30000000-0000-0000-0000-000000000001'),
@@ -39,7 +45,7 @@ select ok((select caption like '%chez-samir%' from public.marketing_campaigns wh
 select is(public.enqueue_due_marketing_campaigns(), 0, 'idempotent : pas de doublon dans la même échéance');
 
 -- Échéance suivante (abonnement vieux de 70 jours)
-update public.subscriptions set created_at = now() - interval '70 days' where merchant_id = '30000000-0000-0000-0000-000000000001';
+update public.subscriptions set first_paid_at = now() - interval '70 days' where merchant_id = '30000000-0000-0000-0000-000000000001';
 select is(public.enqueue_due_marketing_campaigns(), 1, 'échéance mensuelle suivante : nouvelle campagne');
 select is((select count(*)::int from public.marketing_campaigns where merchant_id = '30000000-0000-0000-0000-000000000001'), 2,
           'une campagne par échéance');
@@ -89,8 +95,9 @@ select is((select status::text from public.admin_review_campaign('c0000000-0000-
           'scheduled', 'validation et programmation');
 reset role;
 -- Jour complet : 3 établissements au plus
-insert into public.marketing_campaigns (merchant_id, cycle_start, caption, status, scheduled_for)
-select 'd0000000-0000-0000-0000-000000000001', current_date + 500 + g, 'Texte de remplissage ' || g, 'scheduled', current_date + 2
+insert into public.marketing_campaigns (merchant_id, cycle_start, caption, status, scheduled_for, reviewed_by, reviewed_at)
+select 'd0000000-0000-0000-0000-000000000001', current_date + 500 + g, 'Texte de remplissage ' || g, 'scheduled', current_date + 2,
+       'ad000000-0000-0000-0000-000000000001', now()
 from generate_series(1, 2) g;
 select pg_temp.as_user('ad000000-0000-0000-0000-000000000001');
 set local role authenticated;
@@ -101,8 +108,9 @@ select is((select status::text from public.admin_review_campaign('c0000000-0000-
 select is((select status::text from public.admin_record_publication('c0000000-0000-0000-0000-000000000001', 'instagram', true, 'https://example.test/p/1')),
           'published', 'publication enregistrée');
 reset role;
-insert into public.marketing_campaigns (id, merchant_id, cycle_start, caption, status, scheduled_for)
-values ('c0000000-0000-0000-0000-000000000009', '30000000-0000-0000-0000-000000000001', current_date + 700, 'Texte pour échec', 'scheduled', current_date + 3);
+insert into public.marketing_campaigns (id, merchant_id, cycle_start, caption, status, scheduled_for, reviewed_by, reviewed_at)
+values ('c0000000-0000-0000-0000-000000000009', '30000000-0000-0000-0000-000000000001', current_date + 700, 'Texte pour échec', 'scheduled', current_date + 3,
+        'ad000000-0000-0000-0000-000000000001', now());
 select pg_temp.as_user('ad000000-0000-0000-0000-000000000001');
 set local role authenticated;
 select is((select status::text || ':' || attempts from public.admin_record_publication('c0000000-0000-0000-0000-000000000009', 'facebook', false, null, 'jeton expiré')),
@@ -113,6 +121,21 @@ reset role;
 select is((select count(*)::int from public.marketing_publications where campaign_id in
            ('c0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000009')), 2, 'historique des publications');
 select is((select count(*)::int from cron.job where jobname = 'marketing-campaigns'), 1, 'une seule tâche planifiée');
+
+-- Validation humaine obligatoire
+select throws_ok($$ insert into public.marketing_campaigns (merchant_id, cycle_start, caption, status, scheduled_for)
+                    values ('30000000-0000-0000-0000-000000000001', current_date + 900, 'Texte sans relecteur', 'scheduled', current_date + 5) $$,
+                 '23514', null, 'impossible de programmer une campagne sans relecteur');
+select pg_temp.as_user('ad000000-0000-0000-0000-000000000001');
+set local role authenticated;
+select throws_ok($$ select public.admin_record_publication('c0000000-0000-0000-0000-000000000003', 'instagram', true) $$,
+                 '22023', 'campaign_locked', 'une campagne non validée ne peut pas être publiée');
+reset role;
+select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
+set local role authenticated;
+select throws_ok($$ select public.update_campaign_caption('c0000000-0000-0000-0000-000000000009', 'Texte modifié après relecture') $$,
+                 '22023', 'campaign_locked', 'le texte validé ne se modifie plus côté établissement');
+reset role;
 
 select * from finish();
 rollback;

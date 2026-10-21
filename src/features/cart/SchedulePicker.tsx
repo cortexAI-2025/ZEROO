@@ -19,6 +19,7 @@ import {
 import type { GroupOrder } from './store';
 
 export type SchedulableMerchant = {
+  timezone: string;
   default_prep_minutes: number;
   group_orders_enabled: boolean;
   group_min_lead_hours: number;
@@ -83,11 +84,16 @@ export function SchedulePicker({
     ? groupLeadMinutes(merchant.group_min_lead_hours)
     : scheduleLeadMinutes(merchant.default_prep_minutes);
   const options = data.data
-    ? scheduleOptions({ ...data.data, now: new Date(), leadMinutes: lead })
+    ? scheduleOptions({
+        ...data.data,
+        now: new Date(),
+        leadMinutes: lead,
+        timeZone: merchant.timezone,
+      })
     : [];
   const selectedDay = day ?? options[0]?.day ?? null;
   const times = options.find((o) => o.day === selectedDay)?.times ?? [];
-  const chosen = scheduledFor ? isoToSlot(scheduledFor) : null;
+  const chosen = scheduledFor ? isoToSlot(scheduledFor, merchant.timezone) : null;
 
   return (
     <Card testID="schedule">
@@ -107,7 +113,7 @@ export function SchedulePicker({
             const first = options[0];
             if (first) {
               setDay(first.day);
-              onSchedule(slotToIso(first.day, first.times[0]));
+              onSchedule(slotToIso(first.day, first.times[0], merchant.timezone));
             }
           }}
         />
@@ -123,7 +129,7 @@ export function SchedulePicker({
                 selected={selectedDay === o.day}
                 onPress={() => {
                   setDay(o.day);
-                  onSchedule(slotToIso(o.day, o.times[0]));
+                  onSchedule(slotToIso(o.day, o.times[0], merchant.timezone));
                 }}
               />
             ))}
@@ -135,7 +141,9 @@ export function SchedulePicker({
                 testID={`schedule-time-${time}`}
                 label={time}
                 selected={chosen?.time === time && chosen.day === selectedDay}
-                onPress={() => selectedDay && onSchedule(slotToIso(selectedDay, time))}
+                onPress={() =>
+                  selectedDay && onSchedule(slotToIso(selectedDay, time, merchant.timezone))
+                }
               />
             ))}
           </View>
@@ -167,10 +175,11 @@ export function SchedulePicker({
                   ...(data.data ?? { hours: [], closures: [] }),
                   now: new Date(),
                   leadMinutes: groupLeadMinutes(merchant.group_min_lead_hours),
+                  timeZone: merchant.timezone,
                 })[0];
                 if (first) {
                   setDay(first.day);
-                  onSchedule(slotToIso(first.day, first.times[0]));
+                  onSchedule(slotToIso(first.day, first.times[0], merchant.timezone));
                 }
               }
             }}
