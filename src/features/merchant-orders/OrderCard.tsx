@@ -138,6 +138,15 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
           {item.is_loyalty_reward ? (
             <AppText variant="link">{t('merchant.orders.rewardLine')}</AppText>
           ) : null}
+          {item.happy_hour_name && item.regular_unit_cents !== null ? (
+            <AppText variant="link">
+              {t('happyHour.applied', {
+                name: item.happy_hour_name,
+                price: formatCents(item.unit_price_cents),
+                regular: formatCents(item.regular_unit_cents),
+              })}
+            </AppText>
+          ) : null}
         </View>
       ))}
       {order.customer_note ? (

@@ -1,4 +1,6 @@
 import type { CartLine, DeliveryDetails } from '@/features/cart/store';
+import { cartLinePricing } from '@/features/happyhour/pricing';
+import type { OffersByItem } from '@/features/happyhour/types';
 
 export type PayOrderInput = {
   merchantId: string;
@@ -12,6 +14,8 @@ export type PayOrderInput = {
   deliveryPayment?: 'card' | 'cash';
   /** Absent : retrait sur place. */
   delivery?: DeliveryDetails;
+  /** Offres Happy Hour vues par le client : le prix annoncé est revérifié par le serveur. */
+  offers?: OffersByItem;
 };
 
 export const orderPayload = (input: PayOrderInput) => ({
@@ -21,6 +25,9 @@ export const orderPayload = (input: PayOrderInput) => ({
     quantity: l.quantity,
     optionIds: l.options.map((o) => o.id),
     useReward: l.key === input.rewardLineKey,
+    expectedTotalCents: input.offers
+      ? cartLinePricing(l, input.offers, input.rewardLineKey).totalCents
+      : undefined,
   })),
   note: input.note.trim() || undefined,
   mealPayment: input.mealPayment ?? 'card',

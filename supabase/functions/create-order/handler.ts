@@ -5,7 +5,14 @@ import { adminClient, requireUser, unwrap } from '../_shared/supabase.ts';
 type Body = {
   merchantId: string;
   /** useReward : une unité de cette ligne (menu formule) est le menu offert par la fidélité. */
-  items: { itemId: string; quantity: number; optionIds?: string[]; useReward?: boolean }[];
+  items: {
+    itemId: string;
+    quantity: number;
+    optionIds?: string[];
+    useReward?: boolean;
+    /** Prix annoncé au client pour la ligne : refusé si l'offre ou le prix a changé. */
+    expectedTotalCents?: number;
+  }[];
   note?: string;
   /** Repas : carte via le lien du restaurant (défaut) ou espèces au comptoir (retrait). */
   mealPayment?: 'card' | 'cash';
@@ -53,6 +60,7 @@ export const handler = handle(async (req) => {
         quantity: i.quantity,
         option_ids: i.optionIds ?? [],
         use_reward: i.useReward === true,
+        expected_total_cents: i.expectedTotalCents ?? null,
       })),
       p_customer_note: body.note ?? null,
       p_delivery: delivery

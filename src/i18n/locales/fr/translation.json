@@ -208,6 +208,9 @@
         "delivery_out_of_range": "Cette adresse est hors de la zone de livraison du restaurant.",
         "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
       },
+      "offerEnded": "L'offre Happy Hour sur « {{name}} » est terminée : le prix de votre panier a été mis à jour.",
+      "offerChanged": "Le prix Happy Hour de « {{name}} » a changé : votre total a été mis à jour.",
+      "dismissNotice": "Compris",
       "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
       "deliveryOnlyUnavailable": "Livraison momentanément indisponible. Cet établissement ne propose pas de retrait : réessayez dans quelques minutes.",
       "twoPayments": "Deux paiements directs : le repas au restaurant (après acceptation), la livraison au livreur (quand il prend la mission). Aucun frais ZeeRoo.",
@@ -376,6 +379,15 @@
         "delivery": "{{name}} a bien reçu vos {{price}} pour la livraison."
       }
     }
+  },
+  "happyHour": {
+    "badge": "Happy Hour",
+    "until": "Jusqu'à {{time}}",
+    "remaining_one": "plus qu'{{count}} à ce prix",
+    "remaining_other": "plus que {{count}} à ce prix",
+    "saving": "Happy Hour : vous économisez {{price}}",
+    "regularPrice": "Prix habituel",
+    "applied": "Happy Hour « {{name}} » : {{price}} au lieu de {{regular}} l'unité"
   },
   "merchant": {
     "tabs": {
@@ -563,6 +575,51 @@
         "deleteGroupConfirm": "Supprimer le groupe « {{name}} » ?"
       }
     },
+    "happyHours": {
+      "title": "Happy Hours",
+      "hint": "Des offres programmées sur vos produits ou formules, incluses dans votre abonnement : aucune commission. Le prix est recalculé et vérifié par ZeeRoo à chaque commande.",
+      "new": "Créer une Happy Hour",
+      "newTitle": "Nouvelle Happy Hour",
+      "editTitle": "Modifier la Happy Hour",
+      "empty": "Aucune Happy Hour pour l'instant.",
+      "name": "Nom de l'offre",
+      "discount": "Réduction",
+      "percent": "Pourcentage",
+      "fixedPrice": "Prix promotionnel",
+      "percentLabel": "Pourcentage de réduction (1 à 90)",
+      "priceHint": "Indiquez le prix promotionnel de chaque produit choisi ci-dessous. Il doit être inférieur à son prix habituel.",
+      "referenceHint": "La réduction porte sur le prix du produit (pas sur les suppléments). Le client voit votre prix habituel barré : il doit être le prix que vous pratiquez réellement en dehors de l'offre.",
+      "productsTitle": "Produits et formules concernés",
+      "promoPrice": "Prix promo (€)",
+      "windowsTitle": "Jours et heures",
+      "windowsHint": "Une plage peut passer minuit (ex. 22:00 → 03:00). Fuseau horaire : celui de votre établissement.",
+      "addWindow": "Ajouter une plage",
+      "validityTitle": "Validité et stock",
+      "validFrom": "Du (JJ/MM/AAAA, facultatif)",
+      "validTo": "Au (JJ/MM/AAAA, facultatif)",
+      "quantity": "Quantité maximale (facultatif)",
+      "quantityHint": "Nombre total d'unités vendues au prix de l'offre. Au-delà, le tarif habituel s'applique. Une commande refusée ou annulée rend son stock.",
+      "appliesTo": "S'applique à",
+      "modePickup": "Retrait",
+      "modeDelivery": "Livraison",
+      "modeBoth": "Retrait et livraison",
+      "active": "Offre active",
+      "products_one": "{{count}} produit",
+      "products_other": "{{count}} produits",
+      "validity": "Du {{from}} au {{to}}",
+      "stock": "{{used}} / {{limit}} vendus à ce prix",
+      "deleteConfirm": "Supprimer l'offre « {{name}} » ? Les commandes passées gardent leur prix.",
+      "errors": {
+        "name": "Indiquez un nom (60 caractères maximum).",
+        "percent": "Le pourcentage doit être un entier entre 1 et 90.",
+        "windows": "Chaque plage doit avoir au moins un jour et des heures valides (début différent de la fin).",
+        "validity": "Dates invalides (JJ/MM/AAAA), la fin après le début.",
+        "quantity": "La quantité doit être un entier positif.",
+        "modes": "Choisissez le retrait, la livraison, ou les deux.",
+        "items": "Choisissez au moins un produit.",
+        "prices": "Chaque prix promotionnel doit être renseigné et inférieur au prix habituel."
+      }
+    },
     "closures": {
       "title": "Fermetures exceptionnelles",
       "hint": "Congés, travaux, jour férié : sur ces jours entiers, votre commerce n'accepte aucune commande, quels que soient vos horaires habituels.",
@@ -715,6 +772,9 @@
     "alreadySubscribed": "Votre abonnement est déjà actif.",
     "invalidReward": "Le menu offert ne s'applique qu'à un menu formule, une seule fois par commande.",
     "noRewardAvailable": "Vous n'avez plus de menu offert disponible chez ce commerçant.",
+    "invalidHappyHour": "Offre invalide : vérifiez les produits, les prix (une vraie réduction) et les plages horaires.",
+    "happyHourNotFound": "Cette offre n'existe plus.",
+    "priceChanged": "Un prix a changé depuis l'affichage (offre terminée, stock épuisé ou prix modifié). Vérifiez votre panier puis validez de nouveau.",
     "pickupUnavailable": "Cet établissement ne propose pas le retrait sur place.",
     "orderModeRequired": "Gardez au moins un mode de commande : le retrait, ou la livraison (formule Pro).",
     "deliveryUnavailable": "Ce restaurant ne livre pas pour le moment.",

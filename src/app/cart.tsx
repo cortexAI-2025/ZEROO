@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -10,13 +10,17 @@ import type { SavedAddress } from '@/features/account/api';
 import { useAddresses } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useDeliveryQuote, useMerchantDeliverySettings } from '@/features/cart/delivery';
-import {
-  cartDiscountCents,
-  cartTotalCents,
-  isValidDeliveryPhone,
-  useCart,
-} from '@/features/cart/store';
+import { repriceLines } from '@/features/cart/reprice';
+import { cartDiscountCents, isValidDeliveryPhone, useCart } from '@/features/cart/store';
+import { fetchMerchantPage } from '@/features/discover/api';
 import { formatDistance } from '@/features/discover/location';
+import { useActiveOffers } from '@/features/happyhour/hooks';
+import {
+  cartLinePricing,
+  cartTotalWithOffers,
+  type OfferChange,
+  offerChanges,
+} from '@/features/happyhour/pricing';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { AddressField } from '@/features/merchant/AddressField';
 import { deliveryPausedNow, orderModes, resolveMode } from '@/features/merchant/modes';
@@ -37,6 +41,7 @@ export default function CartScreen() {
     note,
     rewardLineKey,
     setQuantity,
+    setLines,
     setNote,
     setRewardLine,
     clear,
@@ -74,6 +79,26 @@ export default function CartScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSaved?.id]);
 
+  // Offres Happy Hour du mode choisi, relues toutes les 30 s : le prix annoncé suit l'offre.
+  const { offers, refetch: refetchOffers } = useActiveOffers(
+    merchant?.id,
+    mode === 'delivery' ? 'delivery' : 'pickup',
+  );
+  const previousOffers = useRef(offers);
+  const [notices, setNotices] = useState<OfferChange[]>([]);
+  useEffect(() => {
+    // Une offre qui se termine (ou change de prix) pendant que le client prépare son panier :
+    // on le dit, plutôt que de modifier le total en silence.
+    const changes = offerChanges(
+      previousOffers.current,
+      offers,
+      lines.map((l) => l.itemId),
+    );
+    if (changes.length > 0) setNotices((n) => [...n, ...changes]);
+    previousOffers.current = offers;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offers]);
+
   const quoteQuery = useDeliveryQuote(isDelivery ? merchant?.id : undefined, deliveryAddress);
   const quote = isDelivery ? quoteQuery.data : undefined;
   const card = useLoyaltyCard(merchant?.id);
@@ -85,8 +110,8 @@ export default function CartScreen() {
   // Espèces : au comptoir pour un retrait (si le restaurant l'accepte), au livreur pour une course.
   const [mealCash, setMealCash] = useState(false);
   const [rideCash, setRideCash] = useState(false);
-  const subtotal = cartTotalCents(lines);
-  const discount = cartDiscountCents(lines, activeRewardKey);
+  const subtotal = cartTotalWithOffers(lines, offers, activeRewardKey);
+  const discount = cartDiscountCents(lines, activeRewardKey, offers);
   const total = subtotal - discount;
   // La course est payée au livreur, en plus du repas : prix fixé par le restaurant.
   const deliveryFee = isDelivery
@@ -112,6 +137,7 @@ export default function CartScreen() {
         lines,
         note,
         rewardLineKey: activeRewardKey,
+        offers,
         mealPayment: cashMeal ? 'cash' : 'card',
         deliveryPayment: isDelivery && rideCash ? 'cash' : 'card',
         delivery:
@@ -128,9 +154,18 @@ export default function CartScreen() {
       router.replace({ pathname: '/order/[id]', params: { id: result.orderId } });
     } catch (e) {
       setError(t(errorKey(e)));
+      if (errorKey(e) === 'errors.priceChanged') void refreshPrices();
     } finally {
       setBusy(false);
     }
+  };
+
+  // Le serveur a refusé un prix annoncé : on relit les offres et la carte, puis le client revalide.
+  const refreshPrices = async () => {
+    if (!merchant) return;
+    await refetchOffers();
+    const page = await fetchMerchantPage(merchant.slug);
+    if (page) setLines(repriceLines(lines, page.menu).lines);
   };
 
   if (!merchant || lines.length === 0) {
@@ -152,6 +187,23 @@ export default function CartScreen() {
       <Stack.Screen options={{ title: t('client.cart.title'), headerShown: true }} />
       <AppText variant="title">{merchant.name}</AppText>
 
+      {notices.length > 0 ? (
+        <Card testID="offer-notices">
+          {notices.map((notice, i) => (
+            <AppText key={`${notice.itemId}-${i}`} variant="error">
+              {t(notice.kind === 'ended' ? 'client.cart.offerEnded' : 'client.cart.offerChanged', {
+                name: lines.find((l) => l.itemId === notice.itemId)?.name ?? '',
+              })}
+            </AppText>
+          ))}
+          <Button
+            variant="ghost"
+            title={t('client.cart.dismissNotice')}
+            onPress={() => setNotices([])}
+          />
+        </Card>
+      ) : null}
+
       {lines.map((line) => (
         <Card key={line.key} testID={`cart-line-${line.name}`}>
           <View style={styles.row}>
@@ -160,7 +212,7 @@ export default function CartScreen() {
               {line.options.length > 0 ? (
                 <AppText variant="muted">{line.options.map((o) => o.name).join(', ')}</AppText>
               ) : null}
-              <AppText variant="muted">{formatCents(line.unitPriceCents * line.quantity)}</AppText>
+              <CartLinePrice line={line} offers={offers} rewardKey={activeRewardKey} />
               {line.key === activeRewardKey ? (
                 <AppText variant="link">🎁 {t('client.loyalty.rewardApplied')}</AppText>
               ) : null}
@@ -415,7 +467,38 @@ export default function CartScreen() {
   );
 }
 
+/** Prix d'une ligne : tarif habituel barré et économie quand une offre Happy Hour s'applique. */
+function CartLinePrice({
+  line,
+  offers,
+  rewardKey,
+}: {
+  line: { key: string; itemId: string; unitPriceCents: number; quantity: number };
+  offers: ReturnType<typeof useActiveOffers>['offers'];
+  rewardKey: string | null;
+}) {
+  const { t } = useTranslation();
+  const pricing = cartLinePricing(line, offers, rewardKey);
+  if (pricing.savingCents === 0) {
+    return <AppText variant="muted">{formatCents(pricing.totalCents)}</AppText>;
+  }
+  return (
+    <View testID={`cart-line-offer-${line.itemId}`}>
+      <View style={styles.row}>
+        <AppText>{formatCents(pricing.totalCents)}</AppText>
+        <AppText variant="muted" style={styles.strike}>
+          {formatCents(line.unitPriceCents * line.quantity)}
+        </AppText>
+      </View>
+      <AppText variant="link">
+        {t('happyHour.saving', { price: formatCents(pricing.savingCents) })}
+      </AppText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  strike: { textDecorationLine: 'line-through' },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   flex: { flex: 1 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
