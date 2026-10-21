@@ -157,7 +157,8 @@
       "serviceZone": "Livre autour de {{city}}, jusqu'à {{distance}}",
       "noMode": "Cet établissement ne prend pas de commande pour le moment.",
       "pickupInstructions": "Consignes de retrait",
-      "deliveryOnly": "Livraison uniquement : pas de retrait sur place."
+      "deliveryOnly": "Livraison uniquement : pas de retrait sur place.",
+      "deliveryPaused": "Livraison momentanément indisponible."
     },
     "item": {
       "required": "Obligatoire",
@@ -260,6 +261,13 @@
       "cancelConfirmBody": "Le commerçant n'a pas encore accepté : vous ne serez pas débité.",
       "cancelConfirmAction": "Annuler la commande",
       "keep": "Garder",
+      "unclaimed": {
+        "title": "Aucun livreur n'a encore pris votre livraison",
+        "body": "Votre commande est acceptée, mais aucun livreur ne l'a prise depuis plus de 15 minutes. Vous pouvez patienter ou l'annuler. Si vous avez déjà réglé le repas par le lien de paiement du restaurant, le remboursement se règle directement avec lui : ZeeRoo n'encaisse aucun paiement.",
+        "cancel": "Annuler la commande",
+        "confirmTitle": "Annuler la livraison ?",
+        "confirmBody": "La commande sera annulée. Un éventuel remboursement du repas se règle directement avec le restaurant."
+      },
       "deliveryCode": "Code de livraison",
       "deliveryCodeHint": "Donnez ce code au livreur à son arrivée.",
       "deliveryTo": "Livraison : {{address}}",
@@ -466,6 +474,12 @@
         "delivered": "Livrée"
       },
       "historyEmpty": "Aucune commande terminée pour l'instant.",
+      "unclaimed": {
+        "body": "Aucun livreur n'a pris cette livraison depuis plus de 15 minutes. Vous pouvez patienter ou l'annuler : prévenez le client si un remboursement est nécessaire, c'est à vous de le faire.",
+        "cancel": "Annuler la commande",
+        "confirmTitle": "Annuler cette livraison ?",
+        "confirmBody": "La commande sera annulée et le client prévenu. Un éventuel remboursement du repas se règle directement avec lui."
+      },
       "setupBanner": "Renseignez votre lien de paiement (ou acceptez les espèces) et démarrez votre abonnement (onglet Boutique) pour recevoir des commandes.",
       "rewardLine": "🎁 Offert (fidélité)",
       "discount": "Menu offert",

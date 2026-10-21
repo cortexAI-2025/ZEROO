@@ -1,18 +1,29 @@
 export type OrderMode = 'pickup' | 'delivery';
 
-type ModeFlags = { offers_pickup: boolean; offers_delivery: boolean | null };
+type ModeFlags = {
+  offers_pickup: boolean;
+  /** Livraison activée par l'établissement et incluse dans sa formule (Pro). */
+  offers_delivery: boolean | null;
+  /** ... et au moins un livreur rattaché, en ligne, avec de la capacité. */
+  delivery_available_now: boolean | null;
+};
 
 /**
- * Modes de commande proposés par un établissement, dans l'ordre d'affichage : le retrait
- * (click & collect) d'abord, puis la livraison. Reflet de `offers_pickup` et `offers_delivery`
- * calculés côté serveur, qui revérifie de toute façon à la commande.
+ * Modes de commande proposés au client, dans l'ordre d'affichage : le retrait (click & collect)
+ * d'abord, puis la livraison, seulement si un livreur peut la prendre maintenant. Reflet de
+ * colonnes calculées côté serveur, qui revérifie de toute façon à la commande.
  */
 export function orderModes(flags: ModeFlags | null | undefined): OrderMode[] {
   if (!flags) return [];
   const modes: OrderMode[] = [];
   if (flags.offers_pickup) modes.push('pickup');
-  if (flags.offers_delivery) modes.push('delivery');
+  if (flags.delivery_available_now) modes.push('delivery');
   return modes;
+}
+
+/** La livraison existe mais aucun livreur ne peut la prendre pour l'instant. */
+export function deliveryPausedNow(flags: ModeFlags | null | undefined): boolean {
+  return !!flags?.offers_delivery && !flags.delivery_available_now;
 }
 
 /** Le mode souhaité s'il est proposé, sinon le premier mode proposé (`null` s'il n'y en a aucun). */

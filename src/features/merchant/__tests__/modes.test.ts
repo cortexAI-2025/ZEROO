@@ -1,22 +1,43 @@
-import { orderModes, resolveMode, showsAddress } from '../modes';
+import { deliveryPausedNow, orderModes, resolveMode, showsAddress } from '../modes';
+
+const flags = (
+  offers_pickup: boolean,
+  offers_delivery: boolean | null,
+  delivery_available_now: boolean | null,
+) => ({ offers_pickup, offers_delivery, delivery_available_now });
 
 describe('orderModes', () => {
   it('liste le retrait avant la livraison', () => {
-    expect(orderModes({ offers_pickup: true, offers_delivery: true })).toEqual([
-      'pickup',
-      'delivery',
-    ]);
+    expect(orderModes(flags(true, true, true))).toEqual(['pickup', 'delivery']);
   });
 
   it('gère le retrait seul et la livraison seule (dark kitchen)', () => {
-    expect(orderModes({ offers_pickup: true, offers_delivery: false })).toEqual(['pickup']);
-    expect(orderModes({ offers_pickup: false, offers_delivery: true })).toEqual(['delivery']);
+    expect(orderModes(flags(true, false, false))).toEqual(['pickup']);
+    expect(orderModes(flags(false, true, true))).toEqual(['delivery']);
+  });
+
+  it('ne propose pas la livraison quand aucun livreur ne peut la prendre', () => {
+    expect(orderModes(flags(true, true, false))).toEqual(['pickup']);
+    expect(orderModes(flags(false, true, false))).toEqual([]);
   });
 
   it('ne propose aucun mode sans retrait ni livraison, ou quand les données manquent', () => {
-    expect(orderModes({ offers_pickup: false, offers_delivery: false })).toEqual([]);
-    expect(orderModes({ offers_pickup: false, offers_delivery: null })).toEqual([]);
+    expect(orderModes(flags(false, false, false))).toEqual([]);
+    expect(orderModes(flags(false, null, null))).toEqual([]);
     expect(orderModes(undefined)).toEqual([]);
+  });
+});
+
+describe('deliveryPausedNow', () => {
+  it('signale une livraison proposée mais momentanément indisponible', () => {
+    expect(deliveryPausedNow(flags(false, true, false))).toBe(true);
+    expect(deliveryPausedNow(flags(true, true, false))).toBe(true);
+  });
+
+  it('ne signale rien quand la livraison est disponible ou n’est pas proposée', () => {
+    expect(deliveryPausedNow(flags(true, true, true))).toBe(false);
+    expect(deliveryPausedNow(flags(true, false, false))).toBe(false);
+    expect(deliveryPausedNow(null)).toBe(false);
   });
 });
 
@@ -27,6 +48,7 @@ describe('resolveMode', () => {
 
   it('se rabat sur le seul mode proposé', () => {
     expect(resolveMode('pickup', ['delivery'])).toBe('delivery');
+    expect(resolveMode('delivery', ['pickup'])).toBe('pickup');
   });
 
   it('renvoie null quand aucun mode n’est proposé', () => {

@@ -8,7 +8,7 @@ import { useCart } from '@/features/cart/store';
 import { fetchMerchantPage } from '@/features/discover/api';
 import { directionsUrl } from '@/features/discover/location';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
-import { cancelMyOrder } from '@/features/orders/api';
+import { cancelMyOrder, cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
 import { CourierBadge, useOrderCourier } from '@/features/orders/CourierBadge';
 import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
@@ -42,6 +42,7 @@ export default function OrderScreen() {
   const [cancelError, setCancelError] = useState<string | null>(null);
   // Lien de paiement du livreur (paiement de la livraison par carte).
   const orderCourier = useOrderCourier(id, order?.courier_name ?? null);
+  const [cancellingMission, setCancellingMission] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [reorderNote, setReorderNote] = useState<string | null>(null);
 
@@ -105,6 +106,27 @@ export default function OrderScreen() {
       setCancelError(t(errorKey(e)));
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const cancelUnclaimed = async () => {
+    const ok = await confirmAsync({
+      title: t('client.order.unclaimed.confirmTitle'),
+      message: t('client.order.unclaimed.confirmBody'),
+      confirmLabel: t('client.order.unclaimed.cancel'),
+      cancelLabel: t('client.order.keep'),
+      destructive: true,
+    });
+    if (!ok) return;
+    setCancelError(null);
+    setCancellingMission(true);
+    try {
+      await cancelUnclaimedDelivery(id);
+      await query.refetch();
+    } catch (e) {
+      setCancelError(t(errorKey(e)));
+    } finally {
+      setCancellingMission(false);
     }
   };
 
@@ -357,6 +379,20 @@ export default function OrderScreen() {
             variant="ghost"
             title={t('client.loyalty.title')}
             onPress={() => router.push('/loyalty')}
+          />
+        </Card>
+      ) : null}
+
+      {isDeliveryUnclaimed(order) ? (
+        <Card testID="unclaimed-delivery">
+          <AppText variant="subtitle">{t('client.order.unclaimed.title')}</AppText>
+          <AppText>{t('client.order.unclaimed.body')}</AppText>
+          <Button
+            testID="cancel-unclaimed"
+            variant="secondary"
+            title={t('client.order.unclaimed.cancel')}
+            loading={cancellingMission}
+            onPress={() => void cancelUnclaimed()}
           />
         </Card>
       ) : null}

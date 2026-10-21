@@ -19,7 +19,7 @@ import {
 import { formatDistance } from '@/features/discover/location';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { AddressField } from '@/features/merchant/AddressField';
-import { orderModes, resolveMode } from '@/features/merchant/modes';
+import { deliveryPausedNow, orderModes, resolveMode } from '@/features/merchant/modes';
 import { customerOrderKeys } from '@/features/orders/hooks';
 import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
@@ -213,7 +213,11 @@ export default function CartScreen() {
 
       {deliverySettings && mode === null ? (
         <Card testID="no-order-mode">
-          <AppText variant="error">{t('client.merchant.noMode')}</AppText>
+          <AppText variant="error">
+            {deliveryPausedNow(deliverySettings)
+              ? t('client.cart.deliveryOnlyUnavailable')
+              : t('client.merchant.noMode')}
+          </AppText>
         </Card>
       ) : null}
 
@@ -292,11 +296,6 @@ export default function CartScreen() {
               ) : quote?.reason ? (
                 <AppText variant="error" testID="delivery-quote">
                   {t(`client.cart.quoteReasons.${quote.reason}`)}
-                </AppText>
-              ) : null}
-              {!hasPickup && quote && !quote.available ? (
-                <AppText variant="error" testID="delivery-only-unavailable">
-                  {t('client.cart.deliveryOnlyUnavailable')}
                 </AppText>
               ) : null}
             </>

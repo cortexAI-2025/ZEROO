@@ -112,7 +112,9 @@ export type Database = {
           created_at: string;
           display_name: string;
           id: string;
+          available_until: string | null;
           is_available: boolean;
+          is_online: boolean | null;
           last_assigned_at: string | null;
           legal_status: Database['public']['Enums']['courier_legal_status'];
           phone: string;
@@ -121,7 +123,7 @@ export type Database = {
           user_id: string;
           vehicle: Database['public']['Enums']['courier_vehicle'];
         };
-        ComputedFields: never;
+        ComputedFields: 'is_online';
         Insert: {
           payment_link?: string | null;
           photo_url?: string | null;
@@ -129,6 +131,7 @@ export type Database = {
           created_at?: string;
           display_name: string;
           id?: string;
+          available_until?: string | null;
           is_available?: boolean;
           last_assigned_at?: string | null;
           legal_status: Database['public']['Enums']['courier_legal_status'];
@@ -145,6 +148,7 @@ export type Database = {
           created_at?: string;
           display_name?: string;
           id?: string;
+          available_until?: string | null;
           is_available?: boolean;
           last_assigned_at?: string | null;
           legal_status?: Database['public']['Enums']['courier_legal_status'];
@@ -627,10 +631,12 @@ export type Database = {
           is_payments_ready: boolean | null;
           is_subscription_active: boolean | null;
           has_delivery_option: boolean | null;
+          delivery_available_now: boolean | null;
           has_order_mode: boolean | null;
           offers_delivery: boolean | null;
         };
         ComputedFields:
+          | 'delivery_available_now'
           | 'has_delivery_option'
           | 'has_order_mode'
           | 'offers_delivery'
@@ -839,6 +845,7 @@ export type Database = {
         Row: {
           meal_payment_declared_at: string | null;
           delivery_payment_declared_at: string | null;
+          delivery_unclaimed_at: string | null;
           accepted_at: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
@@ -900,6 +907,7 @@ export type Database = {
         Insert: {
           meal_payment_declared_at?: string | null;
           delivery_payment_declared_at?: string | null;
+          delivery_unclaimed_at?: string | null;
           accepted_at?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
@@ -960,6 +968,7 @@ export type Database = {
         Update: {
           meal_payment_declared_at?: string | null;
           delivery_payment_declared_at?: string | null;
+          delivery_unclaimed_at?: string | null;
           accepted_at?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
@@ -1292,6 +1301,10 @@ export type Database = {
       };
       call_expire_orders: { Args: Record<PropertyKey, never>; Returns: undefined };
       call_internal_function: { Args: { p_body: Json; p_name: string }; Returns: undefined };
+      cancel_unclaimed_delivery: {
+        Args: { p_order_id: string };
+        Returns: Database['public']['Tables']['orders']['Row'];
+      };
       courier_accept_mission: {
         Args: { p_order_id: string };
         Returns: {
@@ -1635,6 +1648,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      is_online: {
+        Args: {
+          c: Omit<
+            Database['public']['Tables']['couriers']['Row'],
+            Database['public']['Tables']['couriers']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      courier_heartbeat: { Args: Record<PropertyKey, never>; Returns: string | null };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
       dev_place_test_order: { Args: { p_slug?: string }; Returns: string };
       expire_stale_orders: {
@@ -1700,6 +1723,15 @@ export type Database = {
         Returns: boolean;
       };
       has_order_mode: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      delivery_available_now: {
         Args: {
           m: Omit<
             Database['public']['Tables']['merchants']['Row'],

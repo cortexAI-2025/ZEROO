@@ -40,6 +40,11 @@ export async function updatePassword({ password }: NewPasswordValues) {
 }
 
 export async function signOut() {
+  // Un livreur qui se déconnecte n'est plus proposé aux clients (sans effet pour les autres comptes).
+  await supabase.rpc('set_courier_availability', { p_available: false }).then(
+    () => undefined,
+    () => undefined,
+  );
   // Avant la déconnexion : cet appareil ne doit plus recevoir les notifications du compte.
   await unregisterPush().catch(() => undefined);
   const { error } = await supabase.auth.signOut();
