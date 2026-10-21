@@ -12,8 +12,8 @@
 | Abonnement | **30 jours d'essai gratuit, puis Start 19,99 € HT/mois (23,99 € TTC) ou Pro 29,99 € HT/mois avec l'option livraison (35,99 € TTC)**, ou à l'année (199,99 € HT, 299,99 € HT), souscrit sur le web via Stripe Checkout. Les prix Stripe sont HT ; la TVA 20 % s'ajoute via un taux Stripe exclusif, ce qui détaille HT / TVA / TTC sur les factures ; le commerçant peut saisir son numéro de TVA. Le client ne paie rien. |
 | Positionnement | **ZeeRoo est un service, pas un vendeur.** Les repas sont vendus par les restaurants, au prix de leur carte. **Le client paie directement chaque professionnel** (restaurant, livreur) par carte, Apple Pay ou Google Pay via **le lien de paiement de ce professionnel** (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), ou en espèces ; l'argent arrive sur le compte bancaire du professionnel. ZeeRoo n'encaisse jamais l'argent des commandes. **Stripe ne sert qu'aux abonnements**, encaissés par AiWorkPay. Voir §3.6. |
 | Livraison | **Retrait ou livraison par un livreur indépendant** rattaché au restaurant (avec son accord). Le livreur (auto-entrepreneur ou société, SIRET) paie un **abonnement livreur unique : 14,99 € HT par mois (17,99 € TTC) ou 149,99 € HT par an, 30 jours d'essai**, sans commission. Le **restaurant fixe le prix de la course** et sa zone ; le client paie **deux paiements distincts** : le repas au restaurant à la commande, la course au livreur quand un livreur accepte la mission (carte ou espèces au choix), chacun directement sur son compte Stripe. ZeeRoo n'encaisse jamais d'argent. Voir §3.4. |
-| Domaine | **zeroo.online** : site vitrine et liens commerçant `https://zeroo.online/m/<slug>` (cibles des QR codes, redirigés vers l'app web). **app.zeroo.online** : app web, page d'abonnement et retours Stripe. |
-| Site public | **zeroo.online** : site vitrine statique (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages) avec la démo interactive. Ce dépôt ne contient que l'application. |
+| Domaine | **zeeroo.fr** : site vitrine et liens commerçant `https://zeeroo.fr/m/<slug>` (cibles des QR codes, redirigés vers l'app web). **app.zeeroo.fr** : app web, page d'abonnement et retours Stripe. |
+| Site public | **zeeroo.fr** : site vitrine statique (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages) avec la démo interactive. Ce dépôt ne contient que l'application. |
 | Stripe | Le titulaire a déjà un compte Stripe professionnel (activité « aiworkpay ») : la plateforme ZeeRoo doit être un **compte Stripe distinct**, créé dans la même organisation (voir étape d). |
 
 ## 1. Stack retenue et ajustements
@@ -39,7 +39,7 @@
 
 1. **Type de compte Stripe Connect.** Avec des comptes Express ou Custom où la plateforme gère la tarification, Stripe facture la plateforme environ 2 € par compte actif et par mois, plus des frais par virement. Ça représenterait environ environ 10 % d'un abonnement Start à 19,99 € HT. Je recommande des comptes dont **Stripe gère la tarification** (configuration `controller` : `fees.payer = account`, `losses.payments = stripe`, `stripe_dashboard.type = full`, l'équivalent des comptes « Standard »). Avec cette configuration, la plateforme ne paie aucun frais Connect, et le commerçant a son propre dashboard Stripe pour ses virements, ses remboursements et ses litiges.
 2. **Pré-autorisation puis capture.** Le paiement est autorisé à la commande (`capture_method = manual`) et **capturé seulement quand le commerçant accepte**. Si le commerçant refuse, ou ne répond pas sous N minutes, l'autorisation est annulée. Cette approche a deux avantages : aucun remboursement n'est nécessaire, et donc aucun frais Stripe n'est perdu pour le commerçant, qui ne les récupère pas sur un remboursement. Le client, lui, n'est jamais débité pour une commande refusée.
-3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`app.zeroo.online/pro`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
+3. **Abonnement commerçant et règles des stores.** Apple et Google peuvent exiger leur système d'achat intégré (avec une commission de 15 à 30 %) pour un abonnement à un service numérique vendu dans l'app. Je propose de faire **souscrire l'abonnement sur le web** (`app.zeeroo.fr/pro`, avec Stripe Checkout), puis de laisser l'app afficher seulement l'état de l'abonnement. Les paiements des clients concernent des biens physiques (des repas), donc Stripe y est autorisé sans problème.
 4. **Code de retrait.** Pour que le compteur de fidélité ne s'incrémente qu'à la remise réelle, chaque commande porte un code court (ex. `K7P2`) que le client montre en caisse. Le commerçant passe la commande à « récupérée » en le saisissant ou en scannant le QR de la commande.
 5. **« Je pars maintenant » sans traçage continu (RGPD).** La position est envoyée **une seule fois**, au moment du clic. Le serveur calcule l'ETA et **ne stocke pas les coordonnées**, seulement `customer_eta_at`. Le client pourra cliquer à nouveau pour rafraîchir l'ETA.
 6. **Un compte = un commerce.** Le même compte peut aussi commander comme client : l'app propose deux espaces, avec une bascule dans « Compte ».
@@ -79,7 +79,7 @@ zeroo/
 ├── src/
 │   ├── app/                          # Expo Router : routes uniquement, écrans fins
 │   │   ├── _layout.tsx               # providers + gardes (Stack.Protected) session / espace
-│   │   ├── index.tsx                 # app.zeroo.online : page d'accueil (visiteur web) ou redirection
+│   │   ├── index.tsx                 # app.zeeroo.fr : page d'accueil (visiteur web) ou redirection
 │   │   ├── mentions-legales.tsx, confidentialite.tsx
 │   │   ├── auth-callback.tsx         # retour des liens e-mail (confirmation, mot de passe)
 │   │   ├── choose-space.tsx          # « Commander » ou « Gérer mon commerce »
@@ -167,7 +167,7 @@ create table profiles (
 create table merchants (
   id                   uuid primary key default gen_random_uuid(),
   owner_id             uuid not null unique references profiles(id),  -- 1 compte = 1 commerce
-  slug                 text not null unique,            -- lien / QR code : zeroo.online/m/<slug>
+  slug                 text not null unique,            -- lien / QR code : zeeroo.fr/m/<slug>
   name                 text not null,
   description          text,
   category             text not null,                   -- 'snack' | 'sandwicherie' | 'restaurant'…
@@ -469,7 +469,7 @@ Migration `20261013140000_payment_links.sql`.
 
 Migration `20261013150000_pro_verification.sql`.
 
-- **Clients** : Google et Apple sont mis en avant sur les écrans de connexion et d'inscription (un geste, pas de mot de passe) ; l'e-mail + mot de passe reste possible en dessous. Le compte est créé à la première connexion. Sur le web (`app.zeroo.online`), Google et Apple passent par la redirection OAuth de Supabase (`signInWithOAuth`, retour sur `/auth-callback`) ; sur mobile, par les modules natifs (jeton d'identité → `signInWithIdToken`). `EXPO_PUBLIC_OAUTH_PROVIDERS` liste les fournisseurs activés côté web.
+- **Clients** : Google et Apple sont mis en avant sur les écrans de connexion et d'inscription (un geste, pas de mot de passe) ; l'e-mail + mot de passe reste possible en dessous. Le compte est créé à la première connexion. Sur le web (`app.zeeroo.fr`), Google et Apple passent par la redirection OAuth de Supabase (`signInWithOAuth`, retour sur `/auth-callback`) ; sur mobile, par les modules natifs (jeton d'identité → `signInWithIdToken`). `EXPO_PUBLIC_OAUTH_PROVIDERS` liste les fournisseurs activés côté web.
 - **Professionnels** (commerçant, livreur) : même choix de connexion (Google, Apple ou e-mail), puis **e-mail confirmé et téléphone mobile vérifié par code SMS** avant de créer le commerce ou le profil livreur. Le téléphone est rattaché au compte Supabase Auth (`updateUser({ phone })` puis `verifyOtp(type 'phone_change')` → `auth.users.phone_confirmed_at`). Avec Google ou Apple, l'e-mail est déjà confirmé.
 - **Côté serveur** : `is_pro_verified()` et un trigger `require_verified_pro` sur l'insertion dans `merchants` et `couriers` (erreur `pro_verification_required`). Les écritures sans utilisateur (données de démo, service) ne sont pas concernées. Le numéro vérifié est recopié dans `profiles.phone` (+33…).
 - **Configuration Supabase** : fournisseurs Google et Apple (Authentication → Providers) et un fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Coût des SMS à la charge d'AiWorkPay (quelques centimes par code).

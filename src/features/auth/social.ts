@@ -1,4 +1,4 @@
-// Version web (app.zeroo.online) : Google et Apple passent par la redirection OAuth de Supabase.
+// Version web (app.zeeroo.fr) : Google et Apple passent par la redirection OAuth de Supabase.
 // Au retour sur /auth-callback, supabase-js installe la session lui-même (detectSessionInUrl).
 import { env } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
