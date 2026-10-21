@@ -25,6 +25,7 @@ const STATUS_TONE = {
   closed: 'neutral',
   paused: 'warning',
   unpublished: 'danger',
+  noMode: 'danger',
   setup: 'danger',
 } as const;
 
@@ -91,6 +92,17 @@ export default function MerchantOrdersScreen() {
         {status === 'setup' ? (
           <Card testID="setup-banner">
             <AppText>{t('merchant.orders.setupBanner')}</AppText>
+            <Button
+              variant="secondary"
+              title={t('merchant.tabs.shop')}
+              onPress={() => router.push('/pro/shop')}
+            />
+          </Card>
+        ) : null}
+
+        {status === 'noMode' ? (
+          <Card testID="no-mode-banner">
+            <AppText>{t('merchant.status.noMode')}</AppText>
             <Button
               variant="secondary"
               title={t('merchant.tabs.shop')}

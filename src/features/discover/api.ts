@@ -7,11 +7,14 @@ export type MerchantSummary = {
   slug: string;
   name: string;
   category: string;
-  address_line: string;
+  /** `null` pour un établissement qui n'accueille pas le public (dark kitchen). */
+  address_line: string | null;
   city: string;
   distance_m: number | null;
   is_open: boolean;
   is_accepting_orders: boolean;
+  offers_pickup: boolean;
+  offers_delivery: boolean;
 };
 
 export async function fetchNearbyMerchants(

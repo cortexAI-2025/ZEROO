@@ -1,8 +1,18 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import { AppText, Button, Card, Chip, ListRow, Screen, SwitchRow } from '@/components/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  Chip,
+  ListRow,
+  Screen,
+  SwitchRow,
+  TextField,
+} from '@/components/ui';
 import { useBilling } from '@/features/billing/billing';
 import { BillingCards } from '@/features/billing/BillingCards';
 import { formatDistance } from '@/features/discover/location';
@@ -37,6 +47,8 @@ export default function ShopScreen() {
   const { refetch: refetchBilling } = useBilling({ role: 'merchant', id: merchant.id });
   useRefreshOnFocus(refetchMerchant);
   useRefreshOnFocus(refetchBilling);
+
+  const [instructions, setInstructions] = useState(merchant.pickup_instructions ?? '');
 
   const hasAvailableItem = (menu.data ?? []).some(
     (c) => c.is_active && c.menu_items.some((i) => i.is_available),
@@ -105,6 +117,37 @@ export default function ShopScreen() {
             </View>
           </>
         )}
+      </Card>
+
+      <Card>
+        <SwitchRow
+          testID="pickup-mode-switch"
+          label={t('merchant.shop.pickupMode')}
+          hint={t('merchant.shop.pickupModeHint')}
+          value={merchant.offers_pickup}
+          onValueChange={(value) => update.mutate({ offers_pickup: value })}
+        />
+        {merchant.offers_pickup ? (
+          <>
+            <TextField
+              testID="pickup-instructions"
+              label={t('merchant.shop.pickupInstructions')}
+              value={instructions}
+              onChangeText={setInstructions}
+              maxLength={300}
+              multiline
+            />
+            <AppText variant="muted">{t('merchant.shop.pickupInstructionsHint')}</AppText>
+            {instructions.trim() !== (merchant.pickup_instructions ?? '') ? (
+              <Button
+                variant="secondary"
+                title={t('common.save')}
+                loading={update.isPending}
+                onPress={() => update.mutate({ pickup_instructions: instructions.trim() || null })}
+              />
+            ) : null}
+          </>
+        ) : null}
       </Card>
 
       <Card>

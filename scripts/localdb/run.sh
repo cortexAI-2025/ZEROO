@@ -18,7 +18,7 @@ echo "migrations: OK"
 fail=0
 for t in ${@:-supabase/tests/database/*.test.sql}; do
   out=$(psql -v ON_ERROR_STOP=0 -q -t -A -f "$t" 2>&1) || true
-  if echo "$out" | grep -qE "^not ok|Looks like you failed|ERROR:"; then echo "ÉCHEC $t"; echo "$out" | grep -E "^not ok|ERROR|#" | head -15; fail=1
+  if echo "$out" | grep -qE "^not ok|Looks like you (failed|planned)|ERROR:"; then echo "ÉCHEC $t"; echo "$out" | grep -E "^not ok|ERROR|#" | head -15; fail=1
   else echo "OK    $t ($(echo "$out" | grep -c '^ok') tests)"; fi
 done
 exit $fail

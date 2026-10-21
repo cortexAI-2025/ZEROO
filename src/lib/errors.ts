@@ -22,6 +22,8 @@ const businessErrors = {
   invalid_reward: 'errors.invalidReward',
   no_reward_available: 'errors.noRewardAvailable',
   payment_action_required: 'errors.invalidTransition',
+  pickup_unavailable: 'errors.pickupUnavailable',
+  order_mode_required: 'errors.orderModeRequired',
   delivery_unavailable: 'errors.deliveryUnavailable',
   delivery_out_of_range: 'errors.deliveryOutOfRange',
   no_courier_available: 'errors.noCourierAvailable',

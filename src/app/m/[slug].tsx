@@ -7,13 +7,14 @@ import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
 import { CartBar } from '@/features/cart/CartBar';
 import { ItemSheet } from '@/features/cart/ItemSheet';
-import { directionsUrl } from '@/features/discover/location';
+import { directionsUrl, formatDistance } from '@/features/discover/location';
 import { useMerchantPage } from '@/features/discover/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
 import type { MenuItem } from '@/features/menu/types';
 import { shortTime, WEEKDAYS } from '@/features/merchant/hours';
+import { showsAddress } from '@/features/merchant/modes';
 import type { MerchantCategory, OpeningHour } from '@/features/merchant/types';
 import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
@@ -70,6 +71,7 @@ export default function MerchantPageScreen() {
 
   const { merchant, menu } = page.data;
   const canOrder = !!merchant.is_accepting_orders;
+  const hasAddress = showsAddress(merchant);
 
   return (
     <View style={[styles.flex, { backgroundColor: colors.background }]}>
@@ -86,25 +88,46 @@ export default function MerchantPageScreen() {
         <AppText variant="title">{merchant.name}</AppText>
         <AppText variant="muted">
           {t(`merchant.categories.${merchant.category as MerchantCategory}`)} ·{' '}
-          {merchant.address_line}, {merchant.postal_code} {merchant.city}
+          {hasAddress
+            ? `${merchant.address_line}, ${merchant.postal_code} ${merchant.city}`
+            : t('client.merchant.serviceZone', {
+                city: merchant.city,
+                distance: formatDistance(merchant.delivery_radius_m),
+              })}
         </AppText>
-        {merchant.delivery_enabled ? (
+        <View style={styles.badges} testID="merchant-modes">
+          {merchant.offers_pickup ? <Badge label={t('client.merchant.modePickup')} /> : null}
+          {merchant.offers_delivery ? <Badge label={t('client.merchant.modeDelivery')} /> : null}
+        </View>
+        {merchant.offers_delivery ? (
           <AppText variant="link" testID="merchant-delivers">
             🛵 {t('client.merchant.delivers', { price: formatCents(merchant.delivery_fee_cents) })}
           </AppText>
         ) : null}
+        {!merchant.offers_pickup && merchant.offers_delivery ? (
+          <AppText variant="muted">{t('client.merchant.deliveryOnly')}</AppText>
+        ) : null}
         {merchant.description ? <AppText>{merchant.description}</AppText> : null}
 
+        {merchant.offers_pickup && merchant.pickup_instructions ? (
+          <Card testID="pickup-instructions">
+            <AppText variant="subtitle">{t('client.merchant.pickupInstructions')}</AppText>
+            <AppText>{merchant.pickup_instructions}</AppText>
+          </Card>
+        ) : null}
+
         <View style={styles.actions}>
-          <Button
-            variant="secondary"
-            title={t('client.merchant.directions')}
-            onPress={() =>
-              void Linking.openURL(
-                directionsUrl(Platform.OS, merchant.latitude, merchant.longitude),
-              )
-            }
-          />
+          {hasAddress ? (
+            <Button
+              variant="secondary"
+              title={t('client.merchant.directions')}
+              onPress={() =>
+                void Linking.openURL(
+                  directionsUrl(Platform.OS, merchant.latitude, merchant.longitude),
+                )
+              }
+            />
+          ) : null}
           {merchant.phone ? (
             <Button
               variant="secondary"
@@ -141,9 +164,11 @@ export default function MerchantPageScreen() {
         {!canOrder ? (
           <Card testID="not-accepting">
             <AppText>
-              {merchant.is_open_now
-                ? t('client.merchant.pausedBanner')
-                : t('client.merchant.closedBanner')}
+              {!merchant.has_order_mode
+                ? t('client.merchant.noMode')
+                : merchant.is_open_now
+                  ? t('client.merchant.pausedBanner')
+                  : t('client.merchant.closedBanner')}
             </AppText>
           </Card>
         ) : null}
@@ -199,6 +224,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   cover: { width: '100%', aspectRatio: 16 / 9, borderRadius: radius.lg },
   hours: { gap: spacing.xs },
   row: { flexDirection: 'row', gap: spacing.md },

@@ -13,6 +13,7 @@ import { CourierBadge, useOrderCourier } from '@/features/orders/CourierBadge';
 import { DepartureCard } from '@/features/orders/DepartureCard';
 import { useOrder } from '@/features/orders/hooks';
 import { PaymentCard } from '@/features/orders/PaymentCard';
+import { showsAddress } from '@/features/merchant/modes';
 import { rebuildLines } from '@/features/orders/reorder';
 import { ReviewCard } from '@/features/reviews/ReviewCard';
 import { confirmAsync } from '@/lib/confirm';
@@ -373,10 +374,18 @@ export default function OrderScreen() {
 
       {merchant ? (
         <>
-          <AppText variant="muted">
-            {merchant.address_line}, {merchant.city}
-          </AppText>
-          {!isDelivery ? (
+          {showsAddress(merchant) ? (
+            <AppText variant="muted">
+              {merchant.address_line}, {merchant.city}
+            </AppText>
+          ) : null}
+          {!isDelivery && merchant.pickup_instructions ? (
+            <Card testID="pickup-instructions">
+              <AppText variant="subtitle">{t('client.merchant.pickupInstructions')}</AppText>
+              <AppText>{merchant.pickup_instructions}</AppText>
+            </Card>
+          ) : null}
+          {!isDelivery && showsAddress(merchant) ? (
             <Button
               variant="secondary"
               title={t('client.merchant.directions')}

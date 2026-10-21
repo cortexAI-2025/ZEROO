@@ -70,7 +70,8 @@ export function MerchantCard({ merchant, rating, photoUrl, favorite, onToggleFav
         </View>
         <AppText variant="muted">
           {t(`merchant.categories.${merchant.category as MerchantCategory}`)} ·{' '}
-          {merchant.address_line}, {merchant.city}
+          {merchant.address_line ? `${merchant.address_line}, ` : ''}
+          {merchant.city}
           {merchant.distance_m !== null ? ` · ${formatDistance(merchant.distance_m)}` : ''}
         </AppText>
         {rating ? (

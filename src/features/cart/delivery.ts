@@ -11,7 +11,9 @@ export function useMerchantDeliverySettings(merchantId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('merchants')
-        .select('delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link')
+        .select(
+          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, has_order_mode',
+        )
         .eq('id', merchantId!)
         .maybeSingle();
       if (error) throw error;
