@@ -474,6 +474,15 @@ Migration `20261013150000_pro_verification.sql`.
 - **Côté serveur** : `is_pro_verified()` et un trigger `require_verified_pro` sur l'insertion dans `merchants` et `couriers` (erreur `pro_verification_required`). Les écritures sans utilisateur (données de démo, service) ne sont pas concernées. Le numéro vérifié est recopié dans `profiles.phone` (+33…).
 - **Configuration Supabase** : fournisseurs Google et Apple (Authentication → Providers) et un fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Coût des SMS à la charge d'AiWorkPay (quelques centimes par code).
 
+### 3.8 Modes de commande et dark kitchens (21 octobre 2026)
+
+- Catégories : `snack`, `sandwicherie`, `restaurant`, `boulangerie`, **`dark_kitchen`** (cuisine sans boutique), `autre`.
+- `merchants.offers_pickup` (retrait sur place, défaut `true`, `false` à la création d'une dark kitchen) et `delivery_enabled` (existant, formule Pro). Colonnes calculées : `offers_delivery` (= `delivery_enabled` **et** formule Pro) et `has_order_mode` (= retrait ou livraison). `is_accepting_orders` exige au moins un mode.
+- `create_order` refuse un retrait non proposé (`pickup_unavailable`) et revérifie la formule Pro pour la livraison. Couper le retrait suppose une livraison active (`order_mode_required`).
+- `merchants.pickup_instructions` (300 caractères) : consignes affichées sur la fiche et sur la commande.
+- Annuaire public (`nearby_merchants`, `search_merchants`) : pour un établissement **sans retrait**, l'adresse est omise, la recherche par code postal ne le trouve pas et la distance est calculée sur une grille d'environ 1 km, arrondie à 500 m.
+- **Limite connue** : la table `merchants` reste lisible par l'API publique (colonnes `address_line`, `latitude`, `longitude`). Le masquage porte sur l'annuaire, les fiches et les listes de l'application. Une séparation des colonnes d'adresse (table privée) est prévue si ce niveau de confidentialité est exigé.
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

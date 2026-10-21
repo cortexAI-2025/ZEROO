@@ -151,7 +151,13 @@
       "unavailable": "Épuisé",
       "loyaltyMenu": "Menu formule",
       "loyaltyRule": "Fidélité : 9 menus formules achetés = le 10e offert.",
-      "delivers": "Livraison possible · {{price}}"
+      "delivers": "Livraison possible · {{price}}",
+      "modePickup": "Click & collect",
+      "modeDelivery": "Livraison",
+      "serviceZone": "Livre autour de {{city}}, jusqu'à {{distance}}",
+      "noMode": "Cet établissement ne prend pas de commande pour le moment.",
+      "pickupInstructions": "Consignes de retrait",
+      "deliveryOnly": "Livraison uniquement : pas de retrait sur place."
     },
     "item": {
       "required": "Obligatoire",
@@ -195,6 +201,7 @@
         "no_courier_available": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait."
       },
       "deliveryNeedsAddress": "Choisissez votre adresse de livraison dans la liste.",
+      "deliveryOnlyUnavailable": "Livraison momentanément indisponible. Cet établissement ne propose pas de retrait : réessayez dans quelques minutes.",
       "twoPayments": "Deux paiements directs : le repas au restaurant (après acceptation), la livraison au livreur (quand il prend la mission). Aucun frais ZeeRoo.",
       "deliveryAddress": "Adresse de livraison",
       "deliveryAddressHint": "Choisissez votre adresse dans la liste pour que le livreur vous trouve.",
@@ -368,6 +375,7 @@
       "sandwicherie": "Sandwicherie",
       "restaurant": "Restaurant",
       "boulangerie": "Boulangerie",
+      "dark_kitchen": "Dark kitchen (sans boutique)",
       "autre": "Autre"
     },
     "noMerchantTitle": "Bienvenue sur ZeeRoo Pro",
@@ -408,7 +416,8 @@
       "unpublished": "Non publié",
       "acceptingOrders": "Vous recevez des commandes",
       "notAccepting": "Vous ne recevez pas de commandes",
-      "setup": "Configuration à terminer"
+      "setup": "Configuration à terminer",
+      "noMode": "Aucun mode de commande actif : activez le retrait ou la livraison"
     },
     "orders": {
       "title": "Commandes",
@@ -539,6 +548,10 @@
       "history": "Historique des commandes",
       "delivery": "Livraison",
       "cashPickup": "Espèces au comptoir (retrait)",
+      "pickupMode": "Retrait sur place (click & collect)",
+      "pickupModeHint": "Vos clients commandent à l'avance et récupèrent leur commande prête. Désactivez-le si vous n'accueillez pas le public : votre adresse n'est alors pas affichée.",
+      "pickupInstructions": "Consignes de retrait",
+      "pickupInstructionsHint": "Ex. Sonnez au portail bleu. Affichées au client quand sa commande est prête.",
       "cashPickupHint": "Vos clients peuvent commander à emporter et payer en espèces en venant chercher leur commande. La commande part directement, sans paiement en ligne."
     },
     "hours": {
@@ -598,6 +611,7 @@
       "radiusHint": "Distance maximale autour de votre restaurant.",
       "couriers": "Vos livreurs",
       "couriersEmpty": "Aucun livreur pour le moment. Les livreurs indépendants de votre secteur vous envoient leur demande depuis l'app ZeeRoo.",
+      "onlyModeHint": "La livraison est votre seul mode de commande (retrait désactivé) : activez le retrait pour pouvoir la couper.",
       "noCourierWarning": "Aucun livreur accepté : la livraison n'est pas encore proposée à vos clients.",
       "requests": "Demandes de livreurs",
       "approve": "Accepter",
@@ -655,6 +669,8 @@
     "alreadySubscribed": "Votre abonnement est déjà actif.",
     "invalidReward": "Le menu offert ne s'applique qu'à un menu formule, une seule fois par commande.",
     "noRewardAvailable": "Vous n'avez plus de menu offert disponible chez ce commerçant.",
+    "pickupUnavailable": "Cet établissement ne propose pas le retrait sur place.",
+    "orderModeRequired": "Gardez au moins un mode de commande : le retrait, ou la livraison (formule Pro).",
     "deliveryUnavailable": "Ce restaurant ne livre pas pour le moment.",
     "deliveryOutOfRange": "Cette adresse est hors de la zone de livraison du restaurant.",
     "noCourierAvailable": "Aucun livreur disponible pour le moment. Réessayez dans quelques minutes ou choisissez le retrait.",

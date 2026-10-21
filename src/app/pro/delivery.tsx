@@ -66,9 +66,15 @@ export default function DeliverySettingsScreen() {
           label={t('merchant.delivery.enabled')}
           hint={t('merchant.delivery.enabledHint')}
           value={merchant.delivery_enabled}
-          disabled={!merchant.has_delivery_option && !merchant.delivery_enabled}
+          disabled={
+            (!merchant.has_delivery_option && !merchant.delivery_enabled) ||
+            (merchant.delivery_enabled && !merchant.offers_pickup)
+          }
           onValueChange={(value) => update.mutate({ delivery_enabled: value })}
         />
+        {merchant.delivery_enabled && !merchant.offers_pickup ? (
+          <AppText variant="muted">{t('merchant.delivery.onlyModeHint')}</AppText>
+        ) : null}
         {merchant.delivery_enabled && approved.length === 0 && !couriers.isPending ? (
           <AppText variant="error">{t('merchant.delivery.noCourierWarning')}</AppText>
         ) : null}

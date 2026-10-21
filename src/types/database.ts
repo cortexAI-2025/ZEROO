@@ -604,6 +604,8 @@ export type Database = {
           delivery_fee_cents: number;
           delivery_radius_m: number;
           accepts_cash_pickup: boolean;
+          offers_pickup: boolean;
+          pickup_instructions: string | null;
           description: string | null;
           id: string;
           is_paused: boolean;
@@ -625,9 +627,13 @@ export type Database = {
           is_payments_ready: boolean | null;
           is_subscription_active: boolean | null;
           has_delivery_option: boolean | null;
+          has_order_mode: boolean | null;
+          offers_delivery: boolean | null;
         };
         ComputedFields:
           | 'has_delivery_option'
+          | 'has_order_mode'
+          | 'offers_delivery'
           | 'is_accepting_orders'
           | 'is_open_now'
           | 'is_paused_now'
@@ -649,6 +655,8 @@ export type Database = {
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
           accepts_cash_pickup?: boolean;
+          offers_pickup?: boolean;
+          pickup_instructions?: string | null;
           description?: string | null;
           id?: string;
           is_paused?: boolean;
@@ -681,6 +689,8 @@ export type Database = {
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
           accepts_cash_pickup?: boolean;
+          offers_pickup?: boolean;
+          pickup_instructions?: string | null;
           description?: string | null;
           id?: string;
           is_paused?: boolean;
@@ -1689,6 +1699,24 @@ export type Database = {
         };
         Returns: boolean;
       };
+      has_order_mode: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      offers_delivery: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
       is_pro_verified: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_subscription_active: {
         Args: {
@@ -1944,14 +1972,16 @@ export type Database = {
       nearby_merchants: {
         Args: { p_latitude: number; p_limit?: number; p_longitude: number; p_radius_m?: number };
         Returns: {
-          address_line: string;
+          address_line: string | null;
           category: string;
           city: string;
-          distance_m: number;
+          distance_m: number | null;
           id: string;
           is_accepting_orders: boolean;
           is_open: boolean;
           name: string;
+          offers_delivery: boolean;
+          offers_pickup: boolean;
           slug: string;
         }[];
       };
@@ -1988,14 +2018,16 @@ export type Database = {
       search_merchants: {
         Args: { p_limit?: number; p_query: string };
         Returns: {
-          address_line: string;
+          address_line: string | null;
           category: string;
           city: string;
-          distance_m: number;
+          distance_m: number | null;
           id: string;
           is_accepting_orders: boolean;
           is_open: boolean;
           name: string;
+          offers_delivery: boolean;
+          offers_pickup: boolean;
           slug: string;
         }[];
       };

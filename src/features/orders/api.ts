@@ -6,12 +6,21 @@ import type { Tables } from '@/types/database';
 export type CustomerOrder = Order & {
   merchants: Pick<
     Tables<'merchants'>,
-    'name' | 'slug' | 'address_line' | 'city' | 'latitude' | 'longitude' | 'phone' | 'payment_link'
+    | 'name'
+    | 'slug'
+    | 'address_line'
+    | 'city'
+    | 'latitude'
+    | 'longitude'
+    | 'phone'
+    | 'payment_link'
+    | 'offers_pickup'
+    | 'pickup_instructions'
   > | null;
 };
 
 const CUSTOMER_ORDER_SELECT =
-  '*, order_items(*), merchants(name, slug, address_line, city, latitude, longitude, phone, payment_link)';
+  '*, order_items(*), merchants(name, slug, address_line, city, latitude, longitude, phone, payment_link, offers_pickup, pickup_instructions)';
 
 /** Annulation par le client, tant que le commerçant n'a pas accepté (aucun débit). */
 export async function cancelMyOrder(orderId: string) {

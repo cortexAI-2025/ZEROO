@@ -19,6 +19,7 @@ import {
 import { formatDistance } from '@/features/discover/location';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { AddressField } from '@/features/merchant/AddressField';
+import { orderModes, resolveMode } from '@/features/merchant/modes';
 import { customerOrderKeys } from '@/features/orders/hooks';
 import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
@@ -49,7 +50,11 @@ export default function CartScreen() {
     setDeliveryInstructions,
   } = useCart();
   const deliverySettings = useMerchantDeliverySettings(merchant?.id).data;
-  const isDelivery = !!deliverySettings?.delivery_enabled && fulfillment === 'delivery';
+  // Modes réellement proposés (revérifiés côté serveur à la commande) : retrait, livraison, ou les deux.
+  const modes = orderModes(deliverySettings);
+  const mode = deliverySettings ? resolveMode(fulfillment, modes) : null;
+  const isDelivery = mode === 'delivery';
+  const hasPickup = modes.includes('pickup');
   // Adresses enregistrées : un appui remplit l'adresse et les instructions ; l'adresse par
   // défaut est proposée d'office si aucune n'est encore choisie.
   const saved = useAddresses();
@@ -88,13 +93,14 @@ export default function CartScreen() {
     ? (quote?.fee_cents ?? deliverySettings?.delivery_fee_cents ?? 0)
     : 0;
   const grandTotal = total + deliveryFee;
-  const canPayCashAtCounter = !isDelivery && !!deliverySettings?.accepts_cash_pickup;
+  const canPayCashAtCounter = mode === 'pickup' && !!deliverySettings?.accepts_cash_pickup;
   // Sans lien de paiement, le restaurant n'encaisse qu'en espèces au comptoir.
   const canPayByCard = !!deliverySettings?.payment_link;
   const cashMeal = canPayCashAtCounter && (mealCash || !canPayByCard);
   const deliveryReady =
-    !isDelivery ||
-    (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone));
+    mode !== null &&
+    (!isDelivery ||
+      (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone)));
   const order = async () => {
     if (!merchant) return;
     setError(null);
@@ -205,15 +211,23 @@ export default function CartScreen() {
         onPress={() => router.push({ pathname: '/m/[slug]', params: { slug: merchant.slug } })}
       />
 
-      {deliverySettings?.delivery_enabled ? (
+      {deliverySettings && mode === null ? (
+        <Card testID="no-order-mode">
+          <AppText variant="error">{t('client.merchant.noMode')}</AppText>
+        </Card>
+      ) : null}
+
+      {modes.includes('delivery') ? (
         <Card testID="fulfillment">
           <View style={styles.chips}>
-            <Chip
-              testID="fulfillment-pickup"
-              label={t('client.cart.pickup')}
-              selected={!isDelivery}
-              onPress={() => setFulfillment('pickup')}
-            />
+            {hasPickup ? (
+              <Chip
+                testID="fulfillment-pickup"
+                label={t('client.cart.pickup')}
+                selected={!isDelivery}
+                onPress={() => setFulfillment('pickup')}
+              />
+            ) : null}
             <Chip
               testID="fulfillment-delivery"
               label={`🛵 ${t('client.cart.delivery')}`}
@@ -278,6 +292,11 @@ export default function CartScreen() {
               ) : quote?.reason ? (
                 <AppText variant="error" testID="delivery-quote">
                   {t(`client.cart.quoteReasons.${quote.reason}`)}
+                </AppText>
+              ) : null}
+              {!hasPickup && quote && !quote.available ? (
+                <AppText variant="error" testID="delivery-only-unavailable">
+                  {t('client.cart.deliveryOnlyUnavailable')}
                 </AppText>
               ) : null}
             </>

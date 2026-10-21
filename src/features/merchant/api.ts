@@ -48,6 +48,8 @@ export type MerchantPatch = Pick<
   | 'name'
   | 'description'
   | 'category'
+  | 'offers_pickup'
+  | 'pickup_instructions'
   | 'phone'
   | 'address_line'
   | 'postal_code'
