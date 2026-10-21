@@ -889,7 +889,7 @@ export type Database = {
           siret: string | null;
           vat_number: string | null;
           contact_email: string | null;
-          address_line: string;
+          address_line: string | null;
           category: string;
           city: string;
           created_at: string;
@@ -908,9 +908,8 @@ export type Database = {
           id: string;
           is_paused: boolean;
           is_published: boolean;
-          latitude: number;
-          location: unknown;
-          longitude: number;
+          latitude: number | null;
+          longitude: number | null;
           name: string;
           owner_id: string;
           paused_until: string | null;
@@ -921,6 +920,9 @@ export type Database = {
           updated_at: string;
           is_accepting_orders: boolean | null;
           is_open_now: boolean | null;
+          merchant_address_line: string | null;
+          merchant_latitude: number | null;
+          merchant_longitude: number | null;
           is_paused_now: boolean | null;
           is_payments_ready: boolean | null;
           is_subscription_active: boolean | null;
@@ -940,6 +942,9 @@ export type Database = {
           | 'offers_delivery'
           | 'is_accepting_orders'
           | 'is_open_now'
+          | 'merchant_address_line'
+          | 'merchant_latitude'
+          | 'merchant_longitude'
           | 'is_paused_now'
           | 'is_payments_ready'
           | 'is_subscription_active';
@@ -950,7 +955,7 @@ export type Database = {
           siret?: string | null;
           vat_number?: string | null;
           contact_email?: string | null;
-          address_line: string;
+          address_line: string | null;
           category: string;
           city: string;
           created_at?: string;
@@ -969,9 +974,8 @@ export type Database = {
           id?: string;
           is_paused?: boolean;
           is_published?: boolean;
-          latitude: number;
-          location?: never;
-          longitude: number;
+          latitude: number | null;
+          longitude: number | null;
           name: string;
           owner_id: string;
           paused_until?: string | null;
@@ -988,7 +992,7 @@ export type Database = {
           siret?: string | null;
           vat_number?: string | null;
           contact_email?: string | null;
-          address_line?: string;
+          address_line?: string | null;
           category?: string;
           city?: string;
           created_at?: string;
@@ -1007,9 +1011,8 @@ export type Database = {
           id?: string;
           is_paused?: boolean;
           is_published?: boolean;
-          latitude?: number;
-          location?: never;
-          longitude?: number;
+          latitude?: number | null;
+          longitude?: number | null;
           name?: string;
           owner_id?: string;
           paused_until?: string | null;

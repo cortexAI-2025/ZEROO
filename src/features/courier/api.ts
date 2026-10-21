@@ -12,7 +12,7 @@ import {
 } from './types';
 
 const RUN_SELECT =
-  '*, order_items(*), merchants(name, address_line, postal_code, city, latitude, longitude, phone)';
+  '*, order_items(*), merchants(name, address_line:merchant_address_line, postal_code, city, latitude:merchant_latitude, longitude:merchant_longitude, phone)';
 
 export async function fetchMyCourier(userId: string) {
   const { data, error } = await supabase

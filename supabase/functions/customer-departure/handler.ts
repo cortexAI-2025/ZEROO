@@ -33,12 +33,13 @@ export const handler = handle(async (req) => {
     await db
       .from('orders')
       .select(
-        'id, customer_id, customer_name, pickup_code, status, customer_departed_at, customer_eta_at, merchants(name, owner_id, timezone, latitude, longitude)',
+        'id, merchant_id, customer_id, customer_name, pickup_code, status, customer_departed_at, customer_eta_at, merchants(name, owner_id, timezone)',
       )
       .eq('id', body.orderId)
       .maybeSingle(),
   ) as unknown as {
     id: string;
+    merchant_id: string;
     customer_id: string;
     customer_name: string | null;
     pickup_code: string;
@@ -49,8 +50,6 @@ export const handler = handle(async (req) => {
       name: string;
       owner_id: string;
       timezone: string;
-      latitude: number;
-      longitude: number;
     };
   } | null;
   if (!order || order.customer_id !== user.id) throw new HttpError(404, 'order_not_found');
@@ -65,9 +64,16 @@ export const handler = handle(async (req) => {
   }
 
   const merchant = order.merchants;
+  // Position précise : table fermée au public, lue ici avec la clé de service.
+  const { data: place } = await db
+    .from('merchant_locations')
+    .select('latitude, longitude')
+    .eq('merchant_id', order.merchant_id)
+    .single();
+  if (!place) throw new HttpError(404, 'order_not_found');
   const travel = await travelSeconds(
     { latitude: body.latitude, longitude: body.longitude },
-    { latitude: merchant.latitude, longitude: merchant.longitude },
+    { latitude: place.latitude, longitude: place.longitude },
     body.mode,
   );
   const updated = unwrap(

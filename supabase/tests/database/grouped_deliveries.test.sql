@@ -103,7 +103,7 @@ select ok(public.missions_compatible((select id from o where key = 'a'), (select
 select ok(not public.missions_compatible((select id from o where key = 'a'), (select id from o where key = 'x'))
           or public.missions_compatible((select id from o where key = 'a'), (select id from o where key = 'x')),
           'restaurants différents : règle évaluée sans erreur');
-update public.merchants set latitude = 48.9000, longitude = 2.5000 where id = 'd0000000-0000-0000-0000-000000000001';
+update public.merchant_locations set latitude = 48.9000, longitude = 2.5000 where merchant_id = 'd0000000-0000-0000-0000-000000000001';
 select ok(not public.missions_compatible((select id from o where key = 'a'), (select id from o where key = 'x')),
           'restaurants à plus de 1 km : incompatible');
 

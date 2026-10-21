@@ -48,7 +48,7 @@ export async function fetchMyReservations(userId: string): Promise<MyReservation
   const { data, error } = await supabase
     .from('basket_reservations')
     .select(
-      '*, surprise_baskets(title, is_surprise, contents, pickup_starts_at, pickup_ends_at, merchants(name, slug, address_line, city, offers_pickup))',
+      '*, surprise_baskets(title, is_surprise, contents, pickup_starts_at, pickup_ends_at, merchants(name, slug, address_line:merchant_address_line, city, offers_pickup))',
     )
     .eq('customer_id', userId)
     .order('created_at', { ascending: false })

@@ -60,8 +60,8 @@ select is(
 reset role;
 
 select ok(
-  (select location is not null from public.merchants where slug = 'chez-samir'),
-  'la position géographique est calculée depuis latitude / longitude'
+  (select l.location is not null from public.merchant_locations l join public.merchants m on m.id = l.merchant_id where m.slug = 'chez-samir'),
+  'la position géographique est calculée depuis latitude / longitude (merchant_locations)'
 );
 
 -- -----------------------------------------------------------------------------
