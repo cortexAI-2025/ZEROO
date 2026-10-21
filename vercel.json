@@ -3,5 +3,78 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/m/:slug*",
+      "has": [
+        {
+          "type": "host",
+          "value": "zeroo.online"
+        }
+      ],
+      "destination": "https://app.zeeroo.fr/m/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/:page(pro|livreur|order)/:rest*",
+      "has": [
+        {
+          "type": "host",
+          "value": "zeroo.online"
+        }
+      ],
+      "destination": "https://app.zeeroo.fr/:page/:rest*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "zeroo.online"
+        }
+      ],
+      "destination": "https://zeeroo.fr/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/m/:slug*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.zeroo.online"
+        }
+      ],
+      "destination": "https://app.zeeroo.fr/m/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/:page(pro|livreur|order)/:rest*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.zeroo.online"
+        }
+      ],
+      "destination": "https://app.zeeroo.fr/:page/:rest*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.zeroo.online"
+        }
+      ],
+      "destination": "https://zeeroo.fr/:path*",
+      "permanent": true
+    }
+  ]
 }

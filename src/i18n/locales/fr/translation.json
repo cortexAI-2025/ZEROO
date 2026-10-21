@@ -419,6 +419,7 @@
     "remaining_one": "plus qu'{{count}} à ce prix",
     "remaining_other": "plus que {{count}} à ce prix",
     "saving": "Happy Hour : vous économisez {{price}}",
+    "nowTitle": "En ce moment",
     "regularPrice": "Prix habituel",
     "applied": "Happy Hour « {{name}} » : {{price}} au lieu de {{regular}} l'unité"
   },
@@ -607,6 +608,35 @@
         "newOptionDefault": "Nouvelle option",
         "deleteGroupConfirm": "Supprimer le groupe « {{name}} » ?"
       }
+    },
+    "minisite": {
+      "title": "Mini-site",
+      "rowOn": "Personnalisé (formule Pro)",
+      "rowOff": "Fiche de commande · personnalisation réservée à Pro",
+      "hint": "Votre page publique : menu, horaires, commande directe, retrait et livraison selon vos conditions réelles, Happy Hours en cours. Le lien est le même pour toujours.",
+      "linkTitle": "Votre lien public",
+      "preview": "Voir mon mini-site",
+      "proTitle": "Personnalisez votre mini-site avec la formule Pro",
+      "proBody": "Logo, accroche, présentation, couleur et carte de situation sont inclus dans Pro (29,99 € HT par mois). Votre fiche de commande reste en ligne dans tous les cas, avec le même lien.",
+      "proAction": "Voir les formules",
+      "kept": "Vos réglages sont conservés : ils réapparaissent dès le retour en formule Pro.",
+      "cover": "Photo de couverture",
+      "coverHint": "La photo de votre restaurant : celle de la liste et de la page. Elle se modifie aussi dans Informations.",
+      "logo": "Logo",
+      "tagline": "Accroche (100 caractères)",
+      "about": "Présentation",
+      "color": "Couleur",
+      "noColor": "Aucune",
+      "colors": {
+        "green": "Vert",
+        "orange": "Orange",
+        "blue": "Bleu",
+        "red": "Rouge",
+        "purple": "Violet",
+        "dark": "Anthracite"
+      },
+      "sourcesTitle": "Déjà saisi, rien à ressaisir",
+      "sources": "Le menu, les formules, les horaires, les fermetures, vos coordonnées, vos modes de commande et vos Happy Hours viennent de votre espace : ils sont tenus à jour sur votre mini-site automatiquement."
     },
     "happyHours": {
       "title": "Happy Hours",
@@ -805,6 +835,7 @@
     "alreadySubscribed": "Votre abonnement est déjà actif.",
     "invalidReward": "Le menu offert ne s'applique qu'à un menu formule, une seule fois par commande.",
     "noRewardAvailable": "Vous n'avez plus de menu offert disponible chez ce commerçant.",
+    "minisiteRequiresPro": "La personnalisation du mini-site est incluse dans la formule Pro.",
     "invalidHappyHour": "Offre invalide : vérifiez les produits, les prix (une vraie réduction) et les plages horaires.",
     "happyHourNotFound": "Cette offre n'existe plus.",
     "priceChanged": "Un prix a changé depuis l'affichage (offre terminée, stock épuisé ou prix modifié). Vérifiez votre panier puis validez de nouveau.",

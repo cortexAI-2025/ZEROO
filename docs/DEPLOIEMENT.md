@@ -36,7 +36,7 @@ Projet `zeroo` → Settings → Domains → ajouter `app.zeeroo.fr` ; un déploi
 
 - `app` : `CNAME → cname.vercel-dns.com`.
 - La vitrine `zeeroo.fr` est servie par GitHub Pages (`zeroo_mainpage`) ; sa page `404.html` redirige `/m/<slug>` et les pages de l'application vers `app.zeeroo.fr` en conservant chemin et paramètres.
-- **Anciens QR** `zeroo.online/m/<slug>` : aucun code ne peut les rediriger tant que l'ancien domaine pointe ailleurs. Configurer chez IONOS une **redirection HTTP permanente (301) de `zeroo.online/*` vers `https://zeeroo.fr/$1`**, ou héberger l'ancien domaine sur le même site. Le domaine `zeeroo.online` est réservé aux démonstrations commerciales et ne sert pas à l'application.
+- **Anciens QR** `zeroo.online/m/<slug>` : le code est prêt (`vercel.json`, règles `redirects` testées), il reste à **ajouter `zeroo.online` et `www.zeroo.online` comme domaines du projet Vercel** (Settings → Domains) et à pointer leur DNS chez IONOS vers Vercel (`A @ → 76.76.21.21`, `CNAME www → cname.vercel-dns.com`). Les règles renvoient alors `zeroo.online/m/<slug>` vers `https://app.zeeroo.fr/m/<slug>` (même établissement, redirection permanente 308), `/pro`, `/livreur`, `/order/…` vers l'application, et tout le reste vers `https://zeeroo.fr`. Tant que ce réglage n'est pas fait, les anciens QR dépendent de ce que l'ancien domaine sert aujourd'hui. Le domaine `zeeroo.online` (avec deux « e ») est réservé aux démonstrations commerciales et ne sert pas à l'application.
 
 ## 6. Carte de l'annuaire
 

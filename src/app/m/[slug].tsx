@@ -2,11 +2,13 @@ import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, QueryState, Screen } from '@/components/ui';
 import { CartBar } from '@/features/cart/CartBar';
+import { DirectoryMap, MAP_SUPPORTED } from '@/features/discover/DirectoryMap';
 import { useActiveOffers } from '@/features/happyhour/hooks';
+import { offerEndLabel } from '@/features/happyhour/pricing';
 import { OfferPrice } from '@/features/happyhour/OfferPrice';
 import { ItemSheet } from '@/features/cart/ItemSheet';
 import { directionsUrl, formatDistance } from '@/features/discover/location';
@@ -17,9 +19,14 @@ import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
 import { slotsLabel } from '@/features/menu/slotLabel';
 import type { MenuItem } from '@/features/menu/types';
 import { formatFrenchDate } from '@/features/merchant/dates';
+import { siteStyle } from '@/features/merchant/minisite';
 import { shortTime, WEEKDAYS } from '@/features/merchant/hours';
 import { deliveryPausedNow, showsAddress } from '@/features/merchant/modes';
-import type { MerchantCategory, OpeningHour } from '@/features/merchant/types';
+import {
+  type MerchantCategory,
+  merchantPublicUrl,
+  type OpeningHour,
+} from '@/features/merchant/types';
 import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
 import { useNow } from '@/lib/useNow';
@@ -81,6 +88,10 @@ export default function MerchantPageScreen() {
   const { merchant, menu } = page.data;
   const canOrder = !!merchant.is_accepting_orders;
   const hasAddress = showsAddress(merchant);
+  // Mini-site Pro : logo, accroche, présentation, couleur. Sans Pro : fiche de commande Start.
+  const site = siteStyle(merchant);
+  // Offres en vigueur, une ligne par offre (la plus proche de se terminer).
+  const activeOffers = [...new Map([...offers.values()].map((o) => [o.happy_hour_id, o])).values()];
   // Fermeture exceptionnelle en cours ou annoncée (la fin est exclusive : minuit du lendemain).
   const nowMs = now;
   const closure = merchant.merchant_closures
@@ -98,6 +109,9 @@ export default function MerchantPageScreen() {
     <View style={[styles.flex, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title: merchant.name, headerShown: true }} />
       <ScrollView contentContainerStyle={styles.content}>
+        {site.accent ? (
+          <View testID="site-accent" style={[styles.accentBar, { backgroundColor: site.accent }]} />
+        ) : null}
         {merchant.photo_url ? (
           <Image
             source={{ uri: merchant.photo_url }}
@@ -106,7 +120,29 @@ export default function MerchantPageScreen() {
             accessibilityLabel={merchant.name}
           />
         ) : null}
-        <AppText variant="title">{merchant.name}</AppText>
+        <View style={styles.titleRow}>
+          {site.logoUrl ? (
+            <Image
+              testID="site-logo"
+              source={{ uri: site.logoUrl }}
+              style={styles.logo}
+              contentFit="cover"
+              accessibilityLabel={merchant.name}
+            />
+          ) : null}
+          <View style={styles.flex}>
+            <AppText variant="title">{merchant.name}</AppText>
+            {site.tagline ? (
+              <AppText
+                variant="link"
+                testID="site-tagline"
+                style={site.accent ? { color: site.accent } : undefined}>
+                {site.tagline}
+              </AppText>
+            ) : null}
+          </View>
+        </View>
+        {site.about ? <AppText testID="site-about">{site.about}</AppText> : null}
         <AppText variant="muted">
           {t(`merchant.categories.${merchant.category as MerchantCategory}`)} ·{' '}
           {hasAddress
@@ -170,6 +206,49 @@ export default function MerchantPageScreen() {
           />
         </View>
         {showHours ? <Hours hours={merchant.merchant_opening_hours} /> : null}
+
+        {activeOffers.length > 0 ? (
+          <Card testID="active-offers">
+            <AppText variant="subtitle">{t('happyHour.nowTitle')}</AppText>
+            {activeOffers.map((o) => (
+              <AppText key={o.happy_hour_id}>
+                {o.name} · {t('happyHour.until', { time: offerEndLabel(o.ends_at) })}
+              </AppText>
+            ))}
+          </Card>
+        ) : null}
+
+        {site.personalized ? (
+          <View style={styles.actions}>
+            <Button
+              testID="site-share"
+              variant="secondary"
+              title={t('common.share')}
+              onPress={() => {
+                const url = merchantPublicUrl(merchant.slug);
+                void Share.share({ message: `${merchant.name} : ${url}`, url }).catch(
+                  () => undefined,
+                );
+              }}
+            />
+          </View>
+        ) : null}
+        {site.personalized && hasAddress && MAP_SUPPORTED ? (
+          <DirectoryMap
+            merchants={[
+              {
+                slug: merchant.slug,
+                name: merchant.name,
+                is_accepting_orders: !!merchant.is_accepting_orders,
+                latitude: merchant.latitude,
+                longitude: merchant.longitude,
+              },
+            ]}
+            center={null}
+            selectedSlug={merchant.slug}
+            onSelect={() => undefined}
+          />
+        ) : null}
 
         {menu.some((c) => c.menu_items.some((i) => i.is_loyalty_menu)) ? (
           <Card testID="merchant-loyalty">
@@ -294,6 +373,9 @@ const styles = StyleSheet.create({
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  accentBar: { height: 6, borderRadius: radius.sm },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  logo: { width: 64, height: 64, borderRadius: radius.md },
   cover: { width: '100%', aspectRatio: 16 / 9, borderRadius: radius.lg },
   hours: { gap: spacing.xs },
   row: { flexDirection: 'row', gap: spacing.md },

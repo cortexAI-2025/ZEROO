@@ -170,6 +170,14 @@ export default function ShopScreen() {
         />
         <ListRow title={t('merchant.shop.hours')} onPress={() => router.push('/pro/hours')} />
         <ListRow
+          testID="minisite-settings"
+          title={t('merchant.minisite.title')}
+          subtitle={
+            merchant.has_minisite ? t('merchant.minisite.rowOn') : t('merchant.minisite.rowOff')
+          }
+          onPress={() => router.push('/pro/minisite')}
+        />
+        <ListRow
           testID="happy-hours-settings"
           title={t('merchant.happyHours.title')}
           onPress={() => router.push('/pro/happy-hours')}

@@ -817,6 +817,10 @@ export type Database = {
           delivery_fee_cents: number;
           delivery_radius_m: number;
           accepts_cash_pickup: boolean;
+          logo_url: string | null;
+          tagline: string | null;
+          about: string | null;
+          accent_color: string | null;
           offers_pickup: boolean;
           pickup_instructions: string | null;
           description: string | null;
@@ -842,6 +846,7 @@ export type Database = {
           has_delivery_option: boolean | null;
           delivery_available_now: boolean | null;
           has_happy_hour_now: boolean | null;
+          has_minisite: boolean | null;
           has_order_mode: boolean | null;
           offers_delivery: boolean | null;
         };
@@ -849,6 +854,7 @@ export type Database = {
           | 'delivery_available_now'
           | 'has_delivery_option'
           | 'has_happy_hour_now'
+          | 'has_minisite'
           | 'has_order_mode'
           | 'offers_delivery'
           | 'is_accepting_orders'
@@ -872,6 +878,10 @@ export type Database = {
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
           accepts_cash_pickup?: boolean;
+          logo_url?: string | null;
+          tagline?: string | null;
+          about?: string | null;
+          accent_color?: string | null;
           offers_pickup?: boolean;
           pickup_instructions?: string | null;
           description?: string | null;
@@ -906,6 +916,10 @@ export type Database = {
           delivery_fee_cents?: number;
           delivery_radius_m?: number;
           accepts_cash_pickup?: boolean;
+          logo_url?: string | null;
+          tagline?: string | null;
+          about?: string | null;
+          accent_color?: string | null;
           offers_pickup?: boolean;
           pickup_instructions?: string | null;
           description?: string | null;
@@ -1885,6 +1899,15 @@ export type Database = {
         }[];
       };
       has_happy_hour_now: {
+        Args: {
+          m: Omit<
+            Database['public']['Tables']['merchants']['Row'],
+            Database['public']['Tables']['merchants']['ComputedFields']
+          >;
+        };
+        Returns: boolean;
+      };
+      has_minisite: {
         Args: {
           m: Omit<
             Database['public']['Tables']['merchants']['Row'],

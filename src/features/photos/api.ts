@@ -25,6 +25,7 @@ export async function removePhoto(path: string) {
 
 export const photoPaths = {
   merchant: (merchantId: string) => `merchants/${merchantId}/cover.jpg`,
+  logo: (merchantId: string) => `merchants/${merchantId}/logo.jpg`,
   item: (merchantId: string, itemId: string) => `merchants/${merchantId}/items/${itemId}.jpg`,
   courier: (courierId: string) => `couriers/${courierId}/avatar.jpg`,
 };
