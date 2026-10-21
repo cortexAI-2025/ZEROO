@@ -8,7 +8,7 @@ type Body = {
   status: string;
   previous_status: string | null;
   /** Absent : changement de statut. Sinon : événement de mission (livraison). */
-  event?: 'mission_available' | 'courier_assigned';
+  event?: 'mission_available' | 'courier_assigned' | 'mission_unclaimed';
 };
 
 type OrderForPush = {
@@ -80,13 +80,19 @@ export const handler = handle(async (req) => {
     const links = unwrap(
       await db
         .from('merchant_couriers')
-        .select('couriers(user_id, is_available)')
+        .select('couriers(user_id, is_available, available_until)')
         .eq('merchant_id', order.merchant_id)
         .eq('status', 'approved'),
-    ) as unknown as { couriers: { user_id: string; is_available: boolean } | null }[];
+    ) as unknown as {
+      couriers: { user_id: string; is_available: boolean; available_until: string | null } | null;
+    }[];
+    // Seulement les livreurs en ligne : disponibles et dont la fenêtre de présence n'a pas expiré.
     const userIds = links
       .map((link) => link.couriers)
-      .filter((c): c is { user_id: string; is_available: boolean } => !!c?.is_available)
+      .filter(
+        (c): c is { user_id: string; is_available: boolean; available_until: string } =>
+          !!c?.is_available && !!c.available_until && Date.parse(c.available_until) > Date.now(),
+      )
       .map((c) => c.user_id);
     if (userIds.length === 0) return json({ sent: 0 });
     return json(
@@ -97,6 +103,23 @@ export const handler = handle(async (req) => {
         sound: 'new-order.wav',
         channelId: 'orders',
       }),
+    );
+  }
+  if (event === 'mission_unclaimed') {
+    // Personne n'a pris la livraison dans le délai : le client et le restaurant décident.
+    return json(
+      sum(
+        await toCustomer({
+          title: 'Pas encore de livreur',
+          body: `Votre livraison de ${merchant.name} n'a pas encore de livreur. Patientez ou annulez la commande dans l'app.`,
+          channelId: 'orders',
+        }),
+        await toMerchant({
+          title: 'Livraison sans livreur',
+          body: `Commande ${order.pickup_code} : aucun livreur depuis plus de 15 minutes.`,
+          channelId: 'orders',
+        }),
+      ),
     );
   }
   if (event === 'courier_assigned') {
@@ -196,6 +219,20 @@ export const handler = handle(async (req) => {
       );
       break;
     case 'cancelled':
+      // Livraison annulée faute de livreur (après acceptation) : l'autre partie est prévenue.
+      if (order.refusal_reason === 'no_courier') {
+        result =
+          order.cancelled_by === 'merchant'
+            ? await toCustomer({
+                title: 'Livraison annulée',
+                body: `${merchant.name} a annulé votre livraison faute de livreur. Un éventuel remboursement du repas se règle directement avec le restaurant.`,
+              })
+            : await toMerchant({
+                title: 'Commande annulée',
+                body: `${customer} a annulé la commande ${order.pickup_code} (aucun livreur).`,
+              });
+        break;
+      }
       // Seuls ceux qui avaient déjà reçu la commande sont prévenus.
       if (previous_status !== 'placed') break;
       result = sum(

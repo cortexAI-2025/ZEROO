@@ -14,7 +14,7 @@ import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
 import type { MenuItem } from '@/features/menu/types';
 import { shortTime, WEEKDAYS } from '@/features/merchant/hours';
-import { showsAddress } from '@/features/merchant/modes';
+import { deliveryPausedNow, showsAddress } from '@/features/merchant/modes';
 import type { MerchantCategory, OpeningHour } from '@/features/merchant/types';
 import { Thumb } from '@/features/photos/Thumb';
 import { formatCents } from '@/lib/money';
@@ -97,14 +97,21 @@ export default function MerchantPageScreen() {
         </AppText>
         <View style={styles.badges} testID="merchant-modes">
           {merchant.offers_pickup ? <Badge label={t('client.merchant.modePickup')} /> : null}
-          {merchant.offers_delivery ? <Badge label={t('client.merchant.modeDelivery')} /> : null}
+          {merchant.delivery_available_now ? (
+            <Badge label={t('client.merchant.modeDelivery')} />
+          ) : null}
         </View>
-        {merchant.offers_delivery ? (
+        {deliveryPausedNow(merchant) ? (
+          <AppText variant="muted" testID="delivery-paused">
+            {t('client.merchant.deliveryPaused')}
+          </AppText>
+        ) : null}
+        {merchant.delivery_available_now ? (
           <AppText variant="link" testID="merchant-delivers">
             🛵 {t('client.merchant.delivers', { price: formatCents(merchant.delivery_fee_cents) })}
           </AppText>
         ) : null}
-        {!merchant.offers_pickup && merchant.offers_delivery ? (
+        {!merchant.offers_pickup && merchant.delivery_available_now ? (
           <AppText variant="muted">{t('client.merchant.deliveryOnly')}</AppText>
         ) : null}
         {merchant.description ? <AppText>{merchant.description}</AppText> : null}

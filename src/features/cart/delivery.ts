@@ -12,7 +12,7 @@ export function useMerchantDeliverySettings(merchantId: string | undefined) {
       const { data, error } = await supabase
         .from('merchants')
         .select(
-          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, has_order_mode',
+          'delivery_enabled, delivery_fee_cents, accepts_cash_pickup, payment_link, offers_pickup, offers_delivery, delivery_available_now, has_order_mode',
         )
         .eq('id', merchantId!)
         .maybeSingle();
@@ -20,6 +20,8 @@ export function useMerchantDeliverySettings(merchantId: string | undefined) {
       return data;
     },
     enabled: !!merchantId,
+    // Un livreur peut se mettre hors ligne ou arriver : les modes proposés sont revérifiés.
+    refetchInterval: 30_000,
   });
 }
 

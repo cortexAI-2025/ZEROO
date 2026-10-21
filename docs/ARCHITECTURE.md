@@ -483,6 +483,14 @@ Migration `20261013150000_pro_verification.sql`.
 - Annuaire public (`nearby_merchants`, `search_merchants`) : pour un établissement **sans retrait**, l'adresse est omise, la recherche par code postal ne le trouve pas et la distance est calculée sur une grille d'environ 1 km, arrondie à 500 m.
 - **Limite connue** : la table `merchants` reste lisible par l'API publique (colonnes `address_line`, `latitude`, `longitude`). Le masquage porte sur l'annuaire, les fiches et les listes de l'application. Une séparation des colonnes d'adresse (table privée) est prévue si ce niveau de confidentialité est exigé.
 
+### 3.9 Disponibilité de livraison fiable (21 octobre 2026)
+
+- **Fenêtre de disponibilité** : `couriers.available_until`. Se mettre disponible ouvre une fenêtre de 15 minutes, renouvelée toutes les 5 minutes par `courier_heartbeat()` tant que l'app est ouverte (et au retour au premier plan). `is_online` (colonne calculée) = disponible **et** fenêtre non expirée. Une fenêtre expirée ne se rétablit pas par le signal : le livreur la rouvre lui-même. La déconnexion le met hors ligne. Les disponibilités existantes sont périmées à l'application de la migration.
+- **Qui est proposé** : `available_couriers`, `available_missions`, `courier_accept_mission` et la notification « nouvelle mission » ne retiennent que les livreurs **en ligne**, rattachés (`approved`), avec abonnement et lien de paiement, et sous la capacité (2 livraisons simultanées, **tous établissements confondus**).
+- **Ce que voit le client** : `merchants.delivery_available_now` = livraison proposée (formule Pro) **et** au moins un livreur proposable. Sinon : retrait seul si l'établissement l'offre, sinon « Livraison momentanément indisponible » et commande impossible. Le serveur revérifie à la commande (`no_courier_available`) et à l'attribution (`courier_unavailable`, `courier_at_capacity`).
+- **Une seule prise en charge** : `for update skip locked` sur la commande + verrou sur la ligne du livreur ; vérifié avec deux sessions SQL simultanées (`supabase/tests/concurrency/missions.sh`).
+- **Mission que personne ne prend** : `orders.delivery_unclaimed_at` est posé par `flag_unclaimed_missions()` (tâche pg_cron chaque minute) 15 minutes après l'acceptation par le restaurant. Le client et le restaurant sont prévenus (notification `mission_unclaimed`) et peuvent annuler (`cancel_unclaimed_delivery`). **Aucun remboursement n'est simulé** : le repas est payé directement au restaurant (lien de paiement), le remboursement éventuel se règle entre eux ; une récompense fidélité utilisée est rendue.
+
 ### 3.2 Row Level Security (résumé)
 
 Principe : **les clients ne font jamais d'INSERT ni d'UPDATE sur `orders`, `order_items`, `loyalty_cards`, `subscriptions` ou `merchant_stripe_accounts`**. Ces écritures passent par les Edge Functions (service role) ou par des fonctions `security definer` qui vérifient les droits.

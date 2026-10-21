@@ -12,6 +12,7 @@ import {
   useMyLinks,
 } from '@/features/courier/hooks';
 import { MissionCard } from '@/features/courier/MissionCard';
+import { useCourierPresence } from '@/features/courier/presence';
 import { RunCard } from '@/features/courier/RunCard';
 import { NotificationsPrompt } from '@/features/notifications/NotificationsPrompt';
 import { errorKey } from '@/lib/errors';
@@ -27,6 +28,7 @@ export default function CourierRunsScreen() {
   const links = useMyLinks(courier.id);
   const billing = useBilling({ role: 'courier', id: courier.id });
   const actions = useCourierActions();
+  const online = useCourierPresence(courier);
   useRefreshOnFocus(billing.refetch);
 
   const paymentsReady = !!courier.payment_link;
@@ -68,8 +70,8 @@ export default function CourierRunsScreen() {
           testID="availability-switch"
           label={t('courier.runs.available')}
           hint={t('courier.runs.availableHint')}
-          value={courier.is_available}
-          disabled={actions.setAvailability.isPending || (!courier.is_available && !ready)}
+          value={online}
+          disabled={actions.setAvailability.isPending || (!online && !ready)}
           onValueChange={(value) => actions.setAvailability.mutate(value)}
         />
         {actions.setAvailability.error ? (
@@ -79,7 +81,7 @@ export default function CourierRunsScreen() {
 
       <NotificationsPrompt audience="courier" />
 
-      {ready && courier.is_available && (missions.data?.length ?? 0) > 0 ? (
+      {ready && online && (missions.data?.length ?? 0) > 0 ? (
         <>
           <AppText variant="subtitle">{t('courier.runs.missionsTitle')}</AppText>
           <AppText variant="muted">{t('courier.runs.missionsHint')}</AppText>

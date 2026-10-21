@@ -107,7 +107,8 @@ where id = '30000000-0000-0000-0000-000000000001';
 insert into public.couriers (id, user_id, display_name, phone, legal_status, siret, vehicle, is_available)
 values ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'Karim L.',
         '06 12 34 56 78', 'auto_entrepreneur', '88212345600015', 'scooter', true);
-update public.couriers set work_zone = 'Paris centre', payment_link = 'https://paypal.me/karim-demo'
+update public.couriers set work_zone = 'Paris centre', payment_link = 'https://paypal.me/karim-demo',
+                           available_until = now() + interval '100 years'  -- toujours en ligne en développement
 where id = '80000000-0000-0000-0000-000000000001';
 
 insert into public.courier_stripe_accounts (courier_id, stripe_account_id, charges_enabled, payouts_enabled, details_submitted)

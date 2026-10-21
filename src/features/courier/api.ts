@@ -17,7 +17,7 @@ const RUN_SELECT =
 export async function fetchMyCourier(userId: string) {
   const { data, error } = await supabase
     .from('couriers')
-    .select('*')
+    .select('*, is_online')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) throw error;
@@ -40,6 +40,13 @@ export async function createCourier(values: CourierFormValues) {
 export async function setAvailability(available: boolean) {
   const { error } = await supabase.rpc('set_courier_availability', { p_available: available });
   if (error) throw error;
+}
+
+/** Signal de présence : prolonge la fenêtre de disponibilité (null si elle a expiré entre-temps). */
+export async function sendHeartbeat() {
+  const { data, error } = await supabase.rpc('courier_heartbeat');
+  if (error) throw error;
+  return data;
 }
 
 export async function fetchActiveRuns(courierId: string) {

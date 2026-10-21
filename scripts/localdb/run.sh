@@ -21,4 +21,9 @@ for t in ${@:-supabase/tests/database/*.test.sql}; do
   if echo "$out" | grep -qE "^not ok|Looks like you (failed|planned)|ERROR:"; then echo "ÉCHEC $t"; echo "$out" | grep -E "^not ok|ERROR|#" | head -15; fail=1
   else echo "OK    $t ($(echo "$out" | grep -c '^ok') tests)"; fi
 done
+for t in supabase/tests/concurrency/*.sh; do
+  [ -f "$t" ] || continue
+  echo "Concurrence : $t"
+  bash "$t" || fail=1
+done
 exit $fail

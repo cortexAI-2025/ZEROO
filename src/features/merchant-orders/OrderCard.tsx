@@ -5,7 +5,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Button, Card, Chip, TextField } from '@/components/ui';
 import { formatDistance } from '@/features/discover/location';
+import { cancelUnclaimedDelivery, isDeliveryUnclaimed } from '@/features/orders/api';
 import { confirmMealPayment } from '@/features/payments/pay';
+import { confirmAsync } from '@/lib/confirm';
 import { formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
 import { formatCents } from '@/lib/money';
@@ -100,6 +102,8 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
           ) : null}
         </>
       ) : null}
+
+      {isDeliveryUnclaimed(order) ? <UnclaimedDelivery order={order} /> : null}
 
       <MealPayment order={order} />
 
@@ -249,6 +253,7 @@ export function OrderCard({ order, defaultPrepMinutes, onChange }: Props) {
 
 const styles = StyleSheet.create({
   payment: { gap: spacing.xs },
+  unclaimed: { gap: spacing.sm },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,6 +262,48 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });
+
+/** Aucun livreur n'a pris cette livraison dans le délai : le restaurant peut l'annuler. */
+function UnclaimedDelivery({ order }: { order: Order }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const cancel = async () => {
+    const ok = await confirmAsync({
+      title: t('merchant.orders.unclaimed.confirmTitle'),
+      message: t('merchant.orders.unclaimed.confirmBody'),
+      confirmLabel: t('merchant.orders.unclaimed.cancel'),
+      cancelLabel: t('client.order.keep'),
+      destructive: true,
+    });
+    if (!ok) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await cancelUnclaimedDelivery(order.id);
+      await queryClient.invalidateQueries({ queryKey: ['merchant-orders', order.merchant_id] });
+    } catch (e) {
+      setError(t(errorKey(e)));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <View testID={`unclaimed-${order.pickup_code}`} style={styles.unclaimed}>
+      <AppText variant="error">{t('merchant.orders.unclaimed.body')}</AppText>
+      <Button
+        variant="secondary"
+        title={t('merchant.orders.unclaimed.cancel')}
+        loading={busy}
+        onPress={() => void cancel()}
+      />
+      {error ? <AppText variant="error">{error}</AppText> : null}
+    </View>
+  );
+}
 
 /**
  * Paiement du repas, payé directement au restaurant : espèces au comptoir, ou carte via le

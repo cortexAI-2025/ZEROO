@@ -154,11 +154,11 @@ export default function DeliverySettingsScreen() {
             </AppText>
             <Badge
               label={
-                link.couriers?.is_available
+                link.couriers?.is_online
                   ? t('merchant.delivery.available')
                   : t('merchant.delivery.unavailable')
               }
-              tone={link.couriers?.is_available ? 'success' : 'neutral'}
+              tone={link.couriers?.is_online ? 'success' : 'neutral'}
             />
           </View>
           {link.couriers ? (
