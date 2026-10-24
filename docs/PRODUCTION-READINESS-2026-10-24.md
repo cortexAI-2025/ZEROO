@@ -68,3 +68,7 @@ Reste à faire :
 - [x] Webhook Stripe créé en live par le propriétaire (déclaré le 24 octobre 2026) : « Votre compte », `https://rgxesocsvhgsqoehxhgt.supabase.co/functions/v1/stripe-webhook`, événements `checkout.session.completed` et `customer.subscription.created/updated/deleted`. Non vérifié depuis le développement ; le secret `STRIPE_WEBHOOK_SECRET` (`whsec_…`) n'est jamais consigné ici. À contrôler : secret présent côté Supabase (`scripts/deploy-production.sh --dry-run`) et premier événement signé accepté (test d'abonnement avec code promo 100 %).
 - [ ] Activer le portail client Stripe.
 - [ ] Compte partagé : quand un compte Stripe ZeeRoo dédié existera, recréer ces prix dessus et archiver ceux-ci.
+
+## Administrateurs de la plateforme
+- [x] 1 administrateur désigné le 24 octobre 2026 dans `platform_admins` (production) : le compte du propriétaire, e-mail confirmé (identifiant commençant par `68094397`). Aucun autre administrateur ; en ajouter un second évite de dépendre d'une seule personne pour valider les campagnes marketing.
+- [ ] Vérifier en se connectant avec ce compte que l'écran d'administration des campagnes est accessible.
