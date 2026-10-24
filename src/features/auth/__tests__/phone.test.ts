@@ -40,13 +40,13 @@ describe('formatPhone / toNationalFr', () => {
 describe('proVerification', () => {
   const user = (fields: Partial<User>) => ({ id: 'u', ...fields }) as User;
 
-  it('exige e-mail confirmé et téléphone vérifié', () => {
+  it('exige uniquement un e-mail confirmé', () => {
     expect(proVerification(null).verified).toBe(false);
     expect(proVerification(user({ email_confirmed_at: 'x' }))).toEqual({
       emailConfirmed: true,
       phoneVerified: false,
       phone: null,
-      verified: false,
+      verified: true,
     });
     expect(
       proVerification(
