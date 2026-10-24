@@ -29,6 +29,8 @@ type OrderForPush = {
   courier_name: string | null;
   cancelled_by: string | null;
   couriers: { user_id: string } | null;
+  /** Livreur libéré quand la commande a été refusée, expirée ou annulée avant acceptation. */
+  released_courier: { user_id: string } | null;
   merchants: { name: string; owner_id: string; timezone: string };
 };
 
@@ -47,7 +49,7 @@ export const handler = handle(async (req) => {
     await db
       .from('orders')
       .select(
-        'id, merchant_id, delivery_payment_method, customer_id, customer_name, pickup_code, total_cents, is_loyalty_reward, estimated_ready_at, refusal_reason, fulfillment, delivery_fee_cents, delivery_city, delivery_code, courier_name, cancelled_by, couriers(user_id), merchants(name, owner_id, timezone)',
+        'id, merchant_id, delivery_payment_method, customer_id, customer_name, pickup_code, total_cents, is_loyalty_reward, estimated_ready_at, refusal_reason, fulfillment, delivery_fee_cents, delivery_city, delivery_code, courier_name, cancelled_by, couriers!orders_courier_id_fkey(user_id), released_courier:couriers!orders_released_courier_id_fkey(user_id), merchants(name, owner_id, timezone)',
       )
       .eq('id', order_id)
       .maybeSingle(),
@@ -63,7 +65,7 @@ export const handler = handle(async (req) => {
   const toMerchant = (content: PushContent) =>
     sendPush(db, [merchant.owner_id], { data: { url: '/pro' }, ...content });
   const isDelivery = order.fulfillment === 'delivery';
-  const courierUser = order.couriers?.user_id;
+  const courierUser = order.couriers?.user_id ?? order.released_courier?.user_id;
   const toCourier = (content: PushContent) =>
     courierUser
       ? sendPush(db, [courierUser], { data: { url: '/livreur' }, ...content })
