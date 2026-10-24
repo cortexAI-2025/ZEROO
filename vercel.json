@@ -18,7 +18,7 @@
           "value": "zeroo.online"
         }
       ],
-      "destination": "https://app.zeeroo.fr/m/:slug*",
+      "destination": "https://zeeroo.fr/m/:slug*",
       "permanent": true
     },
     {
@@ -29,7 +29,7 @@
           "value": "zeroo.online"
         }
       ],
-      "destination": "https://app.zeeroo.fr/:page/:rest*",
+      "destination": "https://zeeroo.fr/:page/:rest*",
       "permanent": true
     },
     {
@@ -51,7 +51,7 @@
           "value": "www.zeroo.online"
         }
       ],
-      "destination": "https://app.zeeroo.fr/m/:slug*",
+      "destination": "https://zeeroo.fr/m/:slug*",
       "permanent": true
     },
     {
@@ -62,7 +62,7 @@
           "value": "www.zeroo.online"
         }
       ],
-      "destination": "https://app.zeeroo.fr/:page/:rest*",
+      "destination": "https://zeeroo.fr/:page/:rest*",
       "permanent": true
     },
     {
