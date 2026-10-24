@@ -117,7 +117,7 @@ Parcours manuel (une tablette ou un navigateur côté caisse suffit) :
    - saisissez les horaires (`11:30`, `18h`, et un créneau peut finir après minuit), puis « Copier le lundi sur toute la semaine » ;
    - activez « Visible des clients ». Cette option est bloquée tant qu'il n'y a ni produit disponible ni horaire ;
    - testez une pause de 15 min, puis « Reprendre les commandes ».
-4. **QR code** (Boutique → QR code) : il pointe vers `https://zeeroo.fr/m/<slug>` (le site redirige vers l'app web). On peut le partager, ou l'imprimer depuis le web.
+4. **QR code** (Boutique → QR code) : il pointe vers `https://app.zeeroo.fr/m/<slug>` (lien direct vers l'application). On peut le partager, ou l'imprimer depuis le web.
 5. **Commandes en direct** (onglet Commandes) : laissez l'écran ouvert, puis lancez `npm run dev:order` dans un terminal.
    - La commande apparaît sans rechargement, avec une sonnerie. Sur le web, cliquez d'abord « Activer la sonnerie ».
    - Choisissez un délai puis « Accepter » → « Lancer la préparation » → « Commande prête ».
@@ -364,8 +364,8 @@ Le référencement passe par `<Head>` (titre, description, Open Graph). L'écran
 
 ## Domaines
 
-- **zeeroo.fr** : site vitrine (dépôt `cortexAI-2025/zeroo_mainpage`, GitHub Pages), avec la démo interactive. Les liens commerçant `zeeroo.fr/m/<slug>` (QR codes) y sont redirigés vers l'app web.
-- **app.zeeroo.fr** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements), hébergée sur **Vercel** (projet `zeroo`, relié à ce dépôt : chaque push sur `main` est déployé). `vercel.json` : `npm run build:web` → `dist/`, toutes les routes renvoient vers `index.html` (application monopage). Variables à définir dans Vercel : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OAUTH_PROVIDERS` (voir « Inscription et connexion »).
+- **zeeroo.fr** : domaine canonique de l'application web Expo déployée sur Vercel (projet `zeroo`). Vérifier séparément le routage de l'ancien site vitrine GitHub Pages avant de modifier son DNS.
+- **zeeroo.fr** : l'app web (Expo), cible de `APP_WEB_URL` (retours Stripe, abonnements), hébergée sur **Vercel** (projet `zeroo`, relié à ce dépôt : chaque push sur `main` est déployé). `vercel.json` : `npm run build:web` → `dist/`, toutes les routes renvoient vers `index.html` (application monopage). Variables à définir dans Vercel : `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OAUTH_PROVIDERS` (voir « Inscription et connexion »).
 
 Ce dépôt-ci ne contient que l'application.
 
@@ -375,7 +375,7 @@ Ce dépôt-ci ne contient que l'application.
 - **Commerçants et livreurs** : Google, Apple ou e-mail, puis vérification obligatoire de l'e-mail et du téléphone mobile (code SMS) avant de créer leur espace. La règle est appliquée en base (`pro_verification_required`).
 
 À configurer dans Supabase (projet de production) :
-1. **Authentication → URL Configuration** : Site URL `https://app.zeeroo.fr`, Redirect URLs `https://app.zeeroo.fr/**` (et `zeroo://**` pour l'app mobile).
+1. **Authentication → URL Configuration** : Site URL `https://zeeroo.fr`, Redirect URLs `https://zeeroo.fr/**` (et `zeroo://**` pour l'app mobile).
 2. **Authentication → Providers → Google** : ID client et secret OAuth (Google Cloud Console, type « Application Web », URI de redirection autorisée : `https://<projet>.supabase.co/auth/v1/callback`). Ajoutez aussi les ID clients iOS / Android dans « Authorized Client IDs » pour l'app mobile.
 3. **Authentication → Providers → Apple** : Services ID, Team ID, Key ID et clé `.p8` (compte Apple Developer), même URL de retour.
 4. **Authentication → Providers → Phone** : activez le fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Laissez « Enable phone signup » désactivé : le téléphone sert seulement à vérifier les professionnels.

@@ -25,7 +25,7 @@ describe('vercel.json : anciens liens zeroo.online', () => {
         expect(rule?.destination).toBe('https://app.zeeroo.fr/:page/:rest*');
       });
 
-      it('renvoie le reste vers le site zeeroo.fr, en dernier', () => {
+      it('renvoie le reste vers le site vitrine zeeroo.fr, en dernier', () => {
         const rules = forHost(host);
         expect(rules[rules.length - 1].destination).toBe('https://zeeroo.fr/:path*');
       });
