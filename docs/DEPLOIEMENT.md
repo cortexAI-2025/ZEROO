@@ -10,7 +10,7 @@ Dans **votre** terminal, à la racine du dépôt : `npx supabase login` (connexi
 
 ## Historique des migrations : Git = projet hébergé
 
-Les versions (préfixe à 14 chiffres) des fichiers de `supabase/migrations/` sont **celles enregistrées dans le projet hébergé** (`supabase_migrations.schema_migrations`), vérifiées le 24 octobre 2026 : 33 migrations, de `20261023091648_profiles` à `20261024154935_courier_placed_missions`. Ne renommez jamais une migration déjà appliquée. Quand une migration est appliquée par le connecteur (`apply_migration`), le projet lui attribue sa propre version : renommez ensuite le fichier Git avec cette version (relisez-la avec `list_migrations`). Une migration appliquée uniquement en ligne doit être reprise dans Git le jour même : c'est ainsi que 4 correctifs se sont retrouvés absents du dépôt. Un test Jest (`src/__tests__/migrations.test.ts`) garantit des versions et des noms uniques.
+Les versions (préfixe à 14 chiffres) des fichiers de `supabase/migrations/` sont **celles enregistrées dans le projet hébergé** (`supabase_migrations.schema_migrations`), vérifiées le 24 octobre 2026 : 34 migrations, de `20261023091648_profiles` à `20261024160811_release_courier_on_closed_order`. Ne renommez jamais une migration déjà appliquée. Quand une migration est appliquée par le connecteur (`apply_migration`), le projet lui attribue sa propre version : renommez ensuite le fichier Git avec cette version (relisez-la avec `list_migrations`). Une migration appliquée uniquement en ligne doit être reprise dans Git le jour même : c'est ainsi que 4 correctifs se sont retrouvés absents du dépôt. Un test Jest (`src/__tests__/migrations.test.ts`) garantit des versions et des noms uniques.
 
 ## 1. Base de données Supabase
 
