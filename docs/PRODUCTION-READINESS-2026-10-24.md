@@ -64,5 +64,6 @@ Produits : `prod_VV8BTlD88A1opv` (Établissement Start), `prod_VV8BPAhbFsfgqH` (
 
 Reste à faire :
 - [ ] Renseigner les 8 secrets `STRIPE_PRICE_*` côté Supabase (`scripts/deploy-production.sh` ou tableau de bord) ; `STRIPE_SECRET_KEY` doit être celle du même compte.
-- [ ] Créer le taux de TVA 20 % exclusif (`STRIPE_TAX_RATE_ID`), le webhook (`STRIPE_WEBHOOK_SECRET`) et activer le portail client.
+- [x] Taux de TVA « TVA 20 % » (France, `vat`, exclusif) créé en live le 24 octobre 2026 : `STRIPE_TAX_RATE_ID=txr_1UU7xsGPCwvw6qTNXs9ztZIb` (secret Supabase pas encore renseigné). Aucun contrôle préalable des taux existants n'a été possible : un doublon éventuel est sans effet.
+- [ ] Créer le webhook (`STRIPE_WEBHOOK_SECRET`) et activer le portail client.
 - [ ] Compte partagé : quand un compte Stripe ZeeRoo dédié existera, recréer ces prix dessus et archiver ceux-ci.
