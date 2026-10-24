@@ -15,7 +15,7 @@ const {
   sql,
   step,
   webhook,
-} = require('./helpers');
+} = require('../helpers');
 
 const DB_FUNCTIONS_URL =
   process.env.E2E_DB_FUNCTIONS_URL ?? 'http://supabase_kong_zeroo:8000/functions/v1';

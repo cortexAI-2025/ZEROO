@@ -1,6 +1,6 @@
 // Fidélité de bout en bout : carte, menu offert dans le panier, décompte à la remise,
 // commande offerte à 0 €, menu rendu en cas de refus. Client et commerçant en parallèle.
-const { BASE, connectEvent, launch, run, sql, step, visible } = require('./helpers');
+const { BASE, connectEvent, launch, run, sql, step, visible } = require('../helpers');
 
 const SAMIR = '30000000-0000-0000-0000-000000000001';
 const NADIA = '20000000-0000-0000-0000-000000000001';

@@ -15,7 +15,7 @@ Le principal avantage de ZeeRoo est de réunir une marketplace multi-restaurants
 
 TVA 20 % en plus (TTC : 23,99 € et 239,99 € pour Start, 17,99 € et 179,99 € pour Livreur, 35,99 € et 359,99 € pour Pro).
 
-Seuls les **abonnements** ZeeRoo sont facturés par ZeeRoo, via Stripe. Les restaurants encaissent directement leurs commandes et les livreurs leurs courses, sur leur propre compte (Stripe Connect) : ZeeRoo n'encaisse jamais l'argent des commandes. Le contenu de la formule Pro par rapport à Start reste à définir.
+Seuls les **abonnements** ZeeRoo sont facturés par ZeeRoo, via Stripe. Les restaurants encaissent directement leurs commandes et les livreurs leurs courses, directement (lien de paiement du professionnel, espèces) : ZeeRoo n'encaisse jamais l'argent des commandes. Le contenu de Start et de Pro est détaillé dans `docs/OFFRE-COMMERCIALE.md`.
 
 ## 1. Comparatif des tarifs en France
 

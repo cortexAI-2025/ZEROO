@@ -62,3 +62,33 @@ jobs:
       - run: npm ci
       - name: Verify web production export
         run: npm run build:web
+
+  # Migrations rejouées de zéro puis tests pgTAP (droits, RLS, règles métier) et tests de concurrence
+  # sur un Postgres 16 jetable (PostGIS, pgTAP, pg_cron). Aucune base distante n'est touchée.
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer PostgreSQL
+        run: sudo scripts/localdb/setup-ci.sh
+      - name: Migrations et tests de base de données
+        env:
+          PGUSER: postgres
+          PGHOST: localhost
+        run: scripts/localdb/run.sh
+
+  # Parcours du site web dans Chromium avec une API simulée (annuaire public, mini-site, précommandes).
+  web-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build web et scénarios simulés
+        run: npm run e2e:mock

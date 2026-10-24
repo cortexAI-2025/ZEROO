@@ -1,4 +1,4 @@
-const { connectEvent, BASE, launch, run, sql, step, visible, webhook } = require('./helpers');
+const { connectEvent, BASE, launch, run, sql, step, visible, webhook } = require('../helpers');
 const SAMIR = '30000000-0000-0000-0000-000000000001';
 
 run('Espace client', async () => {
