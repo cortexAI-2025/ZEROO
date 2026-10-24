@@ -6,16 +6,16 @@ Ce document est une checklist de validation, pas une attestation de mise en prod
 ## P0 — CI
 - [ ] Confirmer que le workflow `.github/workflows/ci.yml` se déclenche sur PR et sur `main` (quota GitHub Actions et permissions).
 - [ ] Exécuter `npm ci && npm run check && npm run build:web` sur Node 22.
-- [ ] Exécuter `npm run db:test` sur Supabase local (Docker requis).
-- [ ] Vérifier les tests E2E séparément ; ne pas considérer `npm run e2e` comme preuve de réussite du nouveau modèle de paiement.
+- [x] Tests de base de données dans la CI : job `database` (`scripts/localdb/setup-ci.sh` puis `scripts/localdb/run.sh`, 26 fichiers pgTAP). À confirmer sur un premier run GitHub Actions réel.
+- [x] E2E : `npm run e2e:mock` (sans Supabase) tourne en CI (job `web-smoke`). `npm run e2e` ne cible plus que landing/auth/merchant ; les anciens tests Stripe Connect sont isolés dans `e2e/legacy-connect/` et ne prouvent rien sur le modèle actuel.
 - [ ] Protéger `main` avec contrôles obligatoires avant fusion.
 
 ## P0 — Paiement et tests obsolètes
 Le modèle actuel est : paiements de repas et courses directement aux professionnels, Stripe Billing uniquement pour les abonnements ZEEROO, sans Stripe Connect.
-- [ ] Réécrire `e2e/payments.e2e.js` : il teste encore PaymentIntent, capture, Connect et `connect-onboarding`.
-- [ ] Auditer `e2e/delivery.e2e.js` et `e2e/delivery-app.e2e.js` pour supprimer les attentes Connect.
-- [ ] Tester commande acceptée → lien de paiement professionnel → déclaration client → confirmation professionnelle ; refuser la fausse confirmation par un tiers.
-- [ ] Tester espèces au retrait / à la remise selon les règles métier, sans déclarer un paiement automatiquement.
+- [x] (Isolé dans `e2e/legacy-connect/`, couvert par `supabase/tests/database/payments_direct.test.sql`) Réécrire `e2e/payments.e2e.js` : il teste encore PaymentIntent, capture, Connect et `connect-onboarding`.
+- [x] (Isolés dans `e2e/legacy-connect/`) Auditer `e2e/delivery.e2e.js` et `e2e/delivery-app.e2e.js` pour supprimer les attentes Connect.
+- [x] Commande acceptée → déclaration client → confirmation professionnelle ; fausse confirmation par un tiers refusée (pgTAP `payments_direct`).
+- [x] Espèces au retrait / à la remise sans déclaration automatique (pgTAP `payments_direct`).
 - [ ] Tester les abonnements : essai 30 jours, changement de formule, webhook signé et idempotent, impayé, résiliation, droits RLS.
 - [ ] Vérifier que les montants des commandes ne transitent jamais par le compte Stripe ZEEROO.
 
@@ -27,6 +27,7 @@ Le modèle actuel est : paiements de repas et courses directement aux profession
 - [ ] Tester les cron jobs, Vault, webhook Stripe et traitement des doublons.
 
 ## P1 — Authentification et domaine
+- [ ] **Action propriétaire** : activer la protection contre les mots de passe compromis (Supabase → Authentication → mot de passe / « Prevent use of leaked passwords »). Non faisable depuis l'environnement de développement ; contrôle ensuite via les avis de sécurité Supabase (`auth_leaked_password_protection` doit disparaître).
 - [ ] Tester Google OAuth web et mobile : provider Supabase, client IDs, redirect URLs et callback `https://app.zeeroo.fr/auth-callback`.
 - [ ] Tester confirmation e-mail, mot de passe oublié et templates.
 - [ ] Vérifier le fournisseur SMS et les journaux d'envoi avant d'activer le téléphone comme méthode obligatoire.
@@ -41,3 +42,6 @@ Le modèle actuel est : paiements de repas et courses directement aux profession
 
 ## Critère de sortie
 Publication seulement après CI verte, migrations et fonctions vérifiées, scénarios E2E adaptés au modèle actuel, authentification validée et recette sur l'environnement hébergé. Conserver les preuves (SHA, workflow run, versions de fonctions, date des tests) dans le rapport de recette.
+
+## Décisions du propriétaire
+- Données d'identité des commerçants (SIRET, TVA, e-mail de contact, raison sociale, téléphone, lien de paiement, `owner_id`) : **laissées publiques en l'état** (décision du 24 octobre 2026). L'adresse des dark kitchens reste privée (`merchant_locations`).
