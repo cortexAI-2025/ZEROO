@@ -26,6 +26,6 @@ export function stripeClient(): Stripe {
 /** Montant minimum accepté par Stripe pour un paiement en euros. */
 export const MIN_CHARGE_CENTS = 50;
 
-/** URL publique de l'app web (retours de Stripe Checkout et de l'inscription Connect). */
+/** URL publique de l'app web (retours de Stripe Checkout et du portail d'abonnements). */
 export const appWebUrl = () =>
   (Deno.env.get('APP_WEB_URL') ?? 'https://app.zeeroo.fr').replace(/\/$/, '');
