@@ -16,16 +16,16 @@ describe('vercel.json : anciens liens zeroo.online', () => {
     describe(host, () => {
       it('renvoie un ancien QR /m/<slug> vers l’application, même établissement', () => {
         const rule = forHost(host).find((r) => r.source === '/m/:slug*');
-        expect(rule?.destination).toBe('https://zeeroo.fr/m/:slug*');
+        expect(rule?.destination).toBe('https://app.zeeroo.fr/m/:slug*');
         expect(rule?.permanent).toBe(true);
       });
 
       it('renvoie les pages de l’application (pro, livreur, commande) vers l’application', () => {
         const rule = forHost(host).find((r) => r.source.includes('pro|livreur|order'));
-        expect(rule?.destination).toBe('https://zeeroo.fr/:page/:rest*');
+        expect(rule?.destination).toBe('https://app.zeeroo.fr/:page/:rest*');
       });
 
-      it('renvoie le reste vers le site zeeroo.fr, en dernier', () => {
+      it('renvoie le reste vers le site vitrine zeeroo.fr, en dernier', () => {
         const rules = forHost(host);
         expect(rules[rules.length - 1].destination).toBe('https://zeeroo.fr/:path*');
       });
