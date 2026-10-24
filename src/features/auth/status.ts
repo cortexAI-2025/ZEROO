@@ -18,7 +18,7 @@ export type ProVerification = {
 
 export function proVerification(user: User | null | undefined): ProVerification {
   const emailConfirmed = Boolean(user?.email_confirmed_at);
-  const phone = user?.phone ? `+${user.phone.replace(/^\\+/, '')}` : null;
+  const phone = user?.phone ? `+${user.phone.replace(/^\+/, '')}` : null;
   const phoneVerified = Boolean(user?.phone_confirmed_at) && phone !== null;
   const isStagingTestAccount =
     process.env.EXPO_PUBLIC_SUPABASE_URL === STAGING_PROJECT_URL &&
