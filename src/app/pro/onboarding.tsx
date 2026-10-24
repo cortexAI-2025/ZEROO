@@ -17,7 +17,7 @@ export default function OnboardingScreen() {
   const { setSpace } = useSpace();
   const { verified } = useProVerification();
 
-  // E-mail confirmé et téléphone vérifié avant de créer le commerce (règle appliquée en base).
+  // E-mail confirmé avant de créer le commerce (règle appliquée en base).
   if (!verified) {
     return (
       <ProVerificationScreen

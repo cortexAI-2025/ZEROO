@@ -22,13 +22,13 @@ import { useSpace } from '@/features/space/SpaceProvider';
 import { errorKey } from '@/lib/errors';
 import { spacing } from '@/theme';
 
-/** Inscription du livreur : compte vérifié (e-mail + téléphone), puis profil. */
+/** Inscription du livreur : compte vérifié (e-mail), puis profil. */
 export default function CourierOnboardingScreen() {
   const { t } = useTranslation();
   const { setSpace } = useSpace();
   const verification = useProVerification();
 
-  // E-mail confirmé et téléphone vérifié avant de créer le profil (règle appliquée en base).
+  // E-mail confirmé avant de créer le profil (règle appliquée en base).
   if (!verification.verified) {
     return (
       <ProVerificationScreen
@@ -54,7 +54,7 @@ function CourierProfileForm({ verifiedPhone }: { verifiedPhone: string | null })
     resolver: zodResolver(courierSchema),
     defaultValues: {
       displayName: '',
-      // Numéro déjà vérifié par SMS : pré-rempli.
+      // Numéro de contact facultatif à renseigner dans le profil.
       phone: toNationalFr(verifiedPhone),
       legalStatus: 'auto_entrepreneur',
       siret: '',

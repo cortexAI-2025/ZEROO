@@ -1,10 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 
-/**
- * Un professionnel (commerçant, livreur) doit avoir un e-mail confirmé et un téléphone vérifié
- * par SMS avant de créer son espace. La règle est appliquée en base (pro_verification.sql) ;
- * l'app ne fait qu'afficher les étapes.
- */
+/** Professional account verification requires a confirmed email only. */
 export type ProVerification = {
   emailConfirmed: boolean;
   phoneVerified: boolean;
@@ -21,6 +17,6 @@ export function proVerification(user: User | null | undefined): ProVerification 
     emailConfirmed,
     phoneVerified,
     phone: phoneVerified ? phone : null,
-    verified: emailConfirmed && phoneVerified,
+    verified: emailConfirmed,
   };
 }
