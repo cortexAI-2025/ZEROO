@@ -156,7 +156,10 @@ export default function CartScreen() {
     setBusy(true);
     try {
       // Never rely on a cached space selection as proof of customer identity.
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
       if (authError || !user || user.id !== confirmedCustomerId) {
         setConfirmedCustomerId(null);
         throw new Error('Session client expirée ou modifiée : reconnectez-vous.');
@@ -577,7 +580,9 @@ export default function CartScreen() {
                 : t('client.cart.order', { price: formatCents(total) })
           }
           loading={busy}
-          disabled={!deliveryReady || authLoading || !session || confirmedCustomerId !== session.user.id}
+          disabled={
+            !deliveryReady || authLoading || !session || confirmedCustomerId !== session.user.id
+          }
           onPress={() => void order()}
         />
       ) : (
