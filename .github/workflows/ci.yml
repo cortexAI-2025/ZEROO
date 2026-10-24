@@ -49,3 +49,16 @@ jobs:
       - name: Tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npx jest --ci --reporters=default --reporters=github-actions
+
+  web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify web production export
+        run: npm run build:web
