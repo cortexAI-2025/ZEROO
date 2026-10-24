@@ -577,7 +577,7 @@ export default function CartScreen() {
                 : t('client.cart.order', { price: formatCents(total) })
           }
           loading={busy}
-          disabled={!deliveryReady}
+          disabled={!deliveryReady || authLoading || !session || confirmedCustomerId !== session.user.id}
           onPress={() => void order()}
         />
       ) : (
