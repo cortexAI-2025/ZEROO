@@ -6,7 +6,7 @@
 // E2E_DB_FUNCTIONS_URL : URL des fonctions vue depuis la base (pg_net), par défaut celle de Kong.
 const http = require('http');
 
-const { ANON, AUTH_URL, FUNCTIONS, connectEvent, run, sql, step } = require('./helpers');
+const { ANON, AUTH_URL, FUNCTIONS, connectEvent, run, sql, step } = require('../helpers');
 
 const DB_FUNCTIONS_URL =
   process.env.E2E_DB_FUNCTIONS_URL ?? 'http://supabase_kong_zeroo:8000/functions/v1';

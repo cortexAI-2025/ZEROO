@@ -12,7 +12,7 @@ const {
   step,
   visible: v,
   webhook,
-} = require('./helpers');
+} = require('../helpers');
 
 const SAMIR = '30000000-0000-0000-0000-000000000001';
 const SHOTS = process.env.E2E_SHOTS;

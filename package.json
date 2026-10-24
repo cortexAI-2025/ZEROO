@@ -78,8 +78,9 @@
     "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local > src/types/database.ts && prettier --write src/types/database.ts",
     "dev:order": "docker exec supabase_db_zeroo psql -U postgres -tAc \"select public.dev_place_test_order('${SLUG:-chez-samir}')\"",
-    "e2e": "node --env-file=.env.local e2e/landing.e2e.js && node --env-file=.env.local e2e/auth.e2e.js && node --env-file=.env.local e2e/merchant.e2e.js && node --env-file=.env.local e2e/client.e2e.js && node --env-file=.env.local e2e/payments.e2e.js && node --env-file=.env.local e2e/loyalty.e2e.js && node --env-file=.env.local e2e/notifications.e2e.js && node --env-file=.env.local e2e/delivery.e2e.js && node --env-file=.env.local e2e/delivery-app.e2e.js",
-    "build:web": "expo export --platform web --output-dir dist"
+    "e2e": "node --env-file=.env.local e2e/landing.e2e.js && node --env-file=.env.local e2e/auth.e2e.js && node --env-file=.env.local e2e/merchant.e2e.js",
+    "build:web": "expo export --platform web --output-dir dist",
+    "e2e:mock": "EXPO_PUBLIC_SUPABASE_URL=https://x.supabase.co EXPO_PUBLIC_SUPABASE_ANON_KEY=x npm run build:web && node e2e/directory.mock.e2e.js && node e2e/directory-public.mock.e2e.js && node e2e/minisite.mock.e2e.js && node e2e/schedule.mock.e2e.js"
   },
   "private": true,
   "jest": {

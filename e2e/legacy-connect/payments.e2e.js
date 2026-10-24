@@ -12,7 +12,7 @@ const {
   sql,
   step,
   webhook,
-} = require('./helpers');
+} = require('../helpers');
 
 const CRON_SECRET = process.env.CRON_SECRET ?? 'cron_test';
 const SAMIR = '30000000-0000-0000-0000-000000000001';
