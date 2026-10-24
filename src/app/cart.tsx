@@ -9,6 +9,7 @@ import { AppText, Button, Card, Chip, Screen, TextField } from '@/components/ui'
 import type { SavedAddress } from '@/features/account/api';
 import { useAddresses } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { signOut } from '@/features/auth/api';
 import { useDeliveryQuote, useMerchantDeliverySettings } from '@/features/cart/delivery';
 import { repriceLines } from '@/features/cart/reprice';
 import { SchedulePicker } from '@/features/cart/SchedulePicker';
@@ -29,6 +30,7 @@ import { customerOrderKeys } from '@/features/orders/hooks';
 import { useReorderReport } from '@/features/orders/reorderReport';
 import { placeOrder } from '@/features/payments/pay';
 import { errorKey } from '@/lib/errors';
+import { supabase } from '@/lib/supabase';
 import { DEFAULT_TIMEZONE, formatDateTimeIn } from '@/lib/zone';
 import { formatCents } from '@/lib/money';
 import { spacing, useThemeColors } from '@/theme';
@@ -37,7 +39,8 @@ export default function CartScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const queryClient = useQueryClient();
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
+  const [confirmedCustomerId, setConfirmedCustomerId] = useState<string | null>(null);
   const {
     merchant,
     lines,
@@ -148,10 +151,16 @@ export default function CartScreen() {
     (!isDelivery ||
       (!!deliveryAddress && quote?.available === true && isValidDeliveryPhone(deliveryPhone)));
   const order = async () => {
-    if (!merchant) return;
+    if (!merchant || !session || confirmedCustomerId !== session.user.id) return;
     setError(null);
     setBusy(true);
     try {
+      // Never rely on a cached space selection as proof of customer identity.
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user || user.id !== confirmedCustomerId) {
+        setConfirmedCustomerId(null);
+        throw new Error('Session client expirée ou modifiée : reconnectez-vous.');
+      }
       const result = await placeOrder({
         merchantId: merchant.id,
         merchantName: merchant.name,
@@ -209,6 +218,38 @@ export default function CartScreen() {
     <Screen scroll>
       <Stack.Screen options={{ title: t('client.cart.title'), headerShown: true }} />
       <AppText variant="title">{merchant.name}</AppText>
+
+      {!authLoading && (!session || confirmedCustomerId !== session.user.id) ? (
+        <Card testID="customer-identity-gate">
+          <AppText variant="subtitle">Identification requise avant commande</AppText>
+          <AppText variant="muted">
+            {session
+              ? `Vous êtes connecté avec ${session.user.email ?? 'un compte existant'}. Si vous confirmez, cette commande et son historique seront associés à ce compte, même si vous avez changé d'espace.`
+              : 'Connectez-vous à votre compte client avant de passer commande. Le mode invité n’est pas activé.'}
+          </AppText>
+          {session ? (
+            <>
+              <Button
+                testID="confirm-customer-identity"
+                title="Commander avec ce compte"
+                onPress={() => setConfirmedCustomerId(session.user.id)}
+              />
+              <Button
+                testID="switch-customer-account"
+                variant="secondary"
+                title="Utiliser un autre compte client"
+                onPress={() => void signOut().then(() => router.push('/sign-in'))}
+              />
+            </>
+          ) : (
+            <Button
+              testID="sign-in-before-checkout"
+              title="Se connecter pour commander"
+              onPress={() => router.push('/sign-in')}
+            />
+          )}
+        </Card>
+      ) : null}
 
       {reorderReport ? (
         <Card testID="reorder-report">
