@@ -2,8 +2,8 @@ import type { PlanTier } from './plans';
 
 /**
  * Droits par formule. Cette table ne sert qu'à l'affichage (cadenas, invitations à passer en Pro) :
- * les règles sont appliquées par la base de données (voir supabase/migrations/20261029090000_commercial_offer.sql,
- * 20261030090000_scheduled_group_orders.sql, 20261031090000_advanced_stats.sql, 20261101090000_marketing_campaigns.sql).
+ * les règles sont appliquées par la base de données (voir supabase/migrations/20261023094951_commercial_offer.sql,
+ * 20261023094959_scheduled_group_orders.sql, 20261023095007_advanced_stats.sql, 20261023095014_marketing_campaigns.sql).
  * Un abonnement n'ouvre ses droits qu'en essai ou actif : `plan` vaut null sinon.
  */
 export type MerchantFeature =
