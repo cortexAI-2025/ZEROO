@@ -117,7 +117,7 @@ Parcours manuel (une tablette ou un navigateur côté caisse suffit) :
    - saisissez les horaires (`11:30`, `18h`, et un créneau peut finir après minuit), puis « Copier le lundi sur toute la semaine » ;
    - activez « Visible des clients ». Cette option est bloquée tant qu'il n'y a ni produit disponible ni horaire ;
    - testez une pause de 15 min, puis « Reprendre les commandes ».
-4. **QR code** (Boutique → QR code) : il pointe vers `https://zeeroo.fr/m/<slug>` (le site redirige vers l'app web). On peut le partager, ou l'imprimer depuis le web.
+4. **QR code** (Boutique → QR code) : il pointe vers `https://app.zeeroo.fr/m/<slug>` (lien direct vers l'application). On peut le partager, ou l'imprimer depuis le web.
 5. **Commandes en direct** (onglet Commandes) : laissez l'écran ouvert, puis lancez `npm run dev:order` dans un terminal.
    - La commande apparaît sans rechargement, avec une sonnerie. Sur le web, cliquez d'abord « Activer la sonnerie ».
    - Choisissez un délai puis « Accepter » → « Lancer la préparation » → « Commande prête ».
@@ -218,7 +218,7 @@ Stripe ne sert qu'aux abonnements (pas de Connect).
      STRIPE_PRICE_PRO_MONTH=price_… STRIPE_PRICE_PRO_YEAR=price_… \
      STRIPE_PRICE_COURIER_START_MONTH=price_… STRIPE_PRICE_COURIER_START_YEAR=price_… \
      STRIPE_PRICE_COURIER_PRO_MONTH=price_… STRIPE_PRICE_COURIER_PRO_YEAR=price_… \
-     APP_WEB_URL=https://zeeroo.fr CRON_SECRET=$(openssl rand -hex 32)
+     APP_WEB_URL=https://app.zeeroo.fr CRON_SECRET=$(openssl rand -hex 32)
    ```
 6. **Expiration automatique**, chaque minute via pg_cron. Dans l'éditeur SQL Supabase, en remettant la même valeur que `CRON_SECRET` :
    ```sql
