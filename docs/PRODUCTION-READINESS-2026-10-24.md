@@ -45,3 +45,24 @@ Publication seulement après CI verte, migrations et fonctions vérifiées, scé
 
 ## Décisions du propriétaire
 - Données d'identité des commerçants (SIRET, TVA, e-mail de contact, raison sociale, téléphone, lien de paiement, `owner_id`) : **laissées publiques en l'état** (décision du 24 octobre 2026). L'adresse des dark kitchens reste privée (`merchant_locations`).
+
+## Prix Stripe créés (24 octobre 2026)
+Créés en **mode live** sur le compte Stripe `stripe_afara-trigon`, qui contient aussi des produits d'autres activités (AiWorkPay, etc.) : choix explicite du propriétaire. Récurrents, en euros, **hors taxe** (`tax_behavior=exclusive`), `metadata.app=zeeroo`. Les identifiants ne sont pas des secrets ; les secrets de fonctions Supabase correspondants ne sont **pas encore renseignés**.
+
+| Secret de fonction | Prix | Montant |
+|---|---|---|
+| `STRIPE_PRICE_START_MONTH` | `price_1UU7vhGPCwvw6qTNVMvNtk07` | 19,99 €/mois |
+| `STRIPE_PRICE_START_YEAR` | `price_1UU7vhGPCwvw6qTNktZVZnG3` | 199,99 €/an |
+| `STRIPE_PRICE_PRO_MONTH` | `price_1UU7vhGPCwvw6qTNG8T6WXG5` | 29,99 €/mois |
+| `STRIPE_PRICE_PRO_YEAR` | `price_1UU7vhGPCwvw6qTNdCtmFT3h` | 299,99 €/an |
+| `STRIPE_PRICE_COURIER_START_MONTH` | `price_1UU7viGPCwvw6qTNgTE64qDQ` | 14,99 €/mois |
+| `STRIPE_PRICE_COURIER_START_YEAR` | `price_1UU7viGPCwvw6qTNCjkguqz2` | 149,99 €/an |
+| `STRIPE_PRICE_COURIER_PRO_MONTH` | `price_1UU7viGPCwvw6qTNknrCqE5r` | 24,99 €/mois |
+| `STRIPE_PRICE_COURIER_PRO_YEAR` | `price_1UU7viGPCwvw6qTN7cgw73TS` | 249,99 €/an |
+
+Produits : `prod_VV8BTlD88A1opv` (Établissement Start), `prod_VV8BPAhbFsfgqH` (Établissement Pro), `prod_VV8BML5D6dox8t` (Livreur Start), `prod_VV8BcDAQ1al2M3` (Livreur Pro). Clés de recherche : `zeeroo_<merchant|courier>_<start|pro>_<month|year>`.
+
+Reste à faire :
+- [ ] Renseigner les 8 secrets `STRIPE_PRICE_*` côté Supabase (`scripts/deploy-production.sh` ou tableau de bord) ; `STRIPE_SECRET_KEY` doit être celle du même compte.
+- [ ] Créer le taux de TVA 20 % exclusif (`STRIPE_TAX_RATE_ID`), le webhook (`STRIPE_WEBHOOK_SECRET`) et activer le portail client.
+- [ ] Compte partagé : quand un compte Stripe ZeeRoo dédié existera, recréer ces prix dessus et archiver ceux-ci.
