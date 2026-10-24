@@ -374,7 +374,7 @@ Transitions autorisées :
 
 Le SIRET saisi est contrôlé (14 chiffres, clé de Luhn) et unique.
 
-**Missions (migration `20261013100000_missions_cash.sql`, remplace l'attribution à la commande).**
+**Missions (migration `20261023094801_missions_cash.sql`, remplace l'attribution à la commande).**
 - La commande n'attend plus un livreur : le repas est payé, le restaurant accepte, puis la course est **proposée à tous les livreurs** rattachés, disponibles et ayant de la capacité (`available_missions`, sans l'adresse précise du client). **Le premier qui accepte l'obtient** (`courier_accept_mission` : verrou sur le livreur et `for update skip locked` sur la commande).
 - **Capacité** : jusqu'à **2 livraisons simultanées** par livreur, y compris pendant une tournée (`courier_at_capacity`). Un livreur plein ne voit plus de missions.
 - À la création, la livraison n'est proposée que s'il existe au moins un livreur rattaché et disponible avec de la capacité (contrôle souple, `merchant_delivery_quote`).
@@ -404,7 +404,7 @@ Le SIRET saisi est contrôlé (14 chiffres, clé de Luhn) et unique.
 
 Expiration : sans réponse du restaurant après 10 minutes, la commande passe en `expired`. La fidélité compte aussi à `delivered`.
 
-**Données (migration `20261009120100_delivery.sql`).**
+**Données (migration `20261023094750_delivery.sql`).**
 - `couriers` (un profil par compte) :
   - `display_name`, `phone` ;
   - `legal_status` (`auto_entrepreneur` | `societe`), `siret` ;
@@ -444,7 +444,7 @@ Expiration : sans réponse du restaurant après 10 minutes, la commande passe en
 
 ### 3.5 Tableaux de bord, avis et option livraison
 
-Migration `20261013120000_dashboards.sql`, écrans calqués sur la démo `docs/maquette/zeeroo-demo.html`.
+Migration `20261023094811_dashboards.sql`, écrans calqués sur la démo `docs/maquette/zeeroo-demo.html`.
 
 - **Formules restaurant** : Start (19,99 € HT/mois) = retrait sur place ; Pro (29,99 € HT/mois) = retrait **et option livraison**. `subscriptions.plan` est écrit par le webhook Stripe (prix souscrit). Activer la livraison exige Pro (`delivery_requires_pro`) ; un retour à Start coupe la livraison, et `merchant_delivery_quote` revérifie la formule.
 - **Avis** (`order_reviews`) : après une commande retirée ou livrée, le client note le restaurant et, pour une livraison, le livreur (1 à 5 étoiles, un commentaire), une seule fois, via `submit_order_review`. Notes publiques des restaurants : `merchant_ratings` (sans commentaires) ; note du livreur : `courier_rating_summary`. Le restaurant et le livreur lisent les avis qui les concernent (RLS).
@@ -454,7 +454,7 @@ Migration `20261013120000_dashboards.sql`, écrans calqués sur la démo `docs/m
 
 ### 3.6 Paiements directs par lien de paiement (décision du 13 octobre 2026)
 
-Migration `20261013140000_payment_links.sql`.
+Migration `20261023094827_payment_links.sql`.
 
 - **Stripe sert uniquement aux abonnements** des restaurants et des livreurs (compte d'AiWorkPay, webhook `stripe-webhook` limité aux abonnements). Plus de Stripe Connect : les fonctions `connect-onboarding`, `pay-delivery` et `order-payment-status` sont supprimées.
 - Chaque restaurant et chaque livreur renseigne **son lien de paiement** (`merchants.payment_link`, `couriers.payment_link`, `https://…`) : la page de son propre fournisseur (SumUp, PayPal, Stripe Payment Link, Lydia Pro…), qui accepte la carte, Apple Pay et Google Pay et verse l'argent sur son compte bancaire.
@@ -467,7 +467,7 @@ Migration `20261013140000_payment_links.sql`.
 
 ### 3.7 Inscription : Google / Apple pour les clients, vérification des professionnels (13 octobre 2026)
 
-Migration `20261013150000_pro_verification.sql`.
+Migration `20261023094834_pro_verification.sql`.
 
 - **Clients** : Google et Apple sont mis en avant sur les écrans de connexion et d'inscription (un geste, pas de mot de passe) ; l'e-mail + mot de passe reste possible en dessous. Le compte est créé à la première connexion. Sur le web (`app.zeeroo.fr`), Google et Apple passent par la redirection OAuth de Supabase (`signInWithOAuth`, retour sur `/auth-callback`) ; sur mobile, par les modules natifs (jeton d'identité → `signInWithIdToken`). `EXPO_PUBLIC_OAUTH_PROVIDERS` liste les fournisseurs activés côté web.
 - **Professionnels** (commerçant, livreur) : même choix de connexion (Google, Apple ou e-mail), puis **e-mail confirmé et téléphone mobile vérifié par code SMS** avant de créer le commerce ou le profil livreur. Le téléphone est rattaché au compte Supabase Auth (`updateUser({ phone })` puis `verifyOtp(type 'phone_change')` → `auth.users.phone_confirmed_at`). Avec Google ou Apple, l'e-mail est déjà confirmé.

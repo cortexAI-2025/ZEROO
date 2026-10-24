@@ -8,6 +8,10 @@ Dans **votre** terminal, à la racine du dépôt : `npx supabase login` (connexi
 
 **Secrets Vault des tâches planifiées** (avant que les tâches ne servent) : `functions_url` = `https://rgxesocsvhgsqoehxhgt.supabase.co/functions/v1`. `cron_secret` doit être **identique** au secret de fonction `CRON_SECRET`. Sans jamais le copier dans un chat : dans le SQL Editor, `select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'cron_secret');` puis `select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret';` et collez cette valeur dans Dashboard → Edge Functions → Secrets → `CRON_SECRET`. Faites de même pour `functions_url` avec `vault.create_secret('<url>', 'functions_url')`.
 
+## Historique des migrations : Git = projet hébergé
+
+Les versions (préfixe à 14 chiffres) des fichiers de `supabase/migrations/` sont **celles enregistrées dans le projet hébergé** (`supabase_migrations.schema_migrations`), vérifiées le 24 octobre 2026 : 33 migrations, de `20261023091648_profiles` à `20261024154935_courier_placed_missions`. Ne renommez jamais une migration déjà appliquée. Quand une migration est appliquée par le connecteur (`apply_migration`), le projet lui attribue sa propre version : renommez ensuite le fichier Git avec cette version (relisez-la avec `list_migrations`). Une migration appliquée uniquement en ligne doit être reprise dans Git le jour même : c'est ainsi que 4 correctifs se sont retrouvés absents du dépôt. Un test Jest (`src/__tests__/migrations.test.ts`) garantit des versions et des noms uniques.
+
 ## 1. Base de données Supabase
 
 Avec le CLI (recommandé) :
@@ -28,7 +32,7 @@ Vérification : `select count(*) from supabase_migrations.schema_migrations;` do
 npx supabase functions deploy
 ```
 
-Secrets à définir (`npx supabase secrets set …`) : voir `supabase/functions/.env.example` (clés Stripe, `STRIPE_WEBHOOK_SECRET`, `APP_WEB_URL=https://app.zeeroo.fr`, `CRON_SECRET`). Secrets Vault pour les tâches planifiées : `functions_url` et `cron_secret` (voir `supabase/migrations/20261008180000_payments.sql`).
+Secrets à définir (`npx supabase secrets set …`) : voir `supabase/functions/.env.example` (clés Stripe, `STRIPE_WEBHOOK_SECRET`, `APP_WEB_URL=https://app.zeeroo.fr`, `CRON_SECRET`). Secrets Vault pour les tâches planifiées : `functions_url` et `cron_secret` (voir `supabase/migrations/20261023094706_payments.sql`).
 
 ## 3. Authentification Supabase
 
