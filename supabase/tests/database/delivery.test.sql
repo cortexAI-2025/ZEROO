@@ -201,7 +201,8 @@ update public.couriers set is_available = true;
 
 set local role authenticated;
 select pg_temp.as_user('70000000-0000-0000-0000-000000000001');
-select is((select count(*)::int from public.available_missions()), 0, 'pas de mission avant l''acceptation du restaurant');
+-- Depuis la PR #22, la mission est proposée dès que la commande est placée, sans attendre le restaurant.
+select is((select count(*)::int from public.available_missions()), 1, 'mission proposée dès la commande placée, avant l''acceptation du restaurant');
 reset role;
 
 select is((select status::text from public.apply_order_transition((select id from o where key = 'a'),

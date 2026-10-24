@@ -20,14 +20,16 @@ select throws_ok($$ select public.create_courier('Nouveau', '0611223344', 'auto_
   'P0001', 'pro_verification_required', 'pas de profil livreur sans vérification');
 reset role;
 
--- E-mail confirmé, téléphone pas encore vérifié.
+-- E-mail confirmé : suffit pour devenir professionnel (depuis la PR #25, plus de SMS obligatoire).
 update auth.users set email_confirmed_at = now() where id = 'bbbbbbbb-0000-0000-0000-000000000001';
 set local role authenticated;
 select pg_temp.as_user('bbbbbbbb-0000-0000-0000-000000000001');
-select is(public.is_pro_verified(), false, 'l''e-mail seul ne suffit pas');
+select is(public.is_pro_verified(), true, 'l''e-mail confirmé suffit');
+select lives_ok($$ select public.create_merchant('Nouveau Snack', 'snack', '1 rue A', '75001', 'Paris', 48.86, 2.34) $$,
+  'le commerce peut être créé avec l''e-mail seul');
 reset role;
 
--- Numéro saisi mais code SMS pas encore validé.
+-- Numéro saisi mais code SMS pas encore validé : il n'entre pas dans le profil (reste facultatif).
 update auth.users set phone = '33611223344' where id = 'bbbbbbbb-0000-0000-0000-000000000001';
 select is((select phone from public.profiles where id = 'bbbbbbbb-0000-0000-0000-000000000001'), null,
   'un numéro non vérifié ne va pas dans le profil');
@@ -41,9 +43,7 @@ select is((select phone from public.profiles where id = 'bbbbbbbb-0000-0000-0000
 
 set local role authenticated;
 select pg_temp.as_user('bbbbbbbb-0000-0000-0000-000000000001');
-select is(public.is_pro_verified(), true, 'e-mail et téléphone vérifiés');
-select lives_ok($$ select public.create_merchant('Nouveau Snack', 'snack', '1 rue A', '75001', 'Paris', 48.86, 2.34) $$,
-  'le commerce peut être créé');
+select is(public.is_pro_verified(), true, 'un téléphone vérifié en plus ne change rien');
 reset role;
 
 -- Le profil suit un changement de numéro (nouvelle vérification).
