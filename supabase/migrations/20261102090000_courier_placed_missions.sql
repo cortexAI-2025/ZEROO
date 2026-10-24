@@ -10,7 +10,13 @@ begin
     changed := replace(original,
       'o.status in (' || quote_literal('accepted') || ', ' || quote_literal('preparing') || ', ' || quote_literal('ready') || ')',
       'o.status in (' || quote_literal('placed') || ', ' || quote_literal('accepted') || ', ' || quote_literal('preparing') || ', ' || quote_literal('ready') || ')');
-    if changed = original then raise exception 'Status filter not found: %', fn; end if;
+    if changed = original then
+      -- Safe to replay if this function already accepts 'placed'.
+      if position('o.status in (' || quote_literal('placed') || ', ' || quote_literal('accepted') in original) > 0 then
+        continue;
+      end if;
+      raise exception 'Status filter not found: %', fn;
+    end if;
     execute changed;
   end loop;
 end $$;
