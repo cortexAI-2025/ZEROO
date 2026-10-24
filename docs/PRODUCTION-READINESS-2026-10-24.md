@@ -66,7 +66,7 @@ Reste à faire :
 - [ ] Renseigner les 8 secrets `STRIPE_PRICE_*` côté Supabase (`scripts/deploy-production.sh` ou tableau de bord) ; `STRIPE_SECRET_KEY` doit être celle du même compte.
 - [x] Taux de TVA « TVA 20 % » (France, `vat`, exclusif) créé en live le 24 octobre 2026 : `STRIPE_TAX_RATE_ID=txr_1UU7xsGPCwvw6qTNXs9ztZIb` (secret Supabase pas encore renseigné). Aucun contrôle préalable des taux existants n'a été possible : un doublon éventuel est sans effet.
 - [x] Webhook Stripe créé en live par le propriétaire (déclaré le 24 octobre 2026) : « Votre compte », `https://rgxesocsvhgsqoehxhgt.supabase.co/functions/v1/stripe-webhook`, événements `checkout.session.completed` et `customer.subscription.created/updated/deleted`. Non vérifié depuis le développement ; le secret `STRIPE_WEBHOOK_SECRET` (`whsec_…`) n'est jamais consigné ici. À contrôler : secret présent côté Supabase (`scripts/deploy-production.sh --dry-run`) et premier événement signé accepté (test d'abonnement avec code promo 100 %).
-- [ ] Activer le portail client Stripe.
+- [x] Portail client Stripe activé en live par le propriétaire (déclaré le 24 octobre 2026). Réglages attendus : moyen de paiement, factures et informations client activés ; résiliation en fin de période ; **changement de formule et pause désactivés** (le changement Start/Pro passe par l'app). Non vérifié depuis le développement : à contrôler lors de la recette (section 7). Compte Stripe partagé : la configuration s'applique à tout le compte.
 - [ ] Compte partagé : quand un compte Stripe ZeeRoo dédié existera, recréer ces prix dessus et archiver ceux-ci.
 
 ## Administrateurs de la plateforme
