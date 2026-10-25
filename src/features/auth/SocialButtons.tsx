@@ -6,6 +6,7 @@ import { Platform, StyleSheet, View, useColorScheme } from 'react-native';
 import { AppText, Button } from '@/components/ui';
 import { radius, spacing } from '@/theme';
 
+import { SOCIAL_SIGN_IN_ENABLED } from './config';
 import { authErrorKey } from './errors';
 import {
   isAppleSignInAvailable,
@@ -34,7 +35,7 @@ export function SocialButtons({ intro }: { intro?: string }) {
     void isAppleSignInAvailable().then(setAppleAvailable);
   }, []);
 
-  if (!appleAvailable && !googleAvailable) return null;
+  if (!SOCIAL_SIGN_IN_ENABLED || (!appleAvailable && !googleAvailable)) return null;
 
   const run = async (provider: Provider) => {
     setError(null);

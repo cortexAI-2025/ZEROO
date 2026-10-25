@@ -361,7 +361,8 @@ Ce dépôt-ci ne contient que l'application.
 
 ## Inscription et connexion
 
-- **Clients** : « Continuer avec Google » ou « Continuer avec Apple » en premier ; l'e-mail + mot de passe reste en dessous.
+- **Connexion par e-mail uniquement pour l'instant.** Les boutons « Continuer avec Google / Apple » sont masqués par l'interrupteur `SOCIAL_SIGN_IN_ENABLED` (`src/features/auth/config.ts`, `false`). Le reste est prêt : pour les réactiver, configurez les fournisseurs ci-dessous dans Supabase, passez l'interrupteur à `true` et redéployez.
+- **Clients (quand Google / Apple seront réactivés)** : « Continuer avec Google » ou « Continuer avec Apple » en premier ; l'e-mail + mot de passe reste en dessous.
 - **Commerçants et livreurs** : Google, Apple ou e-mail, puis **confirmation de l'e-mail uniquement** avant de créer leur espace (plus de vérification par téléphone ni SMS pour l'instant). La règle est appliquée en base (`pro_verification_required`).
 
 À configurer dans Supabase (projet de production) :
