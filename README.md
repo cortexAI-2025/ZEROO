@@ -233,7 +233,7 @@ Les tests qui visaient l'ancien paiement par Stripe Connect (`stripe-mock`) sont
 
 Ce qui couvre aujourd'hui le paiement et la facturation :
 - `supabase/tests/database/payments_direct.test.sql` (pgTAP) : déclaration par le client, confirmation par le seul professionnel, espèces, livraison ;
-- **aucun test automatique ne couvre** les fonctions `billing` et `stripe-webhook` (prix, anti-doublon, signature) : elles ne sont validées que par relecture et par la recette ;
+- `supabase/functions/_tests/` (Deno, job CI `functions`) : les vraies fonctions `billing` et `stripe-webhook` contre un faux Stripe et une fausse base en mémoire (prix, anti-doublon, essai unique, changement de formule, signature, idempotence). Ne valident pas Stripe lui-même : voir la recette. Lancer : `deno test -A --no-lock --node-modules-dir=none supabase/functions/_tests/` ;
 - la recette en production décrite dans `docs/RECETTE.md`, seul moyen de valider Stripe de bout en bout (essai, changement de formule, impayé, webhook signé).
 
 En local, `stripe listen --forward-to localhost:54321/functions/v1/stripe-webhook` relaie les webhooks d'abonnement vers les fonctions.

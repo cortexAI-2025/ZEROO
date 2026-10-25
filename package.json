@@ -87,7 +87,8 @@
   "jest": {
     "preset": "jest-expo",
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/supabase/functions/"
     ]
   }
 }
