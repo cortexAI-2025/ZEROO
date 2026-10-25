@@ -1440,6 +1440,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          account_space: string | null;
           created_at: string;
           display_name: string | null;
           id: string;
@@ -1574,6 +1575,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_my_account_space: { Args: never; Returns: string | null };
+      claim_account_space: { Args: { p_space: string }; Returns: string };
+
       merchant_advanced_stats: {
         Args: { p_days?: number; p_merchant_id: string };
         Returns: Json;

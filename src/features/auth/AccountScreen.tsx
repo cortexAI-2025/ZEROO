@@ -5,18 +5,11 @@ import { router } from 'expo-router';
 
 import { AppText, Button, ListRow, Screen } from '@/components/ui';
 import { useIsPlatformAdmin } from '@/features/marketing/hooks';
-import { useSpace } from '@/features/space/SpaceProvider';
 import { confirmAsync } from '@/lib/confirm';
 import { errorKey } from '@/lib/errors';
 
 import { deleteAccount, signOut } from './api';
 import { useAuth } from './AuthProvider';
-
-const SWITCH_LABELS = {
-  client: 'space.switchToClient',
-  merchant: 'space.switchToMerchant',
-  courier: 'space.switchToCourier',
-} as const;
 
 /**
  * Écran « Compte », partagé par les espaces client, commerçant et livreur. `children` :
@@ -25,7 +18,6 @@ const SWITCH_LABELS = {
 export function AccountScreen({ children }: { children?: ReactNode }) {
   const { t } = useTranslation();
   const { session } = useAuth();
-  const { space, setSpace } = useSpace();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -68,17 +60,6 @@ export function AccountScreen({ children }: { children?: ReactNode }) {
         />
       ) : null}
 
-      {(['client', 'merchant', 'courier'] as const)
-        .filter((other) => other !== space)
-        .map((other) => (
-          <Button
-            key={other}
-            testID={`switch-space-${other}`}
-            variant="secondary"
-            title={t(SWITCH_LABELS[other])}
-            onPress={() => setSpace(other)}
-          />
-        ))}
       <Button
         variant="secondary"
         title={t('account.signOut')}

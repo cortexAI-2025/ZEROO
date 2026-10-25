@@ -1,50 +1,66 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, use, useState } from 'react';
 
-/** Un même compte peut commander (client), gérer son commerce (merchant) ou livrer (courier). */
-export type Space = 'client' | 'merchant' | 'courier';
+import { useAuth } from '@/features/auth/AuthProvider';
 
-const SPACES: readonly Space[] = ['client', 'merchant', 'courier'];
+import { claimAccountSpace, fetchAccountSpace, type Space } from './api';
 
-const STORAGE_KEY = 'zeroo.space';
-
-function readStoredSpace(): Space | null {
-  try {
-    const value = globalThis.localStorage?.getItem(STORAGE_KEY);
-    return SPACES.includes(value as Space) ? (value as Space) : null;
-  } catch {
-    return null;
-  }
-}
+export type { Space } from './api';
 
 type SpaceState = {
   space: Space | null;
-  setSpace: (space: Space | null) => void;
+  isLoading: boolean;
+  error: unknown;
+  refetch: () => void;
+  chooseSpace: (space: Space) => Promise<void>;
+  selectSignUpSpace: (space: Space) => void;
+  signUpSpace: Space | null;
 };
 
-const SpaceContext = createContext<SpaceState>({ space: null, setSpace: () => {} });
+const SpaceContext = createContext<SpaceState>({
+  space: null,
+  isLoading: true,
+  error: null,
+  refetch: () => {},
+  chooseSpace: async () => {},
+  selectSignUpSpace: () => {},
+  signUpSpace: null,
+});
 
-/** Mémorise sur l'appareil le dernier espace utilisé (préférence locale, rien côté serveur). */
+/** L'espace appartient au compte. Aucune préférence locale ne donne accès à un autre métier. */
 export function SpaceProvider({ children }: { children: ReactNode }) {
-  const [space, setSpaceState] = useState<Space | null>(readStoredSpace);
-
-  const setSpace = (next: Space | null) => {
-    setSpaceState(next);
-    try {
-      if (next) globalThis.localStorage?.setItem(STORAGE_KEY, next);
-      else globalThis.localStorage?.removeItem(STORAGE_KEY);
-    } catch {
-      // Stockage indisponible : la préférence reste en mémoire pour la session.
-    }
+  const { session, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const [signUpSpace, selectSignUpSpace] = useState<Space | null>(null);
+  const key = ['account-space', session?.user.id];
+  const query = useQuery({ queryKey: key, queryFn: fetchAccountSpace, enabled: !!session });
+  const chooseSpace = async (next: Space) => {
+    if (!session) throw new Error('not_authenticated');
+    const claimed = await claimAccountSpace(next);
+    queryClient.setQueryData(key, claimed);
   };
-
-  return <SpaceContext value={{ space, setSpace }}>{children}</SpaceContext>;
+  return (
+    <SpaceContext
+      value={{
+        space: session ? (query.data ?? null) : null,
+        isLoading: authLoading || (!!session && query.isPending),
+        error: session ? query.error : null,
+        refetch: () => {
+          void query.refetch();
+        },
+        chooseSpace,
+        selectSignUpSpace,
+        signUpSpace,
+      }}>
+      {children}
+    </SpaceContext>
+  );
 }
 
 export function useSpace() {
   return use(SpaceContext);
 }
 
-/** Écran d'accueil d'un utilisateur connecté, selon l'espace choisi. */
 export function homeHref(space: Space | null) {
   if (space === 'client') return '/explore' as const;
   if (space === 'merchant') return '/pro' as const;

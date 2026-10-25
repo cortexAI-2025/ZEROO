@@ -137,16 +137,15 @@
     }
   },
   "space": {
-    "title": "Que souhaitez-vous faire ?",
+    "title": "Quel type de compte souhaitez-vous créer ?",
     "client": "Commander",
     "clientHint": "Trouver un snack ou un restaurant et commander à emporter",
     "merchant": "Gérer mon commerce",
     "merchantHint": "Recevoir les commandes, gérer le menu, sans commission",
-    "switchToClient": "Passer à l'espace client",
-    "switchToMerchant": "Passer à l'espace commerçant",
     "courier": "Livrer",
     "courierHint": "Livreur indépendant : livrez pour les restaurants de votre secteur, sans commission",
-    "switchToCourier": "Passer à l'espace livreur"
+    "permanentHint": "Un compte, un espace : ce choix est définitif. Pour utiliser un autre espace, déconnectez-vous et créez un compte distinct.",
+    "locked": "Ce compte appartient à un autre espace. Déconnectez-vous pour utiliser un compte distinct."
   },
   "client": {
     "tabs": {

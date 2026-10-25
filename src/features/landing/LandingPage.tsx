@@ -126,11 +126,11 @@ export function LandingPage() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const { wide } = useColumns();
-  const { setSpace } = useSpace();
+  const { selectSignUpSpace } = useSpace();
 
   // Mémorise l'espace visé : après inscription, l'utilisateur arrive au bon endroit.
   const start = (space: Space) => {
-    setSpace(space);
+    selectSignUpSpace(space);
     router.push('/sign-up');
   };
 
