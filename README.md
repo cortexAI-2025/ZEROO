@@ -362,16 +362,16 @@ Ce dépôt-ci ne contient que l'application.
 ## Inscription et connexion
 
 - **Clients** : « Continuer avec Google » ou « Continuer avec Apple » en premier ; l'e-mail + mot de passe reste en dessous.
-- **Commerçants et livreurs** : Google, Apple ou e-mail, puis vérification obligatoire de l'e-mail et du téléphone mobile (code SMS) avant de créer leur espace. La règle est appliquée en base (`pro_verification_required`).
+- **Commerçants et livreurs** : Google, Apple ou e-mail, puis **confirmation de l'e-mail uniquement** avant de créer leur espace (plus de vérification par téléphone ni SMS pour l'instant). La règle est appliquée en base (`pro_verification_required`).
 
 À configurer dans Supabase (projet de production) :
 1. **Authentication → URL Configuration** : Site URL `https://app.zeeroo.fr`, Redirect URLs `https://app.zeeroo.fr/**` (et `zeroo://**` pour l'app mobile).
 2. **Authentication → Providers → Google** : ID client et secret OAuth (Google Cloud Console, type « Application Web », URI de redirection autorisée : `https://<projet>.supabase.co/auth/v1/callback`). Ajoutez aussi les ID clients iOS / Android dans « Authorized Client IDs » pour l'app mobile.
 3. **Authentication → Providers → Apple** : Services ID, Team ID, Key ID et clé `.p8` (compte Apple Developer), même URL de retour.
-4. **Authentication → Providers → Phone** : activez le fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Laissez « Enable phone signup » désactivé : le téléphone sert seulement à vérifier les professionnels.
+4. **Authentication → Providers → Phone** : laissez le fournisseur **désactivé** (aucun SMS n'est envoyé).
 5. Dans Vercel, `EXPO_PUBLIC_OAUTH_PROVIDERS` = `google,apple` (retirez un fournisseur tant qu'il n'est pas configuré, son bouton disparaît).
 
-Données de démo : le commerçant et le livreur ont un téléphone vérifié ; un nouveau compte pro de test doit passer par la vérification SMS (en local, `[auth.sms.test_otp]` de `supabase/config.toml` permet un code fixe).
+Données de démo : un nouveau compte pro de test n'a besoin que d'un e-mail confirmé (en local, l'e-mail est lu dans Mailpit). Le numéro de téléphone du profil reste un simple champ de contact, sans vérification.
 
 ## Identité visuelle
 
