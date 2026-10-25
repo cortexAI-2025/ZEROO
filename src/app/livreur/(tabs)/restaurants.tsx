@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
@@ -24,7 +25,9 @@ export default function CourierRestaurantsScreen() {
   const courier = useCurrentCourier();
   const links = useMyLinks(courier.id);
   const actions = useCourierActions();
-  const [query, setQuery] = useState('');
+  const { recherche } = useLocalSearchParams<{ recherche?: string }>();
+  const [typedQuery, setQuery] = useState<string | null>(null);
+  const query = typedQuery ?? (typeof recherche === 'string' ? recherche : '');
   const search = useMerchantSearch(query);
   const [error, setError] = useState<string | null>(null);
   const linked = new Set((links.data ?? []).map((l) => l.merchant_id));

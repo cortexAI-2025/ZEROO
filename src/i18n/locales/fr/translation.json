@@ -879,27 +879,32 @@
     },
     "qr": {
       "title": "Votre QR code",
-      "body": "Imprimez-le et affichez-le en caisse et en vitrine : vos clients commandent directement chez vous, sans commission.",
-      "cta": "Commandez en ligne, récupérez sans attendre",
+      "body": "Ce QR ouvre votre commerce dans l’application ZeeRoo. Les clients peuvent consulter le menu et commander ; les livreurs connectés retrouvent le commerce dans leur espace.",
+      "cta": "Ouvrez ce commerce dans l’application",
       "shareMessage": "Commandez chez {{name}} sur ZeeRoo : {{url}}",
       "print": "Imprimer",
       "kit": {
         "title": "Vos supports à imprimer",
-        "body": "Chaque QR code ouvre votre menu. Flyers à glisser dans les sacs de commande ; autocollants à placer en vitrine ou en caisse. Ouvrez le support, puis imprimez-le ou enregistrez-le en PDF. Faites un essai de scan avant un tirage en quantité.",
+        "body": "Deux destinations : autocollant vitrine vers l’application ; flyers vers la fiche ou le mini-site sur zeeroo.fr. Ouvrez le support, puis imprimez ou enregistrez en PDF. Testez chaque QR avant un tirage en quantité.",
         "flyer": "Flyer A6 - une page",
         "sticker": "Autocollant vitrine - 10 × 10 cm",
         "sheet": "Planche A4 - 4 flyers à découper",
         "headline": "La prochaine fois, commandez en direct.",
-        "stickerHeadline": "Commandez ici. En direct.",
-        "intro": "Vous aimez nos plats ? Retrouvez votre restaurant sur ZeeRoo.",
-        "cta": "Scannez pour voir notre menu",
+        "stickerHeadline": "Clients et livreurs, ouvrez ZeeRoo.",
+        "intro": "Découvrez ZeeRoo, l’application pour commander directement chez votre restaurant.",
+        "cta": "Découvrez notre restaurant",
         "benefit": "Le prix de notre carte. Sans commission sur nos ventes.",
         "footer": "Retrait et livraison selon les options du restaurant. Frais de livraison éventuels indiqués avant validation.",
         "printAction": "Imprimer / Enregistrer en PDF",
         "printHint": "Sur Android : menu du navigateur → Partager → Imprimer → Enregistrer en PDF. Taille réelle 100 %, sans en-têtes ni pieds de page. Pour la planche, utilisez du papier A4.",
         "error": "Le support ne peut pas s’ouvrir. Autorisez les fenêtres contextuelles pour ce site, puis réessayez.",
-        "unpublished": "Votre page n’est pas encore publiée. Vous pouvez préparer les supports, mais publiez votre commerce et testez le QR code avant de les distribuer."
-      }
+        "unpublished": "Votre page n’est pas encore publiée. Vous pouvez préparer les supports, mais publiez votre commerce et testez le QR code avant de les distribuer.",
+        "stickerCta": "Scannez pour ouvrir l’application"
+      },
+      "vitrineTitle": "QR vitrine - clients et livreurs",
+      "flyerTitle": "QR flyer - présentation et fiche du commerce",
+      "flyerBody": "Ce QR ouvre votre page sur zeeroo.fr : présentation de ZeeRoo puis votre mini-site si l’option est active, sinon votre fiche simple.",
+      "openCourierRestaurant": "Retrouver ce restaurant dans mon espace livreur"
     },
     "billing": {
       "subscriptionTitle": "Abonnement ZeeRoo",

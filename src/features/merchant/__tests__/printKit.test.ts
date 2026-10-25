@@ -1,3 +1,4 @@
+import { merchantAppUrl, merchantPublicUrl } from '../types';
 import { buildPrintDocument, type PrintKit } from '../printKit';
 const input: PrintKit = {
   format: 'flyer',
@@ -54,4 +55,9 @@ test('les images QR distantes ou exécutables sont refusées', () => {
   expect(() => buildPrintDocument({ ...input, qrDataUrl: 'javascript:alert(1)' })).toThrow(
     'invalid_qr_image',
   );
+});
+
+test('vitrine et flyer gardent leurs destinations distinctes pour un même commerce', () => {
+  expect(merchantAppUrl('chez-samir')).toBe('https://app.zeeroo.fr/m/chez-samir');
+  expect(merchantPublicUrl('chez-samir')).toBe('https://zeeroo.fr/m/chez-samir');
 });

@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
@@ -15,6 +15,7 @@ import { ItemSheet } from '@/features/cart/ItemSheet';
 import { directionsUrl, formatDistance } from '@/features/discover/location';
 import { useMerchantPage } from '@/features/discover/hooks';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useSpace } from '@/features/space/SpaceProvider';
 import { useLoyaltyCard } from '@/features/loyalty/hooks';
 import { LoyaltyProgress } from '@/features/loyalty/LoyaltyProgress';
 import { slotsLabel } from '@/features/menu/slotLabel';
@@ -71,6 +72,7 @@ export default function MerchantPageScreen() {
   const [selected, setSelected] = useState<MenuItem | null>(null);
   const [showHours, setShowHours] = useState(false);
   const { session } = useAuth();
+  const { space } = useSpace();
   const card = useLoyaltyCard(page.data?.merchant.id);
   const now = useNow(60_000);
   // Offres Happy Hour du mode de commande par défaut (retrait, sinon livraison).
@@ -110,6 +112,17 @@ export default function MerchantPageScreen() {
     <View style={[styles.flex, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title: merchant.name, headerShown: true }} />
       <ScrollView contentContainerStyle={styles.content}>
+        {space === 'courier' ? (
+          <Button
+            title={t('merchant.qr.openCourierRestaurant')}
+            onPress={() =>
+              router.push({
+                pathname: '/livreur/restaurants',
+                params: { recherche: merchant.name },
+              })
+            }
+          />
+        ) : null}
         {site.accent ? (
           <View testID="site-accent" style={[styles.accentBar, { backgroundColor: site.accent }]} />
         ) : null}

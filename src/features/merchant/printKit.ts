@@ -53,8 +53,15 @@ h1{font-size:23pt;line-height:1.03;letter-spacing:-0.7pt;margin:4mm 0 2mm;max-wi
 .intro{font-size:9pt;line-height:1.3;margin:0 0 2mm}.qr{display:flex;justify-content:center;align-items:center;background:white;margin:0 auto;width:43mm;height:43mm}.qr img{width:100%;height:100%;display:block}
 .cta{font-size:10pt;font-weight:800;text-align:center;margin:1mm 0}.url{font-size:7pt;line-height:1.2;text-align:center;overflow-wrap:anywhere;margin:1mm 0 3mm}
 .benefit{border-radius:2mm;background:#eff7e9;padding:2.5mm;font-size:9pt;line-height:1.2;font-weight:700;margin:0}
-footer{position:absolute;bottom:5mm;left:7mm;right:7mm;font-size:6.3pt;line-height:1.3;color:#4d5947}
-.sticker header{padding-bottom:2mm;gap:1mm}.sticker .brand{font-size:18pt}.sticker .tag{font-size:9pt}.sticker h1{font-size:18pt;margin:3mm 0 1mm}.sticker .qr{width:37mm;height:37mm}.sticker .cta{font-size:9pt}.sticker .url{font-size:6.5pt;margin-bottom:0}
+footer{position:absolute;bottom:2mm;left:7mm;right:7mm;font-size:6pt;line-height:1.2;color:#4d5947}
+.flyer header{position:absolute;top:7mm;left:7mm;right:7mm}
+.flyer h1{position:absolute;top:37mm;left:7mm;right:7mm;font-size:20pt;line-height:1.1;margin:0}
+.flyer .intro{position:absolute;top:62mm;left:7mm;right:7mm;font-size:8.5pt;line-height:1.3;margin:0}
+.flyer .qr{position:absolute;top:75mm;left:32.5mm;width:40mm;height:40mm;margin:0}
+.flyer .cta{position:absolute;top:117mm;left:7mm;right:7mm;font-size:9pt;margin:0}
+.flyer .url{position:absolute;top:123mm;left:7mm;right:7mm;font-size:6.5pt;margin:0}
+.flyer .benefit{position:absolute;top:130mm;left:7mm;right:7mm;height:9mm;padding:1mm 2mm;font-size:8pt;margin:0}
+.sticker header{padding-bottom:2mm;gap:1mm}.sticker .brand{font-size:18pt}.sticker .tag{font-size:9pt}.sticker h1{font-size:16pt;margin:3mm 0 1mm}.sticker .qr{width:37mm;height:37mm}.sticker .cta{font-size:9pt}.sticker .url{font-size:6.5pt;margin-bottom:0}
 .four .card{outline:0.2mm dashed #bbb;outline-offset:-0.3mm}
 @page{size:${pageSize};margin:0}
 @media print{body{background:white}.toolbar{display:none}.sheet,.sheet.four,.sheet.single-sticker{margin:0}.card{box-shadow:none}}

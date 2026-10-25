@@ -626,3 +626,8 @@ Un compte Auth appartient définitivement à un seul espace : client, restaurant
 Les créations de commerce, de livreur et de commande contrôlent l'espace en base. Les helpers de propriété et les fonctions serveur de facturation/création de commande le contrôlent aussi. Les routes privées sont fermées pendant la lecture du rôle ; un lien direct vers un autre espace ne l'accorde pas. Les menus publics restent consultables.
 
 Reprise : les comptes possédant un seul profil professionnel retrouvent cet espace automatiquement. Les anciens comptes de démonstration multi-profils doivent choisir une fois leur espace définitif. Les données et abonnements historiques restent conservés. Avant le déploiement, examiner ces comptes et leurs éventuels abonnements : une réaffectation de données à un compte distinct demande un traitement administratif explicite. Cette migration ne refond pas toutes les anciennes RPC métier ; leur contrôle d'identité et leurs RLS restent en place. Ne pas appliquer la migration en production sans déployer aussi les fonctions serveur et le frontend correspondants.
+
+
+### QR publics et vitrine professionnelle
+
+Le QR vitrine cible `app.zeeroo.fr/m/<slug>` pour clients et livreurs. Le QR flyer présente l'application et cible `zeeroo.fr/m/<slug>`, servi par le dépôt `zeroo_mainpage` : mini-site si `has_minisite` est actif côté serveur, fiche simple sinon. L'annuaire public `/annuaire/` filtre les commerces publiés par ville, département et nom. Aucune modification de rôle ni demande de rattachement livreur n'est déclenchée au scan.
