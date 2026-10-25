@@ -16,7 +16,7 @@ Le modèle actuel est : paiements de repas et courses directement aux profession
 - [x] (Isolés dans `e2e/legacy-connect/`) Auditer `e2e/delivery.e2e.js` et `e2e/delivery-app.e2e.js` pour supprimer les attentes Connect.
 - [x] Commande acceptée → déclaration client → confirmation professionnelle ; fausse confirmation par un tiers refusée (pgTAP `payments_direct`).
 - [x] Espèces au retrait / à la remise sans déclaration automatique (pgTAP `payments_direct`).
-- [ ] Tester les abonnements : essai 30 jours, changement de formule, webhook signé et idempotent, impayé, résiliation, droits RLS.
+- [~] Abonnements : logique des fonctions `billing` et `stripe-webhook` testée contre un faux Stripe (68 tests Deno, job CI `functions` : essai unique, anti-doublon, changement de formule, signature, idempotence, impayé reporté). **Reste à valider en réel** (recette, section 7) : Stripe Checkout, essai, portail, impayé, résiliation.
 - [ ] Vérifier que les montants des commandes ne transitent jamais par le compte Stripe ZEEROO.
 
 ## P0 — Supabase

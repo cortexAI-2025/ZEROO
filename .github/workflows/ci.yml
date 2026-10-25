@@ -92,3 +92,16 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build web et scénarios simulés
         run: npm run e2e:mock
+
+  # Fonctions d'abonnement (billing, stripe-webhook) : les vraies fonctions contre un faux Stripe et
+  # une fausse base en mémoire. Aucun appel à Stripe ni à Supabase, aucun secret.
+  functions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Tests des fonctions
+        run: deno test -A --no-lock --node-modules-dir=none supabase/functions/_tests/
