@@ -1,5 +1,5 @@
 /* ---------- Restaurant ---------- */
-const RTABS=[['orders','Commandes','list'],['menu','Menu','menu'],['stats','Activité','chart'],['shop','Boutique','shop']];
+const RTABS=[['orders','Commandes','list'],['menu','Menu','menu'],['stats','Activité','chart'],['shop','Boutique','shop'],['account','Compte','user']];
 const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Auj.'];
 const REV=[38600,41250,29800,45500,61200,74800,18600], ORD=[27,29,21,31,42,51,12];
 const COURIERS={karim:{name:'Karim B.',veh:'Scooter',rating:4.9,trips:212},lea:{name:'Léa M.',veh:'Vélo',rating:4.8,trips:96},tom:{name:'Tom R.',veh:'Voiture',rating:null,trips:0}};
@@ -9,13 +9,14 @@ function resto(){
   if(r.tab==='menu') return restoMenu(tb);
   if(r.tab==='stats') return restoStats(tb);
   if(r.tab==='shop') return restoShop(tb);
+  if(r.tab==='account') return restoAccount(tb);
   return restoOrders(tb);
 }
 function liveOrder(){
   const x=o();
   if(!x) return `<div class="empty" style="padding:28px 12px"><div class="h">Aucune commande en cours</div><p>Les commandes arrivent ici avec une alerte sonore.</p></div>`;
   const d=x.fulfil==='delivery';
-  const head=`<div class="row"><div class="f"><div class="sub">Nadia · ${d?'🛵 Livraison':'À emporter'}</div><div class="mute">Code ${x.code}</div></div><span class="badge ${x.status==='placed'?'w':''}">${{placed:'Nouvelle',accepted:'En préparation',ready:'Prête',out:'Partie',delivered:'Terminée'}[x.status]}</span></div>
+  const head=`<div class="row"><div class="f"><div class="sub">Nadia · ${d?'🛵 Livraison':'À emporter'}</div><div class="mute">Code ${x.code}${x.when?' · 🗓️ programmée '+x.when:''}</div></div><span class="badge ${x.status==='placed'?'w':''}">${{placed:'Nouvelle',accepted:'En préparation',ready:'Prête',out:'Partie',delivered:'Terminée'}[x.status]}</span></div>
     ${x.items.map(l=>`<div class="row"><div class="f">${l.q} × ${esc(l.name)}</div></div>`).join('')}
     <div class="mute">${euro(x.total)} · ${x.mealPay==='cash'?'espèces au comptoir':'carte via votre lien de paiement'}</div>
     ${x.mealPay!=='card'||x.status==='placed'||x.status==='refused'?'':x.mealPaid?`<div class="note ok">Repas payé : ${euro(x.total)} reçus.</div>`
@@ -62,24 +63,45 @@ function restoStats(tb){
    <div class="stat"><b>${euro(Math.round(wr/wo))}</b><span>Panier moyen</span></div><div class="stat"><b><span class="stars">★</span> ${avg(S.rating.r).toFixed(2)}</b><span>${S.rating.r.count} avis</span></div></div>
    <div class="card"><div class="sub">Chiffre d'affaires par jour</div>${barChart(rev,DAYS,v=>euro(v))}</div>
    <div class="card"><div class="sub">Produits les plus vendus (7 jours)</div>${top.map(([n,c])=>`<div class="dist"><span style="width:104px;color:var(--ink)">${n}</span><span class="tr"><i style="width:${Math.round(c/tm*100)}%"></i></span><span>${c}</span></div>`).join('')}</div>
+   ${isPro()?`<div class="card"><div class="row"><div class="sub f">Heures de pointe</div><span class="badge pro">PRO</span></div>${barChart([6,31,18,9,4,22,34,12],['11h','12h','13h','14h','17h','19h','20h','21h'],v=>v+' cmd')}<div class="mute">Clients fidèles : 38 % des commandes · Happy Hour : 14 % · Retrait 61 % / livraison 39 %.</div></div>`
+     :`<div class="card lock"><div class="row"><div class="sub f">Statistiques avancées</div><span class="badge pro">PRO</span></div><div class="mute">Période étendue, heures de pointe, clients fidèles, modes de commande et Happy Hour. Vous voyez ici les 7 derniers jours.</div><button class="btn sm" data-act="upgrade">Passer en Pro</button></div>`}
    <div class="note ok"><b>Commission ZeeRoo : 0,00 €</b><br>Vos clients vous paient directement, par carte via votre lien de paiement ou en espèces.</div>
    <div class="card"><div class="sub">Répartition des paiements</div>
      <div class="dist"><span style="width:104px;color:var(--ink)">Carte (votre lien)</span><span class="tr"><i style="width:78%"></i></span><span>78 %</span></div>
      <div class="dist"><span style="width:104px;color:var(--ink)">Espèces</span><span class="tr"><i style="width:22%"></i></span><span>22 %</span></div></div>`,'',tb);
 }
 function restoShop(tb){
-  const s=S.shop,pend=Object.values({t:S.links.tom}).filter(v=>v==='pending').length;
+  const s=S.shop,pend=Object.values({t:S.links.tom}).filter(v=>v==='pending').length,pro=isPro();
+  const prow=(title,sub,act)=>row(title,pro?sub:'Réservé à la formule Pro',act,pro?'':'<span class="badge pro">PRO</span>');
   return page('Boutique',null,`
    <div class="card"><div class="row"><div class="tile" style="background:var(--ink)">${esc(s.name[0]||'?')}</div><div class="f"><div class="sub">${esc(s.name)}</div><div class="mute">${esc(s.cat)} · ${esc(s.city)}</div><div class="mute"><span class="stars">★</span> ${avg(S.rating.r).toFixed(1)} · ${S.rating.r.count} avis</div></div></div>
      <div class="row"><div class="f"><div class="sub">Visible des clients</div></div>${sw('shop.published',s.published)}</div></div>
    <div class="card" style="padding:0 12px">
-     ${row('Informations de l\'entreprise','Raison sociale, SIRET, adresse, contact','sub:info')}
+     ${row('Informations du commerce','Raison sociale, SIRET, adresse, contact','sub:info')}
      ${row('Horaires d\'ouverture',s.hours.filter(h=>h.on).length+' jours par semaine','sub:hours')}
+     ${row('Fermetures exceptionnelles','Congés, jours fériés','sub:close')}
      ${row('Livraison',s.deliveryOn?'Activée · '+euro(s.fee)+' · '+s.radius/1000+' km':'Désactivée','sub:delivery')}
      ${row('Mes livreurs',Object.values({a:S.links.karim,b:S.links.lea}).filter(v=>v==='approved').length+' actifs'+(pend?' · '+pend+' demande':''),'sub:couriers',pend?'<span class="badge w">Nouveau</span>':'')}
      ${row('Lien de paiement',(s.payLink?'SumUp · actif':'À renseigner')+' · espèces au comptoir '+(s.cash?'activées':'désactivées'),'sub:pay')}
-     ${row('Abonnement','Pro (option livraison) · essai gratuit','sub:plan')}
-   </div>`,'',tb);
+   </div>
+   <div class="sec">Visibilité et ventes</div>
+   <div class="card" style="padding:0 12px">
+     ${row('QR code à afficher','Lien direct vers votre menu','sub:qr')}
+     ${row('Paniers anti-gaspi',s.basketOn?'Activés · 3 paniers':'Désactivés','sub:baskets')}
+     ${prow('Happy Hours',s.hhOn?'1 offre active':'Offre désactivée','sub:hh')}
+     ${prow('Mini-site dans l\'annuaire','app.zeeroo.fr/m/chez-samir','sub:mini')}
+     ${prow('Commandes groupées entreprises',s.groupOn?'Activées · 5 convives minimum':'Désactivées','sub:group')}
+     ${prow('Campagne mensuelle','Réseaux ZEEROO · après validation','sub:camp')}
+     ${row('Historique des commandes','','toastK')}
+   </div>
+   <div class="card" style="padding:0 12px">${row('Abonnement',(isPro()?'Établissement Pro':'Établissement Start')+' · essai gratuit','sub:plan')}</div>`,'',tb);
+}
+function restoAccount(tb){
+  return page('Compte',null,`
+   <div class="card"><div class="row"><div class="av">S</div><div class="f"><div class="h">Samir</div><div class="mute">samir@chezsamir.fr <span class="ok">✓ confirmé</span></div><div class="mute">Connexion par e-mail</div></div></div></div>
+   <div class="note ok">Votre e-mail est confirmé : votre espace professionnel est ouvert. Aucune autre vérification n'est demandée.</div>
+   <div class="card" style="padding:4px 12px">${row('Notifications','Nouvelles commandes, alertes sonores','toastK')}${row('Aide et contact','contact@aiworkpay.fr','toastK')}${row('Supprimer mon compte','Efface vos données personnelles','toastK')}</div>
+   <button class="btn ghost" data-act="toastK">Se déconnecter</button>`,'',tb);
 }
 function restoSub(sub){
   const s=S.shop, back='rback';
@@ -89,7 +111,7 @@ function restoSub(sub){
     ${field('N° de TVA','shop.tva')}
     <div class="sec">Adresse et contact</div>${field('Adresse','shop.addr')}<div class="grid2">${field('Code postal','shop.cp',{mode:'numeric'})}${field('Ville','shop.city')}</div>
     ${field('Téléphone','shop.phone',{mode:'tel'})}${field('E-mail','shop.email')}
-    <div class="sec">Présentation</div><div class="mute">Catégorie</div>${chips('shop.cat',['Sandwicherie','Restaurant','Boulangerie','Snack'],s.cat)}
+    <div class="sec">Présentation</div><div class="mute">Catégorie</div>${chips('shop.cat',['Sandwicherie','Restaurant','Boulangerie','Snack','Dark kitchen'],s.cat)}
     ${field('Description','shop.desc',{area:true})}`,'<button class="btn" data-act="rback">Terminé</button>');
   if(sub==='hours') return page('Horaires',back,s.hours.map((h,i)=>`<div class="card"><div class="row"><div class="f sub">${['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][i]}</div>${h.on?'':'<span class="mute">Fermé</span>'}${sw('shop.hours.'+i+'.on',h.on)}</div>
     ${h.on?`<div class="grid2">${field('Ouverture','shop.hours.'+i+'.from',{type:'time'})}${field('Fermeture','shop.hours.'+i+'.to',{type:'time'})}</div>`:''}</div>`).join(''),'<button class="btn" data-act="rback">Terminé</button>');
@@ -112,11 +134,41 @@ function restoSub(sub){
       <div class="mute">Vous confirmez chaque paiement reçu dans l'onglet Commandes.</div></div>
     <div class="card"><div class="row"><div class="f"><div class="sub">Espèces au comptoir</div><div class="mute">Retrait uniquement. La commande part sans paiement en ligne et vous encaissez au retrait.</div></div>${sw('shop.cash',s.cash)}</div></div>`,'<button class="btn" data-act="rback">Terminé</button>');
   if(sub==='plan') return page('Abonnement',back,`
-    <div class="card"><div class="sub">Start · retrait</div><div class="price">19,99 € HT / mois</div><div class="mute">23,99 € TTC · ou 199,99 € HT par an. Retrait sur place, commandes illimitées, 0 % de commission.</div></div>
-    <div class="card" style="border-color:var(--green)"><div class="row"><div class="sub f">Pro · option livraison</div><span class="badge">Votre formule · essai</span></div><div class="price">29,99 € HT / mois</div><div class="mute">35,99 € TTC · ou 299,99 € HT par an. Retrait et livraison par vos livreurs.</div></div>
-    <div class="mute">30 jours d'essai gratuit, résiliable à tout moment. Le client ne paie aucun frais.</div>
+    <div class="note ok">Essai gratuit de 30 jours en cours. Votre formule : <b>${isPro()?'Établissement Pro':'Établissement Start'}</b>.</div>
+    <div class="card" ${isPro()?'':'style="border-color:var(--green)"'}><div class="row"><div class="sub f">Établissement Start</div>${isPro()?'':'<span class="badge">Votre formule</span>'}</div><div class="price">19,99 € HT / mois</div><div class="mute">23,99 € TTC · ou 199,99 € HT par an.</div>
+      <div class="mute">Click &amp; Collect et livraison, commandes illimitées et programmées, menu, QR code, fidélité, avis, paniers anti-gaspi. 0 % de commission.</div>${isPro()?'<button class="btn sm ghost" data-act="plan" data-v="start">Passer en Start</button>':''}</div>
+    <div class="card" ${isPro()?'style="border-color:var(--green)"':''}><div class="row"><div class="sub f">Établissement Pro</div>${isPro()?'<span class="badge">Votre formule</span>':'<span class="badge pro">PRO</span>'}</div><div class="price">29,99 € HT / mois</div><div class="mute">35,99 € TTC · ou 299,99 € HT par an.</div>
+      <div class="mute">Tout Start, plus Happy Hours, mini-site dans l'annuaire, commandes groupées entreprises, statistiques avancées et une campagne mensuelle sur les réseaux ZEEROO.</div>${isPro()?'':'<button class="btn sm" data-act="plan" data-v="pro">Passer en Pro</button>'}</div>
+    <div class="mute">Le changement de formule modifie votre abonnement existant, au prorata : jamais un second abonnement. Résiliable à tout moment, vos données sont conservées.</div>
     <button class="btn ghost" data-act="toastPortal">Gérer mon abonnement</button>
     <div class="mute">Seul l'abonnement passe par Stripe (AiWorkPay). Vos ventes vous sont payées directement par vos clients.</div>`);
+  const proGate=(title,body,foot)=>isPro()?page(title,back,body,foot||'<button class="btn" data-act="rback">Terminé</button>'):page(title,back,`<div class="card lock"><div class="row"><div class="sub f">${title}</div><span class="badge pro">PRO</span></div><div class="mute">Cette fonction est réservée à la formule Établissement Pro. Vos réglages sont conservés si vous repassez en Start.</div></div>`,'<button class="btn" data-act="upgrade">Passer en Pro</button>');
+  if(sub==='hh') return proGate('Happy Hours',`
+    <div class="mute">Des prix réduits sur des créneaux choisis, avec quota et contrôle du stock à la commande.</div>
+    <div class="card"><div class="row"><div class="f"><div class="sub">Menu américain</div><div class="mute"><span class="strike">${euro(950)}</span>${euro(800)} · lun.–ven. 14:00–18:00 · quota 20</div></div>${sw('shop.hhOn',s.hhOn)}</div></div>
+    <div class="note ${s.hhOn?'ok':''}">${s.hhOn?'Offre active : vos clients voient le prix Happy Hour dans l\'annuaire et dans le menu (regardez le téléphone Client).':'Offre désactivée : le prix normal s\'applique.'}</div>`);
+  if(sub==='mini') return proGate('Mini-site',`
+    <div class="card"><div class="sub">Votre page dans l'annuaire ZEEROO</div><div class="mute">Menu, horaires, photos, avis et commande directe, sur une adresse à vous.</div><div class="price">app.zeeroo.fr/m/chez-samir</div></div>
+    <img class="qr" src="__QR__" alt="QR code vers votre mini-site">
+    <div class="mute" style="text-align:center">Imprimez-le ou affichez-le en vitrine. Vos anciens QR codes continuent de fonctionner.</div>`);
+  if(sub==='group') return proGate('Commandes groupées',`
+    <div class="card"><div class="row"><div class="f"><div class="sub">Accepter les commandes groupées</div><div class="mute">Pour les équipes et les entreprises : commande programmée, entreprise et nombre de convives.</div></div>${sw('shop.groupOn',s.groupOn)}</div></div>
+    <div class="card"><div class="mute">Délai minimum</div><div class="sub">24 h à l'avance</div><div class="mute">Effectif minimum</div><div class="sub">5 convives</div><div class="mute">Réglée directement à votre établissement, sans facturation ZeeRoo.</div></div>`);
+  if(sub==='camp') return proGate('Campagne mensuelle',`
+    <div class="card"><div class="sub">Une campagne par mois sur les réseaux ZEEROO</div><div class="mute">Programmée à la date de renouvellement de votre abonnement, après confirmation du paiement. Le contenu est validé par l'équipe ZEEROO avant publication.</div></div>
+    <div class="card"><div class="row"><div class="f"><div class="sub">J'autorise ZEEROO à présenter mon établissement</div></div>${sw('shop.mktOn',s.mktOn)}</div></div>
+    <div class="note">Aucune campagne n'est créée sans votre accord, ni après une résiliation ou un paiement non confirmé.</div>`);
+  if(sub==='qr') return page('QR code',back,`
+    <img class="qr" src="__QR__" alt="QR code vers votre menu">
+    <div class="mute" style="text-align:center">app.zeeroo.fr/m/chez-samir</div>
+    <div class="note">Affichez-le en vitrine : vos clients ouvrent directement votre menu. Vos anciens QR codes continuent de fonctionner.</div>`,'<button class="btn" data-act="rback">Terminé</button>');
+  if(sub==='baskets') return page('Paniers anti-gaspi',back,`
+    <div class="card"><div class="row"><div class="f"><div class="sub">Vendre mes invendus</div><div class="mute">En fin de journée, des paniers surprise à prix réduit : un complément, pas le cœur du service.</div></div>${sw('shop.basketOn',s.basketOn)}</div></div>
+    ${s.basketOn?'<div class="card"><div class="sub">Panier surprise</div><div class="mute">3 paniers · 4,00 € au lieu de 12,00 € · retrait 21:30–22:00</div></div>':''}`,'<button class="btn" data-act="rback">Terminé</button>');
+  if(sub==='close') return page('Fermetures',back,`
+    <div class="mute">Les clients ne peuvent pas commander pendant une fermeture.</div>
+    <div class="card"><div class="sub">Congés d'été</div><div class="mute">du 3 au 17 août</div></div>
+    <button class="btn ghost" data-act="toastK">+ Ajouter une fermeture</button>`,'<button class="btn" data-act="rback">Terminé</button>');
   if(sub==='item') return restoItem();
   return '';
 }

@@ -1,8 +1,9 @@
 /* ---------- Client : tableau de bord ---------- */
-const KTABS=[['home','Accueil','shop'],['orders','Commandes','list'],['me','Profil','user']];
+const KTABS=[['home','À proximité','pin'],['orders','Commandes','list'],['loy','Fidélité','gift'],['me','Compte','user']];
 function client(){
   const k=S.k, tb=tabbar('k',KTABS,k.tab);
   if(k.tab==='orders') return k.sub==='order'?clientOrder():clientOrders(tb);
+  if(k.tab==='loy') return clientLoyalty(tb);
   if(k.tab==='me') return k.sub?clientSub(k.sub):clientMe(tb);
   const x=o(), top=(S.view==='home'&&!x)||(x&&S.view==='home');
   const h=clientMain();
@@ -30,18 +31,16 @@ function clientOrder(){
 }
 function clientMe(tb){
   const m=S.me, def=m.addrs.find(a=>a.def);
-  return page('Profil',null,`
-   <div class="card"><div class="row"><div class="av">${esc(m.name[0])}</div><div class="f"><div class="h">${esc(m.name)}</div><div class="mute">${esc(m.email)}</div><div class="mute">${esc(m.phone)}</div></div></div></div>
-   <div class="card"><div class="row"><div class="sub f">Fidélité Chez Samir</div><b>${S.stamps} / 10</b></div>
-    <div class="dist"><span class="tr"><i style="width:${S.stamps*10}%"></i></span></div>
-    <div class="mute">${S.stamps>=10?'Votre prochain menu est offert !':'Plus que '+(10-S.stamps)+' commande'+(10-S.stamps>1?'s':'')+' pour un menu offert. Le restaurant l\'offre lui-même.'}</div></div>
+  return page('Compte',null,`
+   <div class="card"><div class="row"><div class="av">${esc(m.name[0])}</div><div class="f"><div class="h">${esc(m.name)}</div><div class="mute">${esc(m.email)} <span class="ok">✓ confirmé</span></div><div class="mute">${esc(m.phone)} · facultatif</div></div></div></div>
    <div class="card" style="padding:4px 12px">
     ${row('Informations personnelles',esc(m.name)+' · '+esc(m.phone),'ksub:info')}
     ${row('Adresses',m.addrs.length+' enregistrées · '+esc(def.label),'ksub:addr')}
-    ${row('Moyens de paiement',m.card?'Visa •••• 4242':'Aucune carte','ksub:pay')}
+    ${row('Paiements','Directement aux professionnels','ksub:pay')}
     ${row('Restaurants favoris',Object.values(m.favs).filter(Boolean).length+' favori(s)','ksub:fav')}
     ${row('Notifications',m.notif.push?'Activées':'Désactivées','ksub:notif')}
-    ${row('Aide et contact','','toastK')}</div>
+    ${row('Aide et contact','contact@aiworkpay.fr','toastK')}
+    ${row('Supprimer mon compte','Efface vos données personnelles','toastK')}</div>
    <button class="btn ghost" data-act="toastK">Se déconnecter</button>`,'',tb);
 }
 function clientSub(s){
@@ -50,9 +49,17 @@ function clientSub(s){
   if(s==='addr'){t='Adresses';b=m.addrs.map(a=>`<div class="card"><div class="row"><div class="f"><div class="sub">${esc(a.label)} ${a.def?'<span class="badge">Par défaut</span>':''}</div><div class="mute">${esc(a.line)}</div></div></div>
      <div class="row">${a.def?'':`<button class="btn sm ghost" data-act="defAddr" data-id="${a.id}">Par défaut</button>`}<button class="btn sm ghost" data-act="delAddr" data-id="${a.id}">Supprimer</button></div></div>`).join('')+
      `<div class="card">${field('Nouvelle adresse','k.newAddr')}<button class="btn sm" data-act="addAddr">Ajouter</button></div>`}
-  if(s==='pay'){t='Paiement';b=`${m.card?`<div class="card"><div class="row"><div class="f"><div class="sub">Visa •••• 4242</div><div class="mute">Expire 09/28</div></div><button class="btn sm ghost" data-act="delCard">Supprimer</button></div></div>`:`<div class="empty"><div class="h">Aucune carte</div></div><button class="btn" data-act="delCard">Ajouter une carte</button>`}
-     <div class="note">Vous réglez le repas au restaurant et la livraison au livreur, directement. Espèces possibles selon les restaurants.</div>`}
+  if(s==='pay'){t='Paiements';b=`<div class="card"><div class="sub">Aucune carte à enregistrer</div><div class="mute">Vous réglez le repas au restaurant et la livraison au livreur, directement, avec le lien de paiement de chacun (carte, Apple Pay, Google Pay) ou en espèces selon les établissements. Le professionnel confirme la réception.</div></div><div class="note ok">ZeeRoo n'encaisse jamais l'argent de vos commandes et ne prélève aucun frais de service.</div>`}
   if(s==='fav'){t='Favoris';b=[['samir',S.shop.name,'Sandwicherie'],['bella','Bella Pizza','Pizzeria'],['petit','Le Petit Four','Boulangerie']].map(([k,n,c])=>`<div class="lr"><div class="f"><div class="sub">${esc(n)}</div><div class="mute">${c}</div></div><button class="chip" aria-pressed="${!!m.favs[k]}" data-act="fav" data-k="${k}">${m.favs[k]?'♥ Favori':'♡ Ajouter'}</button></div>`).join('')}
-  if(s==='notif'){t='Notifications';b=[['push','Suivi de commande (push)'],['mail','Reçus par e-mail'],['sms','SMS du livreur']].map(([k,l])=>`<div class="lr"><div class="f">${l}</div>${sw('me.notif.'+k,m.notif[k])}</div>`).join('')}
+  if(s==='notif'){t='Notifications';b=[['push','Suivi de commande (notifications)']].map(([k,l])=>`<div class="lr"><div class="f">${l}</div>${sw('me.notif.'+k,m.notif[k])}</div>`).join('')}
   return page(t,'kback',b,'<button class="btn" data-act="kback">Enregistrer</button>');
+}
+
+function clientLoyalty(tb){
+  const n=Math.min(9,S.stamps);
+  return page('Fidélité',null,`
+   <div class="card"><div class="row"><div class="sub f">${esc(S.shop.name)}</div><b>${n} / 9</b></div>
+    <div class="pgrid" role="img" aria-label="${n} menus sur 9, puis un menu offert">${Array.from({length:9},(_,i)=>`<i class="${i<n?'on':''}">${i+1}</i>`).join('')}<i class="gift">offert</i></div>
+    <div class="mute">${n>=9?'Votre prochain menu est offert !':'Plus que '+(9-n)+' menu'+(9-n>1?'s':'')+' pour un menu offert. Le restaurant l\'offre lui-même.'}</div></div>
+   <div class="note">9 menus achetés chez un restaurant, le 10<sup>e</sup> est offert par ce restaurant. Seuls les menus choisis par le restaurant comptent.</div>`,'',tb);
 }
