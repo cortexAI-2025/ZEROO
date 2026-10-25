@@ -87,7 +87,7 @@
     "orWithEmail": "ou avec votre adresse e-mail",
     "signInIntro": "Le plus simple : continuez avec Google ou Apple, sans mot de passe.",
     "signUpIntro": "Le plus rapide : continuez avec Google ou Apple. Pas de mot de passe à retenir.",
-    "proHint": "Commerçant ou livreur ? Google et Apple fonctionnent aussi. Avant d'ouvrir votre espace, nous vérifierons votre e-mail et votre numéro de téléphone par SMS.",
+    "proHint": "Commerçant ou livreur ? Avant d'ouvrir votre espace, nous vérifierons votre adresse e-mail.",
     "checkEmailTitle": "Vérifiez votre boîte mail",
     "checkEmailBody": "Nous avons envoyé un lien à {{email}}. Ouvrez-le depuis ce téléphone pour activer votre compte.",
     "resetTitle": "Réinitialiser le mot de passe",
