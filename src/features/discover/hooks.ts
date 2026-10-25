@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useAuth } from '@/features/auth/AuthProvider';
+
 import {
   fetchMerchantPage,
   fetchMerchantPhotos,
@@ -8,20 +10,32 @@ import {
 } from './api';
 import type { Coordinates } from './location';
 
+// Client connecté : annuaire limité aux établissements affiliés. Attend la fin du chargement de la
+// session pour ne pas afficher d'abord la liste publique.
 export function useNearbyMerchants(coords: Coordinates | null) {
+  const { session, isLoading } = useAuth();
+  const affiliatedOnly = !!session;
   return useQuery({
-    queryKey: ['discover', 'nearby', coords?.latitude.toFixed(3), coords?.longitude.toFixed(3)],
-    queryFn: () => fetchNearbyMerchants(coords!.latitude, coords!.longitude),
-    enabled: !!coords,
+    queryKey: [
+      'discover',
+      'nearby',
+      coords?.latitude.toFixed(3),
+      coords?.longitude.toFixed(3),
+      affiliatedOnly,
+    ],
+    queryFn: () => fetchNearbyMerchants(coords!.latitude, coords!.longitude, affiliatedOnly),
+    enabled: !!coords && !isLoading,
   });
 }
 
 export function useMerchantSearch(query: string) {
+  const { session, isLoading } = useAuth();
+  const affiliatedOnly = !!session;
   const term = query.trim();
   return useQuery({
-    queryKey: ['discover', 'search', term.toLowerCase()],
-    queryFn: () => searchMerchants(term),
-    enabled: term.length >= 2,
+    queryKey: ['discover', 'search', term.toLowerCase(), affiliatedOnly],
+    queryFn: () => searchMerchants(term, affiliatedOnly),
+    enabled: term.length >= 2 && !isLoading,
   });
 }
 
