@@ -64,7 +64,8 @@ Supabase local n'envoie pas de vrais e-mails : ils arrivent dans **Mailpit**, su
 | `npm run db:reset` | Recrée la base locale à partir des migrations et de `supabase/seed.sql` |
 | `npm run db:types` | Régénère `src/types/database.ts` à partir du schéma local |
 | `npm run format` | Formate le code avec Prettier |
-| `npm run e2e` | Tests de bout en bout dans un navigateur (voir plus bas) |
+| `npm run e2e` | Tests de bout en bout dans un navigateur contre le Supabase local (voir plus bas) |
+| `npm run e2e:mock` | Scénarios navigateur sans Supabase (API simulée), utilisés en CI |
 | `npm run dev:order` | Simule une commande payée chez « Chez Samir » (`SLUG=mon-commerce npm run dev:order` pour un autre commerce) |
 
 ## Tester l'étape (a)
@@ -228,24 +229,14 @@ Stripe ne sert qu'aux abonnements (pas de Connect).
 En local, `stripe listen --forward-to localhost:54321/functions/v1/stripe-webhook` relaie les webhooks d'abonnement.
 
 ### Tester sans compte Stripe
-> À mettre à jour : `e2e/payments.e2e.js` et les étapes Connect de `e2e/delivery.e2e.js` décrivent encore l'ancien paiement par Stripe Connect.
+Les tests qui visaient l'ancien paiement par Stripe Connect (`stripe-mock`) sont **isolés dans `e2e/legacy-connect/`** et ne sont plus lancés : ils ne prouvent rien sur le modèle actuel (paiement direct aux professionnels, Stripe uniquement pour les abonnements).
 
-`e2e/payments.e2e.js` teste les fonctions contre **stripe-mock**, le serveur de test officiel de Stripe :
-- création de commande et du paiement ;
-- webhooks signés, signature invalide, doublon ;
-- acceptation avec capture, refus et annulation sans débit ;
-- Stripe Checkout, montant minimum, abonnement impayé ;
-- inscription Connect, abonnement avec essai, portail ;
-- expiration.
+Ce qui couvre aujourd'hui le paiement et la facturation :
+- `supabase/tests/database/payments_direct.test.sql` (pgTAP) : déclaration par le client, confirmation par le seul professionnel, espèces, livraison ;
+- **aucun test automatique ne couvre** les fonctions `billing` et `stripe-webhook` (prix, anti-doublon, signature) : elles ne sont validées que par relecture et par la recette ;
+- la recette en production décrite dans `docs/RECETTE.md`, seul moyen de valider Stripe de bout en bout (essai, changement de formule, impayé, webhook signé).
 
-```bash
-# stripe-mock sur le réseau Docker de Supabase, pour que les fonctions le joignent par son nom
-docker run -d --name stripe-mock --network supabase_network_zeroo -p 12111:12111 stripe/stripe-mock
-# dans supabase/functions/.env : STRIPE_SECRET_KEY=sk_test_mock, STRIPE_API_BASE=http://stripe-mock:12111,
-# STRIPE_WEBHOOK_SECRET=whsec_platform_test, STRIPE_CONNECT_WEBHOOK_SECRET=whsec_connect_test, CRON_SECRET=cron_test
-npx supabase functions serve --env-file supabase/functions/.env
-npm run e2e
-```
+En local, `stripe listen --forward-to localhost:54321/functions/v1/stripe-webhook` relaie les webhooks d'abonnement vers les fonctions.
 
 ## Étape (e) : fidélité
 
@@ -343,8 +334,7 @@ Il ne peut se rendre disponible qu'avec un compte Stripe actif, un abonnement en
 
 **Tests** :
 - 59 tests pgTAP (`delivery.test.sql`) ;
-- `e2e/delivery.e2e.js` : serveur, double paiement contre stripe-mock, webhooks, notifications du livreur et du client, nouveau livreur ;
-- `e2e/delivery-app.e2e.js` : trois navigateurs (nouvelle livreuse, restaurant, cliente), du profil livreur à la livraison.
+- anciens parcours `e2e/legacy-connect/delivery*.e2e.js` : périmés (Stripe Connect), non lancés, remplacés par les tests pgTAP et la recette `docs/RECETTE.md`.
 
 ## Page d'accueil de l'app web
 
@@ -419,7 +409,9 @@ Pistes non incluses, à prioriser ensemble :
 
 ## Tests de bout en bout
 
-`npm run e2e` joue les parcours page d'accueil, authentification, commerçant, client, fidélité et livraison dans un vrai navigateur, et les paiements, notifications et livraisons côté serveur, contre le Supabase local. Les pages Stripe sont simulées et les webhooks signés comme le ferait Stripe. Préparation (fonctions et stripe-mock : voir « Tester sans compte Stripe ») :
+Deux jeux de scénarios navigateur (Playwright) :
+- `npm run e2e:mock` : annuaire public, mini-site, précommandes, **sans Supabase** (API simulée). Il tourne en CI (job `web-smoke`).
+- `npm run e2e` : page d'accueil, authentification et commerçant, contre le Supabase local. Les parcours client, fidélité, paiements et livraison de l'ancien modèle Connect sont dans `e2e/legacy-connect/` et ne sont plus lancés.
 
 ```bash
 npx playwright install chromium   # une seule fois
