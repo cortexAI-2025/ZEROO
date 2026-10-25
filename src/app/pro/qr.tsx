@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Share, StyleSheet, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { AppText, Button, Card, Screen } from '@/components/ui';
 import { useCurrentMerchant } from '@/features/merchant/hooks';
+import { buildPrintDocument, type PrintFormat } from '@/features/merchant/printKit';
 import { merchantPublicUrl } from '@/features/merchant/types';
 import { spacing } from '@/theme';
 
@@ -11,6 +13,44 @@ export default function QrScreen() {
   const { t } = useTranslation();
   const merchant = useCurrentMerchant();
   const url = merchantPublicUrl(merchant.slug);
+  const [printError, setPrintError] = useState(false);
+  const preparePrint = (format: PrintFormat) => {
+    setPrintError(false);
+    const svg = globalThis.document?.querySelector('[data-testid="merchant-qr"] svg');
+    if (!svg) {
+      setPrintError(true);
+      return;
+    }
+    const popup = globalThis.open?.('', '_blank');
+    if (!popup) {
+      setPrintError(true);
+      return;
+    }
+    const qr = svg.cloneNode(true) as SVGElement;
+    qr.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    popup.opener = null;
+    popup.document.open();
+    popup.document.write(
+      buildPrintDocument({
+        format,
+        merchantName: merchant.name,
+        url,
+        qrDataUrl: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr.outerHTML),
+        copy: {
+          headline: t('merchant.qr.kit.headline'),
+          stickerHeadline: t('merchant.qr.kit.stickerHeadline'),
+          intro: t('merchant.qr.kit.intro'),
+          cta: t('merchant.qr.kit.cta'),
+          benefit: t('merchant.qr.kit.benefit'),
+          footer: t('merchant.qr.kit.footer'),
+          print: t('merchant.qr.kit.printAction'),
+          hint: t('merchant.qr.kit.printHint'),
+        },
+      }),
+    );
+    popup.document.close();
+    popup.document.getElementById('print')?.addEventListener('click', () => popup.print());
+  };
 
   const share = () =>
     Share.share({ message: t('merchant.qr.shareMessage', { name: merchant.name, url }), url });
@@ -24,7 +64,7 @@ export default function QrScreen() {
           {merchant.name}
         </AppText>
         <View testID="merchant-qr">
-          <QRCode value={url} size={220} />
+          <QRCode value={url} size={220} quietZone={44} ecl="M" />
         </View>
         <AppText style={[styles.center, styles.dark]}>{t('merchant.qr.cta')}</AppText>
         <AppText variant="muted" style={styles.center} selectable>
@@ -33,11 +73,31 @@ export default function QrScreen() {
       </Card>
       <Button title={t('common.share')} onPress={() => void share()} />
       {Platform.OS === 'web' ? (
-        <Button
-          variant="secondary"
-          title={t('merchant.qr.print')}
-          onPress={() => globalThis.print?.()}
-        />
+        <>
+          <AppText variant="subtitle">{t('merchant.qr.kit.title')}</AppText>
+          <AppText variant="muted">{t('merchant.qr.kit.body')}</AppText>
+          {!merchant.is_published ? (
+            <AppText variant="error">{t('merchant.qr.kit.unpublished')}</AppText>
+          ) : null}
+          <Button
+            testID="qr-flyer"
+            title={t('merchant.qr.kit.flyer')}
+            onPress={() => preparePrint('flyer')}
+          />
+          <Button
+            testID="qr-sticker"
+            variant="secondary"
+            title={t('merchant.qr.kit.sticker')}
+            onPress={() => preparePrint('sticker')}
+          />
+          <Button
+            testID="qr-sheet"
+            variant="secondary"
+            title={t('merchant.qr.kit.sheet')}
+            onPress={() => preparePrint('sheet')}
+          />
+          {printError ? <AppText variant="error">{t('merchant.qr.kit.error')}</AppText> : null}
+        </>
       ) : null}
     </Screen>
   );
