@@ -14,6 +14,8 @@ const IC={
  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
  wallet:'<rect x="2" y="6" width="20" height="14" rx="3"/><path d="M2 10h20M16 15h2"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ pin:'<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+ gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v9h14v-9M8.5 8C6 8 6 4.5 8.5 4.5 11 4.5 12 8 12 8s1-3.500 3.500-3.500C18 4.500 18 8 15.500 8"/>',
  bike:'<circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M5.5 17l4-8h5l4 8M9.5 9L8 6H6M14.5 9l1-3h2"/>'
 };
 const ic=n=>`<svg viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
@@ -29,6 +31,8 @@ function fresh(){return{
   r:{tab:'orders',sub:null,item:null,confirmDel:false,newOptName:'',newOptDelta:0,newCat:''},
   c:{tab:'runs',sub:null,saved:false},
   k:{tab:'home',sub:null,oi:null,newAddr:''},
+  hm:{view:'list',q:'',f:{open:false,pickup:false,delivery:false,hh:false}},
+  sched:'asap',slot:'19:45',cplan:'pro',
   me:{name:'Nadia Benali',phone:'06 11 22 33 44',email:'nadia@exemple.fr',notif:{push:true,mail:true,sms:false},card:true,
     addrs:[{id:'a1',label:'Maison',line:'5 rue Saint-Augustin, 75002 Paris',def:true},{id:'a2',label:'Bureau',line:'18 rue de Richelieu, 75001 Paris',def:false}],favs:{samir:true,bella:false,petit:false}},
   stamps:7,
@@ -36,13 +40,13 @@ function fresh(){return{
     {id:'o2',when:'Lun. 6 oct., 12:40',shop:'Bella Pizza',items:['1 × Pizza reine'],total:1200,fee:0,mode:'pickup',pay:'espèces',stars:4},
     {id:'o3',when:'Sam. 4 oct., 19:55',shop:'Chez Samir',items:['2 × Kebab galette'],total:1700,fee:350,mode:'delivery',pay:'carte',stars:0}],
   rated:false,rateC:0,rateR:0,rateTxt:'',
-  shop:{open:true,published:true,name:'Chez Samir',payLink:'https://pay.sumup.com/b2c/chez-samir',legal:'Samir Food SAS',siret:'73282932000074',tva:'FR32732829320',addr:'12 rue de la Paix',cp:'75002',city:'Paris',phone:'01 42 00 00 00',email:'contact@chezsamir.fr',cat:'Sandwicherie',desc:'Kebabs et burgers maison, pain frais chaque matin.',
+  shop:{plan:'pro',hhOn:true,groupOn:false,basketOn:true,mktOn:true,open:true,published:true,name:'Chez Samir',payLink:'https://pay.sumup.com/b2c/chez-samir',legal:'Samir Food SAS',siret:'73282932000074',tva:'FR32732829320',addr:'12 rue de la Paix',cp:'75002',city:'Paris',phone:'01 42 00 00 00',email:'contact@chezsamir.fr',cat:'Sandwicherie',desc:'Kebabs et burgers maison, pain frais chaque matin.',
     deliveryOn:true,fee:350,radius:3000,cash:true,
     hours:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((d,i)=>({d,on:i<6,from:'11:30',to:i>=4?'23:00':'22:00'}))},
   menu:{cats:[{id:'s',name:'Sandwichs'},{id:'m',name:'Menus'},{id:'a',name:'Accompagnements'},{id:'b',name:'Boissons'},{id:'d',name:'Desserts'}],
     items:[
      {id:'k',cat:'s',name:'Kebab galette',desc:'Sauce blanche, oignons',price:850,avail:true,opts:[{name:'Fromage',delta:100},{name:'Double viande',delta:250},{name:'Sauce harissa',delta:0}]},
-     {id:'m',cat:'m',name:'Menu américain',desc:'Burger, frites, boisson',price:950,avail:true,opts:[{name:'Boisson grande',delta:50}]},
+     {id:'m',cat:'m',name:'Menu américain',desc:'Burger, frites, boisson',price:950,hh:800,avail:true,opts:[{name:'Boisson grande',delta:50}]},
      {id:'f',cat:'a',name:'Frites maison',desc:'Portion 300 g',price:300,avail:true,opts:[]},
      {id:'b',cat:'b',name:'Boisson 33 cl',desc:'Soda ou eau',price:200,avail:true,opts:[]},
      {id:'t',cat:'d',name:'Tiramisu',desc:'Fait maison',price:450,avail:false,opts:[]}]},
@@ -59,12 +63,17 @@ let S=fresh();
 const getP=p=>p.split('.').reduce((a,k)=>a==null?a:a[k],S);
 const setP=(p,v)=>{const k=p.split('.');let o=S;for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=v};
 const fee=()=>S.shop.fee;
+const cap=()=>S.cplan==='pro'?2:1;
+const isPro=()=>S.shop.plan==='pro';
+const hhActive=()=>isPro()&&S.shop.hhOn;
+const unit=it=>hhActive()&&it.hh?it.hh:it.price;
+const linePrice=l=>{const it=S.menu.items[itemIdx(l.id)];if(!it)return l.price;return unit(it)+it.opts.filter(p=>l.opts.includes(p.name)).reduce((s,p)=>s+p.delta,0)};
 const o=()=>S.order;
 const mine=()=>o()&&o().courier==='Karim';
 const linkedOk=()=>S.links.karim==='approved'&&S.avail||S.links.lea==='approved';
 const canDeliver=()=>S.shop.deliveryOn&&linkedOk();
-const missionVisible=()=>{const x=o();return x&&x.fulfil==='delivery'&&['accepted','ready'].includes(x.status)&&!x.courier&&!x.skipKarim&&S.avail&&S.load<2&&S.links.karim==='approved'};
-const subtotal=()=>S.lines.reduce((s,l)=>s+l.price*l.q,0);
+const missionVisible=()=>{const x=o();return x&&x.fulfil==='delivery'&&['accepted','ready'].includes(x.status)&&!x.courier&&!x.skipKarim&&S.avail&&S.load<cap()&&S.links.karim==='approved'};
+const subtotal=()=>S.lines.reduce((s,l)=>s+linePrice(l)*l.q,0);
 const avg=r=>r.sum/r.count;
 const itemIdx=id=>S.menu.items.findIndex(i=>i.id===id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
@@ -86,35 +95,27 @@ const tabbar=(who,tabs,cur)=>`<div class="tabbar" role="tablist">${tabs.map(([k,
 function canOrder(){return S.shop.published&&S.shop.open}
 function clientMain(){
   const x=o();
-  if(S.view==='home'&&!x) return page('Autour de vous',null,`
-    <p class="mute" style="margin:0">Paris 2e · 650 m</p>
-    ${S.shop.published?`<button class="card" data-act="openMenu" style="text-align:left" ${canOrder()?'':'disabled'}>
-      <div class="row"><div class="tile" style="background:var(--ink)">${esc(S.shop.name[0]||'?')}</div>
-        <div class="f"><div class="sub">${esc(S.shop.name)}</div><div class="mute">${esc(S.shop.cat)} · ${canDeliver()?'Livraison '+euro(fee()):'Retrait seulement'}${S.shop.cash?' · Espèces au comptoir':''}</div>
-        <div class="mute"><span class="stars">★</span> ${avg(S.rating.r).toFixed(1)} (${S.rating.r.count})</div></div></div>
-      <div class="row">${canOrder()?'<span class="badge">Ouvert</span>':'<span class="badge w">Fermé pour le moment</span>'}${canDeliver()?'<span class="badge k">Livraison</span>':''}</div></button>`:''}
-    <div class="card" style="opacity:.55"><div class="row"><div class="tile" style="background:var(--green-d)">P</div>
-      <div class="f"><div class="sub">Le Petit Four</div><div class="mute">Boulangerie · Retrait seulement</div></div></div></div>
-    <div class="card" style="opacity:.55"><div class="row"><div class="tile" style="background:var(--warn)">B</div>
-      <div class="f"><div class="sub">Bella Pizza</div><div class="mute">Pizzeria · Livraison 4,00 €</div></div></div></div>
-    <p class="mute" style="margin:0">Aucun frais de service : le prix de la carte, rien de plus.</p>`);
+  if(S.view==='home'&&!x) return explore();
   if(S.view==='menu'&&!x){
     const body=S.menu.cats.map(c=>{const its=S.menu.items.filter(i=>i.cat===c.id);if(!its.length)return '';
       return `<div class="sec">${esc(c.name)}</div>`+its.map(m=>{const inCart=S.lines.filter(l=>l.id===m.id).reduce((s,l)=>s+l.q,0);
       return `<div class="card" ${m.avail?'':'style="opacity:.6"'}><div class="row"><div class="f"><div class="sub">${esc(m.name)}</div><div class="mute">${esc(m.desc)}</div>
-        <div class="price">${euro(m.price)}${m.opts.length?' <span class="mute">· options</span>':''}</div></div>
+        <div class="price">${hhActive()&&m.hh?'<span class="strike">'+euro(m.price)+'</span>'+euro(m.hh)+' <span class="badge hh">Happy Hour</span>':euro(m.price)}${m.opts.length?' <span class="mute">· options</span>':''}</div></div>
         ${m.avail?`<div class="qty">${inCart?`<span class="mute">${inCart}</span>`:''}<button data-act="add" data-id="${m.id}" aria-label="Ajouter ${esc(m.name)}">+</button></div>`:'<span class="badge w">Épuisé</span>'}</div></div>`}).join('')}).join('');
-    return page(S.shop.name,true,body,subtotal()?`<button class="btn" data-act="toCart">Voir le panier · ${euro(subtotal())}</button>`:'');
+    const hhNote=hhActive()?`<div class="note">🍹 Happy Hour en cours : Menu américain à ${euro(800)} jusqu'à 18:00.</div>`:'';
+    return page(S.shop.name,true,hhNote+body,subtotal()?`<button class="btn" data-act="toCart">Voir le panier · ${euro(subtotal())}</button>`:'');
   }
   if(S.view==='cart'&&!x){
     const dl=S.fulfil==='delivery'&&canDeliver(), cashMeal=!dl&&S.mealPay==='cash'&&S.shop.cash;
     const total=subtotal();
     return page('Panier',true,`
       ${S.lines.map(l=>`<div class="row"><div class="f">${esc(l.name)}${l.opts.length?`<div class="mute">${esc(l.opts.join(', '))}</div>`:''}</div>
-        <div class="qty"><button data-act="dec" data-key="${esc(l.key)}" aria-label="Retirer">−</button><span>${l.q}</span><button data-act="inc" data-key="${esc(l.key)}" aria-label="Ajouter">+</button></div><div class="price" style="min-width:64px;text-align:right">${euro(l.price*l.q)}</div></div>`).join('')}
+        <div class="qty"><button data-act="dec" data-key="${esc(l.key)}" aria-label="Retirer">−</button><span>${l.q}</span><button data-act="inc" data-key="${esc(l.key)}" aria-label="Ajouter">+</button></div><div class="price" style="min-width:64px;text-align:right">${euro(linePrice(l)*l.q)}</div></div>`).join('')}
       <div class="chips" role="group" aria-label="Mode">
         <button class="chip" aria-pressed="${!dl}" data-act="fulfil" data-v="pickup">À emporter</button>
         <button class="chip" aria-pressed="${dl}" data-act="fulfil" data-v="delivery" ${canDeliver()?'':'disabled style="opacity:.45"'}>🛵 Livraison</button></div>
+      <div class="card"><div class="sub">Quand ?</div><div class="chips"><button class="chip" aria-pressed="${S.sched==='asap'}" data-act="sched" data-v="asap">Dès que possible</button><button class="chip" aria-pressed="${S.sched==='later'}" data-act="sched" data-v="later">Programmer à un autre moment</button></div>
+        ${S.sched==='later'?`<div class="chips">${['19:30','19:45','20:00','20:15'].map(t=>`<button class="chip" aria-pressed="${S.slot===t}" data-act="slot" data-v="${t}">${t}</button>`).join('')}</div><div class="mute">Créneaux de 15 minutes pendant les horaires d'ouverture, jusqu'à 14 jours à l'avance. Commande programmée : aujourd'hui, ${S.slot}.</div>`:`<div class="mute">L'établissement prépare votre commande dès qu'il l'accepte.</div>`}</div>
       ${!canDeliver()?`<div class="note">Livraison indisponible : ${!S.shop.deliveryOn?'le restaurant ne livre pas pour le moment.':'aucun livreur disponible.'}</div>`:''}
       ${dl?`<div class="card"><div class="mute">Adresse de livraison</div><div>5 rue Saint-Augustin, 75002 Paris</div><div class="mute">650 m du restaurant · dans la zone (${S.shop.radius/1000} km)</div></div>
         <div class="card"><div class="sub">Paiement de la livraison (${euro(fee())})</div>
@@ -132,6 +133,37 @@ function clientMain(){
   }
   return track();
 }
+/* ---------- Annuaire (onglet « À proximité ») ---------- */
+function merchants(){
+  const sm=S.shop;
+  return [
+   {id:'samir',name:sm.name,cat:sm.cat,city:sm.city,open:canOrder(),pickup:true,delivery:canDeliver(),hh:hhActive(),stars:avg(S.rating.r).toFixed(1),n:S.rating.r.count,line:(canDeliver()?'Livraison '+euro(fee()):'Retrait seulement')+(sm.cash?' · Espèces au comptoir':''),x:46,y:40,tint:'var(--ink)',live:sm.published},
+   {id:'petit',name:'Le Petit Four',cat:'Boulangerie',city:'Paris 1er',open:true,pickup:true,delivery:false,hh:false,stars:'4.6',n:87,line:'Retrait seulement · Paniers anti-gaspi',x:24,y:62,tint:'var(--green-d)',live:true},
+   {id:'bella',name:'Bella Pizza',cat:'Pizzeria',city:'Paris 9e',open:true,pickup:true,delivery:true,hh:false,stars:'4.4',n:140,line:'Livraison 4,00 €',x:72,y:30,tint:'var(--warn)',live:true},
+   {id:'nuit',name:'Nuit Gourmande',cat:'Dark kitchen',city:'Paris 10e',open:true,pickup:false,delivery:true,hh:false,stars:'4.7',n:52,line:'Livraison uniquement · adresse non publiée · repas de nuit',x:0,y:0,tint:'#3b4a63',live:true,dark:true}];
+}
+function explore(){
+  const h=S.hm,f=h.f,q=h.q.trim().toLowerCase();
+  const list=merchants().filter(m=>m.live&&(!q||(m.name+' '+m.city+' '+m.cat).toLowerCase().includes(q))&&(!f.open||m.open)&&(!f.pickup||m.pickup)&&(!f.delivery||m.delivery)&&(!f.hh||m.hh));
+  const FL=[['open','Ouvert maintenant'],['pickup','Retrait'],['delivery','Livraison disponible'],['hh','Happy Hour']];
+  const cards=list.map(m=>`<button class="card" data-act="${m.id==='samir'?'openMenu':'toastDemo'}" style="text-align:left" ${m.id==='samir'&&!canOrder()?'disabled':''}>
+      <div class="row"><div class="tile" style="background:${m.tint}">${esc(m.name[0]||'?')}</div>
+        <div class="f"><div class="sub">${esc(m.name)}</div><div class="mute">${esc(m.cat)} · ${esc(m.city)}</div><div class="mute">${esc(m.line)}</div>
+        <div class="mute"><span class="stars">★</span> ${m.stars} (${m.n})</div></div></div>
+      <div class="row" style="flex-wrap:wrap">${m.open?'<span class="badge">Ouvert</span>':'<span class="badge w">Fermé pour le moment</span>'}${m.pickup?'<span class="badge k">Retrait</span>':''}${m.delivery?'<span class="badge k">Livraison</span>':''}${m.hh?'<span class="badge hh">Happy Hour</span>':''}</div></button>`).join('');
+  const map=`<div class="map" role="img" aria-label="Carte des établissements">${list.filter(m=>!m.dark).map(m=>`<span class="pin ${m.id==='samir'?'g':''}" style="left:${m.x}%;top:${m.y}%">${esc(m.name)}</span>`).join('')}</div>
+    ${list.some(m=>m.dark)?'<div class="mute">Les établissements sans accueil du public (dark kitchens) ne sont pas placés sur la carte ; ils restent dans la liste, avec leur zone de service.</div>':''}`;
+  return page('À proximité',null,`
+    <div class="h" style="font-size:18px">Commander à emporter ou livré</div>
+    <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input data-path="hm.q" placeholder="Nom, ville ou code postal" value="${esc(h.q)}" aria-label="Rechercher un commerce"></label>
+    <div class="seg" role="group" aria-label="Affichage"><button aria-pressed="${h.view==='list'}" data-act="hview" data-v="list">Liste</button><button aria-pressed="${h.view==='map'}" data-act="hview" data-v="map">Carte</button></div>
+    <div class="chips">${FL.map(([k,l])=>`<button class="chip" aria-pressed="${f[k]}" data-act="hf" data-v="${k}">${l}</button>`).join('')}</div>
+    <div class="mute">${list.length} établissement${list.length>1?'s':''} · Paris 2e</div>
+    ${h.view==='map'?map:''}
+    ${list.length?cards:`<div class="empty"><div class="h">Aucun établissement</div><p>Aucun établissement ne correspond à ces filtres.</p><button class="btn sm ghost" data-act="hclear">Effacer les filtres</button></div>`}
+    <p class="mute" style="margin:0">Aucun frais de service : le prix de la carte, rien de plus.</p>`);
+}
+
 function track(){
   const x=o(), d=x.fulfil==='delivery';
   const steps=d?[['placed','Envoyée'],['accepted','Acceptée'],['ready','Prête'],['out','En route'],['delivered','Livrée']]:[['placed','Envoyée'],['accepted','Acceptée'],['ready','Prête'],['delivered','Récupérée']];
@@ -157,6 +189,7 @@ function track(){
      <button class="btn" data-act="sendRate" ${S.rateR||S.rateC?'':'disabled'}>Envoyer mon avis</button></div>`):'';
   return page('Ma commande',null,`
     <div class="h">${title}</div>
+    ${x.when?`<div class="note ok">🗓️ Commande programmée : aujourd'hui, ${x.when}.</div>`:''}
     <div class="timeline">${steps.map(([k,l])=>`<div class="${order.indexOf(k)<=idx?'done':''}">${l}</div>`).join('')}</div>
     ${x.skipNote?`<div class="note bad">${x.skipNote}</div>`:''}
     ${mealBox}${ride}${codeCard}${rate}
