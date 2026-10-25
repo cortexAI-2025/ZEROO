@@ -470,9 +470,9 @@ Migration `20261023094827_payment_links.sql`.
 Migration `20261023094834_pro_verification.sql`.
 
 - **Clients** : Google et Apple sont mis en avant sur les écrans de connexion et d'inscription (un geste, pas de mot de passe) ; l'e-mail + mot de passe reste possible en dessous. Le compte est créé à la première connexion. Sur le web (`app.zeeroo.fr`), Google et Apple passent par la redirection OAuth de Supabase (`signInWithOAuth`, retour sur `/auth-callback`) ; sur mobile, par les modules natifs (jeton d'identité → `signInWithIdToken`). `EXPO_PUBLIC_OAUTH_PROVIDERS` liste les fournisseurs activés côté web.
-- **Professionnels** (commerçant, livreur) : même choix de connexion (Google, Apple ou e-mail), puis **e-mail confirmé et téléphone mobile vérifié par code SMS** avant de créer le commerce ou le profil livreur. Le téléphone est rattaché au compte Supabase Auth (`updateUser({ phone })` puis `verifyOtp(type 'phone_change')` → `auth.users.phone_confirmed_at`). Avec Google ou Apple, l'e-mail est déjà confirmé.
-- **Côté serveur** : `is_pro_verified()` et un trigger `require_verified_pro` sur l'insertion dans `merchants` et `couriers` (erreur `pro_verification_required`). Les écritures sans utilisateur (données de démo, service) ne sont pas concernées. Le numéro vérifié est recopié dans `profiles.phone` (+33…).
-- **Configuration Supabase** : fournisseurs Google et Apple (Authentication → Providers) et un fournisseur SMS (Twilio, Vonage ou MessageBird) pour l'envoi des codes. Coût des SMS à la charge d'AiWorkPay (quelques centimes par code).
+- **Professionnels** (commerçant, livreur) : même choix de connexion (Google, Apple ou e-mail), puis **e-mail confirmé** avant de créer le commerce ou le profil livreur (décision du propriétaire : plus de vérification par téléphone ni SMS pour l'instant ; migration `email_only_pro_verification`). Avec Google ou Apple, l'e-mail est déjà confirmé.
+- **Côté serveur** : `is_pro_verified()` et un trigger `require_verified_pro` sur l'insertion dans `merchants` et `couriers` (erreur `pro_verification_required`). Les écritures sans utilisateur (données de démo, service) ne sont pas concernées. Le numéro de téléphone saisi reste un champ de contact facultatif.
+- **Configuration Supabase** : fournisseurs Google et Apple (Authentication → Providers). Le fournisseur Phone reste désactivé : aucun SMS, aucun coût associé.
 
 ### 3.8 Modes de commande et dark kitchens (21 octobre 2026)
 

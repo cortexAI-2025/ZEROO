@@ -30,7 +30,7 @@ Le modèle actuel est : paiements de repas et courses directement aux profession
 - [ ] Protection contre les mots de passe compromis (Supabase → Authentication → Sign In / Providers → Email → « Prevent use of leaked passwords ») : **indisponible sur l'offre gratuite** (« Only available on Pro plan and above », constaté le 24 octobre 2026). Avis de sécurité `auth_leaked_password_protection` **accepté jusqu'au passage du projet Supabase en Pro**, à faire avant le lancement public. En attendant : longueur minimale portée à 8 et exigences de complexité activées dans le même écran (à confirmer par le propriétaire).
 - [ ] Tester Google OAuth web et mobile : provider Supabase, client IDs, redirect URLs et callback `https://app.zeeroo.fr/auth-callback`.
 - [ ] Tester confirmation e-mail, mot de passe oublié et templates.
-- [ ] Vérifier le fournisseur SMS et les journaux d'envoi avant d'activer le téléphone comme méthode obligatoire.
+- [x] Décision du propriétaire (25 octobre 2026) : **vérification des professionnels par e-mail uniquement**, pas de téléphone ni de SMS pour l'instant. En base : `is_pro_verified()` (migration `email_only_pro_verification`, appliquée en production) ; fournisseur Phone désactivé dans Supabase. À reprendre si la vérification par téléphone est rétablie.
 - [ ] Vérifier `zeeroo.fr`, `app.zeeroo.fr`, liens QR, URL canonique, redirections et configuration Vercel.
 
 ## P1 — Recette commerciale
