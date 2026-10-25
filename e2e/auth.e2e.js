@@ -61,7 +61,7 @@ run('Authentification', async () => {
 
   await page.goto(link.replace(/&amp;/g, '&'));
   await page
-    .getByText('Que souhaitez-vous faire ?')
+    .getByText('Quel type de compte souhaitez-vous créer ?')
     .filter({ visible: true })
     .waitFor({ timeout: 15000 });
   step("lien de confirmation → session ouverte → choix de l'espace");

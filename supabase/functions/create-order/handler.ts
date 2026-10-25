@@ -1,6 +1,6 @@
 import { HttpError, handle, json, readJson } from '../_shared/http.ts';
 import type { OrderRow } from '../_shared/orders.ts';
-import { adminClient, requireUser, unwrap } from '../_shared/supabase.ts';
+import { adminClient, requireAccountSpace, requireUser, unwrap } from '../_shared/supabase.ts';
 
 type Body = {
   merchantId: string;
@@ -46,6 +46,7 @@ export const handler = handle(async (req) => {
   if (!body?.merchantId || !Array.isArray(body.items)) throw new HttpError(400, 'invalid_body');
 
   const db = adminClient();
+  await requireAccountSpace(db, user.id, 'client');
   const mealPayment = body.mealPayment ?? 'card';
   if (mealPayment === 'card') {
     const merchant = unwrap(

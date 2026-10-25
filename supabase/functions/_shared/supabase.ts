@@ -24,8 +24,17 @@ export function unwrap<T>({ data, error }: { data: T; error: { message: string }
   return data;
 }
 
+/** Contrôle serveur : aucune sélection de rôle envoyée par le navigateur ne fait autorité. */
+export async function requireAccountSpace(db: SupabaseClient, userId: string, space: string) {
+  const profile = unwrap(
+    await db.from('profiles').select('account_space').eq('id', userId).maybeSingle(),
+  );
+  if (profile?.account_space !== space) throw new HttpError(403, 'account_space_locked');
+}
+
 /** Commerce dont l'utilisateur est propriétaire (404 sinon). */
 export async function requireOwnedMerchant(db: SupabaseClient, userId: string) {
+  await requireAccountSpace(db, userId, 'merchant');
   const merchant = unwrap(
     await db.from('merchants').select('id, name, slug').eq('owner_id', userId).maybeSingle(),
   );
@@ -35,6 +44,7 @@ export async function requireOwnedMerchant(db: SupabaseClient, userId: string) {
 
 /** Profil livreur de l'utilisateur (404 sinon). */
 export async function requireCourier(db: SupabaseClient, userId: string) {
+  await requireAccountSpace(db, userId, 'courier');
   const courier = unwrap(
     await db.from('couriers').select('id, display_name').eq('user_id', userId).maybeSingle(),
   );

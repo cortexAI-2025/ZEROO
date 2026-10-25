@@ -1,8 +1,9 @@
 import type { Session } from '@supabase/supabase-js';
-import { createContext, type ReactNode, use, useEffect, useState } from 'react';
+import { createContext, type ReactNode, use, useEffect, useRef, useState } from 'react';
 
 import { Platform } from 'react-native';
 
+import { queryClient } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
 
 import { parseAuthCallback } from './callback';
@@ -36,9 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isPasswordRecovery: openedFromRecoveryLink,
   });
 
+  const previousUserId = useRef<string | null>(null);
   useEffect(() => {
     // onAuthStateChange émet INITIAL_SESSION au démarrage, puis chaque changement.
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (previousUserId.current !== (session?.user.id ?? null)) {
+        queryClient.clear();
+        previousUserId.current = session?.user.id ?? null;
+      }
       setState((previous) => ({
         session,
         isLoading: false,

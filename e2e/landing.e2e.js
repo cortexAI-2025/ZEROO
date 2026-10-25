@@ -49,8 +49,8 @@ run("Page d'accueil", async () => {
   await v(page.getByTestId('landing-cta-restaurant')).first().click();
   await v(page.getByTestId('sign-up-submit')).waitFor();
   const space = await page.evaluate(() => localStorage.getItem('zeroo.space'));
-  if (space !== 'merchant') throw new Error('espace mémorisé : ' + space);
-  step('« Inscrire mon restaurant » → inscription, espace commerçant mémorisé pour la suite');
+  if (space !== null) throw new Error('aucun rôle ne doit être stocké dans le navigateur : ' + space);
+  step('« Inscrire mon restaurant » → inscription, aucun rôle local accordé');
 
   // --- Téléphone ----------------------------------------------------------------------
   const mobile = await (

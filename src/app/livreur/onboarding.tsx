@@ -18,24 +18,17 @@ import {
   courierSchema,
 } from '@/features/courier/schemas';
 import { LEGAL_STATUSES, VEHICLES } from '@/features/courier/types';
-import { useSpace } from '@/features/space/SpaceProvider';
 import { errorKey } from '@/lib/errors';
 import { spacing } from '@/theme';
 
 /** Inscription du livreur : compte vérifié (e-mail), puis profil. */
 export default function CourierOnboardingScreen() {
   const { t } = useTranslation();
-  const { setSpace } = useSpace();
   const verification = useProVerification();
 
   // E-mail confirmé avant de créer le profil (règle appliquée en base).
   if (!verification.verified) {
-    return (
-      <ProVerificationScreen
-        exitLabel={t('space.switchToClient')}
-        onExit={() => setSpace('client')}
-      />
-    );
+    return <ProVerificationScreen exitLabel={t('account.signOut')} onExit={() => void signOut()} />;
   }
   return <CourierProfileForm verifiedPhone={verification.phone} />;
 }
@@ -44,7 +37,6 @@ export default function CourierOnboardingScreen() {
 function CourierProfileForm({ verifiedPhone }: { verifiedPhone: string | null }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { setSpace } = useSpace();
   const [error, setError] = useState<string | null>(null);
   const { control, handleSubmit, formState } = useForm<
     CourierFormInput,
@@ -148,11 +140,6 @@ function CourierProfileForm({ verifiedPhone }: { verifiedPhone: string | null })
         onPress={() => void submit()}
       />
       {/* Pas d'onglets tant que le profil n'existe pas : on garde une sortie. */}
-      <Button
-        variant="ghost"
-        title={t('space.switchToClient')}
-        onPress={() => setSpace('client')}
-      />
       <Button variant="ghost" title={t('account.signOut')} onPress={() => void signOut()} />
     </Screen>
   );

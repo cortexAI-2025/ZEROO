@@ -2,6 +2,7 @@ import { authErrorKey } from '@/features/auth/errors';
 
 /** Erreurs métier levées par nos fonctions SQL (raise exception '<code>'). */
 const businessErrors = {
+  account_space_locked: 'space.locked',
   merchant_already_exists: 'errors.merchantAlreadyExists',
   invalid_pickup_code: 'errors.invalidPickupCode',
   invalid_transition: 'errors.invalidTransition',

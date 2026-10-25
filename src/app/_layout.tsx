@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { QueryState } from '@/components/ui';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { addNotificationTapListener } from '@/features/notifications/push';
 import { SpaceProvider, useSpace } from '@/features/space/SpaceProvider';
@@ -18,7 +19,7 @@ void SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const { session, isLoading } = useAuth();
-  const { space } = useSpace();
+  const { space, isLoading: spaceLoading, error: spaceError, refetch } = useSpace();
 
   useEffect(() => {
     if (!isLoading) void SplashScreen.hideAsync();
@@ -26,15 +27,16 @@ function RootNavigator() {
 
   // Toucher une notification ouvre l'écran concerné (commande, tableau de bord).
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || spaceLoading || spaceError) return;
     return addNotificationTapListener((url) => router.push(url as never));
-  }, [isLoading]);
+  }, [isLoading, spaceLoading, spaceError]);
+
+  if (isLoading || spaceLoading || spaceError)
+    return <QueryState error={spaceError} onRetry={refetch} />;
 
   const signedIn = !!session;
-  // Tant que la session n'est pas relue, toutes les routes restent ouvertes : sinon un lien
-  // direct (QR code, notification, rechargement de page) serait redirigé avant de savoir
-  // si l'utilisateur est connecté. Les gardes s'appliquent dès que la session est connue.
-  const allow = (condition: boolean) => isLoading || condition;
+  // Le navigateur n'accorde aucune route privée avant la lecture du rôle serveur.
+  const allow = (condition: boolean) => condition;
 
   // L'ordre compte : quand un écran devient inaccessible, Expo Router
   // redirige vers le premier écran autorisé de cette liste.
@@ -50,6 +52,7 @@ function RootNavigator() {
         <Stack.Screen name="(client)" />
         <Stack.Screen name="addresses" options={{ headerShown: true }} />
         <Stack.Screen name="favorites" options={{ headerShown: true }} />
+        <Stack.Screen name="order/[id]" options={{ headerShown: true }} />
       </Stack.Protected>
       <Stack.Protected guard={allow(signedIn && space === 'merchant')}>
         <Stack.Screen name="pro" />
@@ -62,7 +65,7 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={allow(signedIn)}>
         <Stack.Screen name="update-password" options={{ headerShown: true, title: '' }} />
-        <Stack.Screen name="order/[id]" options={{ headerShown: true }} />
+
         <Stack.Screen name="admin" options={{ headerShown: true }} />
       </Stack.Protected>
       <Stack.Protected guard={allow(!signedIn)}>
@@ -72,7 +75,9 @@ function RootNavigator() {
       {/* Accessibles sans compte : un client qui scanne le QR code d'un commerce voit son menu
           et prépare son panier ; la connexion n'est demandée qu'au moment de commander. */}
       <Stack.Screen name="m/[slug]" options={{ headerShown: true, title: '' }} />
-      <Stack.Screen name="cart" options={{ headerShown: true }} />
+      <Stack.Protected guard={!signedIn || space === 'client'}>
+        <Stack.Screen name="cart" options={{ headerShown: true }} />
+      </Stack.Protected>
       {/* Annuaire public : on découvre les établissements sans compte. */}
       <Stack.Screen name="decouvrir" options={{ headerShown: true, title: '' }} />
     </Stack>

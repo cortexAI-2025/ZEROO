@@ -8,23 +8,16 @@ import { ProVerificationScreen, useProVerification } from '@/features/auth/ProVe
 import { createMerchant } from '@/features/merchant/api';
 import { merchantKeys } from '@/features/merchant/hooks';
 import { MerchantForm } from '@/features/merchant/MerchantForm';
-import { useSpace } from '@/features/space/SpaceProvider';
 
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { session } = useAuth();
-  const { setSpace } = useSpace();
   const { verified } = useProVerification();
 
   // E-mail confirmé avant de créer le commerce (règle appliquée en base).
   if (!verified) {
-    return (
-      <ProVerificationScreen
-        exitLabel={t('space.switchToClient')}
-        onExit={() => setSpace('client')}
-      />
-    );
+    return <ProVerificationScreen exitLabel={t('account.signOut')} onExit={() => void signOut()} />;
   }
 
   return (
@@ -40,11 +33,6 @@ export default function OnboardingScreen() {
         }}
       />
       {/* Pas d'onglets tant que le commerce n'existe pas : on garde une sortie. */}
-      <Button
-        variant="ghost"
-        title={t('space.switchToClient')}
-        onPress={() => setSpace('client')}
-      />
       <Button variant="ghost" title={t('account.signOut')} onPress={() => void signOut()} />
     </Screen>
   );
