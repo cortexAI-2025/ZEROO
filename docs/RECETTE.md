@@ -31,6 +31,9 @@ Compte restaurant, dans `/pro` :
 
 ## 3. Click & Collect (client, restaurant)
 - [ ] Client : trouver le restaurant sur `/decouvrir` (annuaire public, sans compte) puis ouvrir sa page `/m/<slug>`.
+- [ ] **Publication réservée aux affiliés** : un professionnel sans abonnement actif voit l'interrupteur de publication désactivé avec l'explication ; une fiche non affiliée n'apparaît ni dans l'annuaire de l'app ni pour un client connecté.
+- [ ] Abonnement résilié ou impayé (Stripe) : la fiche quitte l'annuaire mais reste dans le tableau de bord ; après régularisation, le professionnel la republie sans ressaisir ses données.
+- [ ] Un client connecté ne voit que des établissements affiliés sur l'annuaire de l'app (« Commander » toujours disponible) ; les commerces de Trappes non inscrits restent sur zeeroo.fr avec « Pas encore sur ZeeRoo ».
 - [ ] Ajouter un produit au panier, commander en **retrait**, paiement **espèces**.
 - [ ] Restaurant : notification et commande reçue dans `/pro`, **accepter**, indiquer l'heure de préparation.
 - [ ] Client : suivi sur `/order/<id>` ; commande « prête » ; **code de retrait** affiché.

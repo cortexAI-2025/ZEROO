@@ -21,6 +21,7 @@ Le modèle actuel est : paiements de repas et courses directement aux profession
 
 ## P0 — Supabase
 - [ ] Comparer les migrations présentes dans Git avec `supabase_migrations.schema_migrations` du projet hébergé ; appliquer uniquement les migrations manquantes, dans l'ordre, avec sauvegarde.
+- [ ] Migrations d'affiliation à appliquer **avant** de fusionner la PR correspondante (l'app envoie `p_affiliated_only`) : `20261025130000_affiliated_directory`, puis `20261025140000_publication_guard`. Vérifier ensuite : `select proname, pg_get_function_identity_arguments(oid) from pg_proc where proname in ('nearby_merchants','search_merchants')` et la présence des déclencheurs `merchants_publication_guard` et `subscriptions_unpublish_on_lapse`.
 - [ ] Contrôler les fonctions Edge déployées et leurs versions, notamment `billing` et `stripe-webhook`.
 - [ ] Vérifier RLS par rôle client/commerçant/livreur et les politiques d'accès aux commandes.
 - [ ] Contrôler les secrets côté serveur sans les afficher : Stripe, CRON, URL application.
