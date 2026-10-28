@@ -662,3 +662,12 @@ Le dossier client utilise une projection fermée d’auth.users/profiles, un his
 ### Charte visuelle de l’administration (28/10/2026)
 
 Le site `admin-web/` affiche le logo officiel envoyé par le propriétaire, sans régénération ni déformation. Le fichier JPEG est stocké sous `logo-officiel.jpg` et copié par le build statique. Les couleurs de marque (#3AAD17, #7CDA20, #0B1C1C) sont centralisées dans les variables CSS, avec des variantes de contraste pour les thèmes clair et sombre. La préférence de thème existante est conservée. Le logo reste sur fond blanc pour préserver le mot-symbole sombre ; la navigation est déroulante horizontalement sur petit écran.
+
+
+### Annuaire public global sur la mainpage (28/10/2026)
+
+L’interface de référencement est dans le dépôt `zeroo_mainpage`, section `https://zeeroo.fr/#annuaire`, et non dans l’administration ni dans l’annuaire applicatif des affiliés. `directory_businesses` stocke les références administratives importées (NAF établissement 56.10C, statut A), dédoublonnées par SIRET, sans créer de `merchants`, comptes, abonnements ou mini-sites. `search_pro_directory` et `pro_directory_cities` sont SECURITY INVOKER, en lecture publique sous RLS, avec projection explicite et pagination de 25. Les menus/commandes restent dans l’annuaire des affiliés de l’application.
+
+`directory_claims` stocke des demandes privées, pas des droits de propriété. La RPC privée de soumission exige un compte à e-mail confirmé, un dossier minimal, limite à 5 nouvelles demandes sur 24 h et réutilise une demande déjà en attente du même utilisateur pour un SIRET. RLS : lecture propre demandeur ou administrateur ; aucune écriture directe. L’acceptation administrative est journalisée et exige un commerce existant de même SIRET, appartenant au demandeur. Elle ne démarre aucun abonnement. Les fonctions privilégiées restent en schéma `admin_private`, avec façade SECURITY INVOKER dans public.
+
+Un mini-site statique préexistant peut être référencé après rapprochement explicite. Les mini-sites applicatifs sont affichés uniquement pour un rattachement vérifié vers un commerce publié, avec `has_minisite` vrai. La table de référencement ne sert pas de preuve d’affiliation. Le frontend de revendication sur la mainpage utilise une session Supabase en mémoire uniquement.
