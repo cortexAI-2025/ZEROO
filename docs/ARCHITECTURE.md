@@ -657,3 +657,8 @@ La RPC `public.admin_subscriber_details(text,uuid)` est SECURITY INVOKER. Elle d
 La modération des avis ajoute `is_hidden`, une politique SELECT restrictive et un filtre dans les agrégats SECURITY DEFINER existants. La fidélité conserve sa règle métier (9 menus payés/récupérés = 1 offert), avec ajustements auditables limités aux récompenses disponibles. Les offres utilisent les tables Happy Hour et les règles de prix existantes : brouillon par défaut, produits disponibles du commerce, plage quotidienne et activation explicite. La géolocalisation correspond aux coordonnées du commerce, pas à un suivi des clients.
 
 Le dossier client utilise une projection fermée d’auth.users/profiles, un historique paginé des commandes et les cartes de fidélité. Les adresses affichées proviennent des commandes de livraison enregistrées. L’ajout d’un professionnel lie un compte déjà inscrit dans le bon espace, sans créer de mot de passe ni d’abonnement facturé.
+
+
+### Charte visuelle de l’administration (28/10/2026)
+
+Le site `admin-web/` affiche le logo officiel envoyé par le propriétaire, sans régénération ni déformation. Le fichier JPEG est stocké sous `logo-officiel.jpg` et copié par le build statique. Les couleurs de marque (#3AAD17, #7CDA20, #0B1C1C) sont centralisées dans les variables CSS, avec des variantes de contraste pour les thèmes clair et sombre. La préférence de thème existante est conservée. Le logo reste sur fond blanc pour préserver le mot-symbole sombre ; la navigation est déroulante horizontalement sur petit écran.

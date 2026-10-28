@@ -41,3 +41,7 @@ Les listes Commerces, Livreurs et Abonnements proposent « Voir la fiche ». La 
 - Journal : toutes les mutations via `admin_console` nécessitent un motif et un identifiant d’idempotence. Les opérations sont contrôlées côté serveur contre `platform_admins`.
 
 Les suspensions empêchent les nouvelles commandes et nouvelles affectations ; les commandes historiques restent traitables. Un propriétaire ne peut pas annuler une modération. Les comptes administrateur sont protégés des suspensions client. Les nouvelles tables de support ont RLS activée et des politiques de lecture administrateur.
+
+## Identité visuelle
+
+Le logo officiel fourni le 28/10/2026 est conservé sans modification dans `logo-officiel.jpg` (le fichier d’origine porte une extension PNG mais contient du JPEG). Sa zone blanche est préservée pour les deux thèmes. Palette : vert #3AAD17, lime #7CDA20, encre #0B1C1C, neutres verts légers ; les liens utilisent un vert plus foncé sur fond clair pour le contraste. Les onglets deviennent une navigation horizontale sur mobile et les cartes restent sur deux colonnes. Le build copie explicitement l’asset officiel.
