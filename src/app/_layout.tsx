@@ -5,8 +5,8 @@ import '@/i18n';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, router, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Appearance, Pressable, Text, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { QueryState } from '@/components/ui';
@@ -86,6 +86,31 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [themePreference, setThemePreference] = useState<'system' | 'light' | 'dark'>('system');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('zeeroo-theme');
+      if (saved === 'light' || saved === 'dark') {
+        setThemePreference(saved);
+        Appearance.setColorScheme(saved);
+      }
+    } catch {
+      // Le thème système reste disponible si le stockage est désactivé.
+    }
+  }, []);
+
+  function cycleTheme() {
+    const next = themePreference === 'system' ? 'light' : themePreference === 'light' ? 'dark' : 'system';
+    setThemePreference(next);
+    Appearance.setColorScheme(next === 'system' ? null : next);
+    try {
+      if (next === 'system') localStorage.removeItem('zeeroo-theme');
+      else localStorage.setItem('zeeroo-theme', next);
+    } catch {
+      // Le choix reste actif pour la session.
+    }
+  }
   return (
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -93,6 +118,21 @@ export default function RootLayout() {
           <AuthProvider>
             <SpaceProvider>
               <RootNavigator />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Thème actuel : ${themePreference}. Changer de thème`}
+                onPress={cycleTheme}
+                style={{
+                  position: 'absolute', right: 12, bottom: 86, zIndex: 50,
+                  backgroundColor: colorScheme === 'dark' ? '#27332B' : '#FFFFFF',
+                  borderColor: colorScheme === 'dark' ? '#7ED957' : '#2A8010',
+                  borderWidth: 1, borderRadius: 24, paddingVertical: 9, paddingHorizontal: 12,
+                }}
+              >
+                <Text style={{ color: colorScheme === 'dark' ? '#FFFFFF' : '#0B1C1C', fontWeight: '700', fontSize: 12 }}>
+                  {themePreference === 'system' ? '◐ Auto' : themePreference === 'dark' ? '☾ Sombre' : '☀ Clair'}
+                </Text>
+              </Pressable>
             </SpaceProvider>
           </AuthProvider>
         </QueryClientProvider>
