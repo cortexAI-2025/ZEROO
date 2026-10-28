@@ -139,9 +139,9 @@ const merchants = [
   await page.route(/tile\.openstreetmap\.org/, (route) => route.abort());
   await page.route(/geopf\.fr/, (route) => route.fulfill({ json: { features: [] } }));
 
-  await page.goto('http://localhost:8099/explore');
-  await page.getByText('Que souhaitez-vous faire').waitFor({ timeout: 20000 });
-  await page.getByText('Trouver un snack ou un restaurant').click();
+  // Route publique réelle : /explore est désormais sous l'espace client protégé.
+  // L'annuaire public reste accessible sans sélection d'espace via /decouvrir.
+  await page.goto('http://localhost:8099/decouvrir');
   await page.getByText('Utiliser ma position').first().waitFor({ timeout: 20000 });
   await page.getByRole('button', { name: 'Utiliser ma position' }).click({ timeout: 8000 });
   await page.getByTestId('explore-count').waitFor({ timeout: 20000 });
