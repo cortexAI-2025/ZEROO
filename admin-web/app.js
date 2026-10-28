@@ -1,9 +1,9 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm';
 const CONFIG=globalThis.ZEEROO_ADMIN_CONFIG||{};
 const URL='https://rgxesocsvhgsqoehxhgt.supabase.co';
-const sections=['setup','login','mfa','denied','dashboard'];
+const sections=['setup','login','mfa','enroll','denied','dashboard'];
 const $=(id)=>document.getElementById(id);
-let client=null,user=null;
+let client=null,user=null,pendingEnrollment=null;
 const show=(id)=>sections.forEach(s=>$(s).hidden=s!==id);
 const prefers=matchMedia('(prefers-color-scheme: dark)');
 let theme='system';
@@ -23,11 +23,12 @@ async function verify(){
   const {data:membership,error:membershipError}=await client.from('platform_admins').select('user_id').eq('user_id',user.id).maybeSingle();
   if(membershipError||!membership)return show('denied');
   const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
-  if(aalError||aal?.currentLevel!=='aal2')return show('mfa');
+  if(aalError)return show('denied');if(aal?.currentLevel!=='aal2'){const {data:factors,error:factorsError}=await client.auth.mfa.listFactors();if(factorsError)return show('denied');if(!factors?.totp?.some(f=>f.status==='verified')){const {data:enrolled,error:enrollError}=await client.auth.mfa.enroll({factorType:'totp',friendlyName:'ZeeROO Admin'});if(enrollError||!enrolled)return show('denied');pendingEnrollment=enrolled;$('enroll-qr').replaceChildren();const qr=document.createElement('img');qr.src=enrolled.totp.qr_code;qr.alt='QR code de configuration TOTP';qr.width=190;qr.height=190;$('enroll-qr').append(qr);return show('enroll')}return show('mfa')}
   $('identity').textContent=user.email||'Administrateur';
   show('dashboard');await renderTab('overview');
 }
 $('login-form').onsubmit=async(e)=>{e.preventDefault();$('login-error').textContent='';const f=new FormData(e.target);const {error}=await client.auth.signInWithPassword({email:String(f.get('email')),password:String(f.get('password'))});if(error){$('login-error').textContent=errorText(error);return}await verify()};
+$('enroll-form').onsubmit=async(e)=>{e.preventDefault();$('enroll-error').textContent='';if(!pendingEnrollment)return show('denied');const code=String(new FormData(e.target).get('code'));const {data:challenge,error:challengeError}=await client.auth.mfa.challenge({factorId:pendingEnrollment.id});if(challengeError)return $('enroll-error').textContent=errorText(challengeError);const {error}=await client.auth.mfa.verify({factorId:pendingEnrollment.id,challengeId:challenge.id,code});if(error)return $('enroll-error').textContent=errorText(error);pendingEnrollment=null;await verify()};
 $('mfa-form').onsubmit=async(e)=>{e.preventDefault();$('mfa-error').textContent='';const {data:factors,error}=await client.auth.mfa.listFactors();if(error)return $('mfa-error').textContent=errorText(error);const factor=factors?.totp?.find(f=>f.status==='verified');if(!factor)return $('mfa-error').textContent='Aucun facteur TOTP vérifié. Configurez-le dans votre compte avant de continuer.';const {error:challengeError,data:challenge}=await client.auth.mfa.challenge({factorId:factor.id});if(challengeError)return $('mfa-error').textContent=errorText(challengeError);const code=String(new FormData(e.target).get('code'));const {error:verifyError}=await client.auth.mfa.verify({factorId:factor.id,challengeId:challenge.id,code});if(verifyError)return $('mfa-error').textContent=errorText(verifyError);await verify()};
 const titles={overview:'Vue d’ensemble',merchants:'Commerces',couriers:'Livreurs',orders:'Commandes',subscriptions:'Abonnements',disputes:'Litiges',profile:'Mon profil'};
 async function renderTab(tab){
