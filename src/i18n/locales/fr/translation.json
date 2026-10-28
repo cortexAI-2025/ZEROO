@@ -112,7 +112,14 @@
       "phoneTaken": "Ce numéro est déjà utilisé par un autre compte",
       "smsFailed": "Le SMS n'a pas pu être envoyé. Vérifiez le numéro et réessayez.",
       "smsUnavailable": "La vérification par SMS n'est pas encore activée. Réessayez plus tard.",
-      "codeInvalid": "Saisissez le code à 6 chiffres reçu par SMS"
+      "codeInvalid": "Saisissez le code à 6 chiffres reçu par SMS",
+      "firstNameRequired": "Indiquez votre prénom.",
+      "lastNameRequired": "Indiquez votre nom.",
+      "nameTooLong": "80 caractères maximum.",
+      "addressRequired": "Indiquez votre adresse complète (numéro et rue).",
+      "postalCodeInvalid": "Indiquez un code postal à 5 chiffres.",
+      "cityRequired": "Indiquez votre ville.",
+      "phoneRequired": "Indiquez un numéro valide, par exemple 06 12 34 56 78 ou +33 6 12 34 56 78."
     },
     "proVerification": {
       "title": "Vérifiez votre compte professionnel",
@@ -134,7 +141,15 @@
       "resendCode": "Renvoyer le code",
       "changePhone": "Modifier le numéro",
       "done": "Compte vérifié"
-    }
+    },
+    "firstName": "Prénom *",
+    "lastName": "Nom *",
+    "addressLine": "Adresse (numéro et rue) *",
+    "postalCode": "Code postal *",
+    "city": "Ville *",
+    "phone": "Numéro de téléphone *",
+    "requiredFields": "Tous les champs sont obligatoires.",
+    "proAvatarHint": "L’avatar ou le logo est réservé aux restaurants et aux livreurs, dans leur espace professionnel."
   },
   "space": {
     "title": "Quel type de compte souhaitez-vous créer ?",

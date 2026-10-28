@@ -629,3 +629,28 @@ Un compte Auth appartient définitivement à un seul espace : client, restaurant
 Les créations de commerce, de livreur et de commande contrôlent l'espace en base. Les helpers de propriété et les fonctions serveur de facturation/création de commande le contrôlent aussi. Les routes privées sont fermées pendant la lecture du rôle ; un lien direct vers un autre espace ne l'accorde pas. Les menus publics restent consultables.
 
 Reprise : les comptes possédant un seul profil professionnel retrouvent cet espace automatiquement. Les anciens comptes de démonstration multi-profils doivent choisir une fois leur espace définitif. Les données et abonnements historiques restent conservés. Avant le déploiement, examiner ces comptes et leurs éventuels abonnements : une réaffectation de données à un compte distinct demande un traitement administratif explicite. Cette migration ne refond pas toutes les anciennes RPC métier ; leur contrôle d'identité et leurs RLS restent en place. Ne pas appliquer la migration en production sans déployer aussi les fonctions serveur et le frontend correspondants.
+
+
+### Identité requise à l’inscription (28 octobre 2026)
+
+L’inscription par e-mail exige prénom, nom, rue, code postal, ville, téléphone et
+e-mail, en plus du mot de passe existant. Le schéma partagé valide le formulaire
+et l’appel API, normalise l’e-mail et le téléphone (E.164). Auth reçoit ces
+coordonnées dans les métadonnées ; le trigger `handle_new_user` les copie dans
+le profil privé au sein de la même transaction, avant confirmation de l’e-mail.
+Le numéro reste un contact : il ne renseigne ni `auth.users.phone` ni un statut
+vérifié, et ne déclenche aucun SMS.
+
+Le trigger refuse les nouvelles inscriptions Auth par e-mail incomplètes
+(`raw_app_meta_data.provider=email`, fourni par Auth) ainsi que les demandes
+versionnées `signup_profile_version=1`. Les insertions internes de comptes
+historiques ou les autres fournisseurs restent compatibles ; leurs éventuels
+champs personnels sont soumis aux contraintes de la table. Les comptes déjà
+créés ne sont ni bloqués ni complétés artificiellement. L’e-mail de référence
+reste dans Auth. Les nouvelles colonnes privées ne reçoivent aucun droit public,
+aucun droit de modification supplémentaire ; les politiques RLS existantes
+continuent de s’appliquer.
+
+Les avatars ne sont pas un champ de l’inscription commune ni du profil client.
+Les restaurants conservent leur logo/photo dans leur espace professionnel, les
+livreurs leur photo dans le leur, avec les contrôles de propriété Storage existants.
