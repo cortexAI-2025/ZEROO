@@ -639,3 +639,8 @@ Le site statique `admin-web/` utilise Supabase Auth (email et mot de passe), val
 ### Données réelles du dashboard administrateur (28/10/2026)
 
 Le navigateur lit `merchants`, `couriers`, `orders`, `subscriptions` et `courier_subscriptions` avec la session utilisateur et les règles RLS. Cinq politiques SELECT autorisent la lecture transversale uniquement si `is_platform_admin()` confirme une appartenance à `platform_admins`. Aucun accès métier en écriture ni clé privilégiée n’est ajouté. La vue d’ensemble utilise des comptages exacts ; les listes sont paginées par 25 avec projection explicite des colonnes et jointures de noms. Les demandes devenues obsolètes après navigation sont ignorées. Les litiges n’ont pas de source locale et restent signalés non connectés.
+
+
+### Fiches abonnés administrateur (28/10/2026)
+
+La RPC `public.admin_subscriber_details(text,uuid)` est SECURITY INVOKER. Elle délègue la lecture transversale à `admin_private.subscriber_details`, SECURITY DEFINER avec search_path vide, contrôle explicite de la session et de l’appartenance à `platform_admins`, et projection fermée des champs. Le schéma privé n’est pas exposé au Data API. La RPC n’est pas exécutable par anon/PUBLIC et refuse tout utilisateur non administrateur. Elle accepte uniquement merchant/courier, ne modifie aucune donnée, et omet les secrets d’authentification et données bancaires. Les réponses obsolètes ou fermées sont ignorées dans l’interface.

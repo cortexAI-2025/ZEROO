@@ -24,3 +24,7 @@ Le client JavaScript Supabase est chargé depuis un CDN avec version figée. Pou
 ## IONOS / domaine
 
 Le projet Vercel autonome est `zeeroo-admin` (ID `prj_0SGgjAZpLb3PcRAySIcJIrnIi5dQ`). Après validation des tests, supprimer l'association Lovable de `admin.zeeroo.fr`, puis chez IONOS remplacer l'enregistrement `admin` existant par un CNAME vers `441819a6ee9b4995.vercel-dns-017.com` (valeur recommandée par Vercel le 28/10/2026). Ne pas changer les NS ni les enregistrements de la racine ou de `app`. Vérifier à nouveau les valeurs dans Vercel avant bascule.
+
+## Fiches abonnés
+
+Les listes Commerces, Livreurs et Abonnements proposent « Voir la fiche ». La fonction publique `admin_subscriber_details` (SECURITY INVOKER) appelle une fonction en schéma non exposé `admin_private` qui contrôle `auth.uid()` et `platform_admins` à chaque requête. La projection des champs est explicite : coordonnées, identité professionnelle, profil, e-mail et dates du compte, état d’abonnement, indicateurs Stripe Connect et activité. Aucun mot de passe, jeton, secret MFA, numéro de carte ou compte bancaire n’est retourné. Toutes les fiches sont en lecture seule.

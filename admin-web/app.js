@@ -36,9 +36,36 @@ function node(tag,text){const el=document.createElement(tag);if(text!==undefined
 function table(headers,rows){
   const wrap=node('div');wrap.className='table-scroll';const t=node('table');const head=node('thead');const tr=node('tr');
   headers.forEach(label=>tr.append(node('th',label)));head.append(tr);t.append(head);const body=node('tbody');
-  rows.forEach(row=>{const line=node('tr');row.forEach(value=>line.append(node('td',value??'—')));body.append(line)});
+  rows.forEach(row=>{const line=node('tr');row.forEach(value=>{const cell=node('td');if(value&&typeof value==='object'&&value.nodeType)cell.append(value);else cell.textContent=String(value??'—');line.append(cell)});body.append(line)});
   t.append(body);wrap.append(t);return wrap;
 }
+const detailLabels={id:'Identifiant',owner_id:'Compte propriétaire',user_id:'Compte utilisateur',name:'Nom du commerce',slug:'Adresse de la fiche',display_name:'Nom affiché',email:'E-mail de connexion',phone:'Téléphone',contact_email:'E-mail professionnel',legal_name:'Raison sociale',legal_status:'Statut juridique',siret:'SIRET',vat_number:'Numéro de TVA',category:'Catégorie',description:'Description',address_line:'Adresse',postal_code:'Code postal',city:'Ville',latitude:'Latitude',longitude:'Longitude',timezone:'Fuseau horaire',vehicle:'Véhicule',work_zone:'Zone de travail',is_available:'Disponible',available_until:'Disponible jusqu’au',last_assigned_at:'Dernière attribution',is_published:'Publié',is_paused:'En pause',paused_until:'Pause jusqu’au',created_at:'Création',updated_at:'Mise à jour',email_confirmed_at:'E-mail confirmé le',phone_confirmed_at:'Téléphone confirmé le',last_sign_in_at:'Dernière connexion',banned_until:'Compte suspendu jusqu’au',locale:'Langue',account_space:'Espace du compte',stripe_customer_id:'Client Stripe',stripe_subscription_id:'Abonnement Stripe',stripe_account_id:'Compte Stripe Connect',status:'Statut',plan:'Offre',trial_end:'Fin de l’essai',trial_used:'Essai utilisé',current_period_end:'Fin de la période',cancel_at_period_end:'Résiliation en fin de période',first_paid_at:'Premier paiement enregistré',charges_enabled:'Encaissements activés',payouts_enabled:'Virements activés',details_submitted:'Dossier Stripe transmis',orders_count:'Commandes associées',last_order_at:'Dernière commande',delivery_enabled:'Livraison activée',delivery_fee_cents:'Frais de livraison',delivery_radius_m:'Rayon de livraison (m)',accepts_cash_pickup:'Espèces au retrait',offers_pickup:'Retrait proposé',pickup_instructions:'Instructions de retrait',default_prep_minutes:'Préparation par défaut (min)',payment_link:'Lien de paiement',photo_url:'URL de la photo',logo_url:'URL du logo',tagline:'Accroche',about:'Présentation',accent_color:'Couleur',group_orders_enabled:'Commandes groupées activées',group_min_lead_hours:'Délai minimum groupe (h)',group_min_headcount:'Effectif minimum groupe',group_min_total_cents:'Minimum commande groupée',marketing_consent:'Consentement marketing',marketing_consent_at:'Date du consentement'};
+function detailValue(key,value){
+  if(value===null||value===undefined||value==='')return 'Non renseigné';
+  if(typeof value==='boolean')return value?'Oui':'Non';
+  if(/(_at|_until|_end)$/.test(key)&&typeof value==='string')return dateText(value);
+  if(key.endsWith('_cents'))return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(value/100);
+  if(key==='status')return statusText(value);
+  return String(value);
+}
+async function subscriberDetails(panel,kind,id,fresh){
+  panel.replaceChildren(node('p','Chargement de la fiche abonné…'));panel.hidden=false;
+  const close=node('button','Fermer la fiche');close.type='button';let closed=false;close.onclick=()=>{closed=true;panel.replaceChildren();panel.hidden=true};panel.prepend(close);
+  try{
+    const {data,error}=await client.rpc('admin_subscriber_details',{p_kind:kind,p_id:id});
+    if(error)throw error;if(!fresh()||closed)return;if(!data?.entity)throw new Error('Abonné introuvable');
+    const title=node('h3',data.entity.name||data.entity.display_name||'Fiche abonné');title.tabIndex=-1;
+    panel.replaceChildren(close,title,node('p','Informations enregistrées dans ZEEROO · Lecture seule · '+dateText(new Date())));
+    const groups=[['entity',kind==='merchant'?'Commerce et informations professionnelles':'Livreur et informations professionnelles'],['account','Compte de connexion'],['profile','Profil utilisateur'],['subscription','Abonnement'],['payments','État des paiements Stripe Connect'],['activity','Activité']];
+    groups.forEach(([key,label])=>{
+      const section=node('section');section.append(node('h4',label));const value=data[key];
+      if(!value)section.append(node('p','Aucune information enregistrée.'));
+      else{const dl=node('dl');dl.className='subscriber-fields';Object.entries(value).forEach(([field,val])=>{if(!detailLabels[field])return;const pair=node('div');pair.append(node('dt',detailLabels[field]),node('dd',detailValue(field,val)));dl.append(pair)});section.append(dl)}
+      panel.append(section);
+    });title.focus();
+  }catch(error){if(fresh()&&!closed)panel.replaceChildren(close,node('p','Fiche inaccessible : '+errorText(error)))}
+}
+
 const lists={
   merchants:{table:'merchants',select:'id,name,city,category,is_published,is_paused,created_at',order:'created_at',headers:['Commerce','Ville','Catégorie','Publication','Activité','Inscription'],row:r=>[r.name,r.city,r.category,r.is_published?'Publié':'Non publié',r.is_paused?'En pause':'Ouvert',dateText(r.created_at)]},
   couriers:{table:'couriers',select:'id,display_name,vehicle,work_zone,is_available,created_at',order:'created_at',headers:['Livreur','Véhicule','Zone','Disponibilité','Inscription'],row:r=>[r.display_name,r.vehicle,r.work_zone,r.is_available?'Disponible':'Indisponible',dateText(r.created_at)]},
@@ -71,8 +98,12 @@ async function renderData(content,tab,version){
       const {data,error,count}=await client.from(config.table).select(config.select+relation,{count:'exact'}).order(config.order,{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
       if(error)throw error;if(!fresh()||current!==request)return;
       region.replaceChildren(node('p',`${count??'—'} enregistrement(s) · Dernière lecture : ${dateText(new Date())}`));
-      if(data?.length)region.append(table(config.headers,data.map(config.row)));else region.append(node('p','Aucun enregistrement dans cette rubrique.'));
-      const nav=node('div');nav.className='pagination';const previous=node('button','Précédent');previous.disabled=page===0;previous.onclick=()=>load(page-1);const next=node('button','Suivant');next.disabled=count!=null?(page+1)*PAGE_SIZE>=count:(data?.length||0)<PAGE_SIZE;next.onclick=()=>load(page+1);nav.append(previous,node('span',`Page ${page+1}`),next);region.append(nav);
+      const detailPanel=node('aside');detailPanel.className='subscriber-detail';detailPanel.hidden=true;
+      const canDetail=['merchants','couriers','merchantSubscriptions','courierSubscriptions'].includes(kind);
+      const detailKind=(kind==='merchants'||kind==='merchantSubscriptions')?'merchant':'courier';let detailRequest=0;
+      const rows=(data||[]).map(record=>{const cells=config.row(record);if(canDetail){const button=node('button','Voir la fiche');button.type='button';const id=record.id||record.merchant_id||record.courier_id;button.onclick=()=>{const detailCurrent=++detailRequest;return subscriberDetails(detailPanel,detailKind,id,()=>fresh()&&current===request&&detailCurrent===detailRequest)};cells.unshift(button)}return cells});
+      if(data?.length)region.append(table(canDetail?['Informations',...config.headers]:config.headers,rows));else region.append(node('p','Aucun enregistrement dans cette rubrique.'));
+      const nav=node('div');nav.className='pagination';const previous=node('button','Précédent');previous.disabled=page===0;previous.onclick=()=>load(page-1);const next=node('button','Suivant');next.disabled=count!=null?(page+1)*PAGE_SIZE>=count:(data?.length||0)<PAGE_SIZE;next.onclick=()=>load(page+1);nav.append(previous,node('span',`Page ${page+1}`),next);region.append(nav,detailPanel);
     }catch(error){if(fresh()&&current===request)region.replaceChildren(node('p','Lecture impossible : '+errorText(error)))}
   }
   await load(0);
