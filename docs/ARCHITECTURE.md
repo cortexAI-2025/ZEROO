@@ -671,3 +671,15 @@ L’interface de référencement est dans le dépôt `zeroo_mainpage`, section `
 `directory_claims` stocke des demandes privées, pas des droits de propriété. La RPC privée de soumission exige un compte à e-mail confirmé, un dossier minimal, limite à 5 nouvelles demandes sur 24 h et réutilise une demande déjà en attente du même utilisateur pour un SIRET. RLS : lecture propre demandeur ou administrateur ; aucune écriture directe. L’acceptation administrative est journalisée et exige un commerce existant de même SIRET, appartenant au demandeur. Elle ne démarre aucun abonnement. Les fonctions privilégiées restent en schéma `admin_private`, avec façade SECURITY INVOKER dans public.
 
 Un mini-site statique préexistant peut être référencé après rapprochement explicite. Les mini-sites applicatifs sont affichés uniquement pour un rattachement vérifié vers un commerce publié, avec `has_minisite` vrai. La table de référencement ne sert pas de preuve d’affiliation. Le frontend de revendication sur la mainpage utilise une session Supabase en mémoire uniquement.
+
+
+### Ergonomie de la console administrateur
+
+La console `admin-web` utilise une navigation latérale persistante sur ordinateur
+et un tiroir accessible sur mobile (fond inerte, boucle de focus, fermeture par
+Échap). Les rubriques existantes sont regroupées par usage. Une recherche locale
+ouvre ces mêmes modules sans requête métier supplémentaire. `navigation.js`
+ne gère ni les permissions ni l'authentification : l'affichage dépend toujours
+de la vérification `platform_admins` dans `app.js`. La synthèse conserve ses
+compteurs exacts et lit au maximum les cinq dernières commandes réelles avec
+une projection explicite. Aucun module fictif ni chiffre de démonstration.

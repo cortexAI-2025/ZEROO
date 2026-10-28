@@ -3,9 +3,9 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {JSDOM}=require('jsdom');
 const source=fs.readFileSync(`${__dirname}/app.js`,'utf8').replace(/^import .*;\n/,'');
-async function screen({fail=false,delay=false,detailDelay=false}={}){
+async function screen({fail=false,delay=false,detailDelay=false,mobile=false}={}){
   const dom=new JSDOM(fs.readFileSync(`${__dirname}/index.html`,'utf8'),{url:'https://admin.example.test',runScripts:'outside-only'});
-  const w=dom.window;w.matchMedia=()=>({matches:false,addEventListener(){}});
+  const w=dom.window;w.matchMedia=query=>({matches:query.includes('max-width')&&mobile,addEventListener(){}});
   const calls=[];const held=[];
   w.createClient=()=>({rpc(name,args){assert.equal(name,'admin_subscriber_details');calls.push({rpc:name,args});const result={data:{entity:{id:args.p_id,name:args.p_kind==='merchant'?'Commerce test':undefined,display_name:'Livreur test',siret:'12345678901234',phone:'0600000000'},account:{email:'abonne@example.test',encrypted_password:'must-not-render'},subscription:{status:'active',stripe_customer_id:'cus_test',trial_end:null}},error:null};return detailDelay?new Promise(resolve=>held.push(()=>resolve(result))):Promise.resolve(result)},auth:{getUser:async()=>({data:{user:{id:'admin',email:'admin@example.test'}}}),onAuthStateChange(){}},from(table){
     let head=false,range=null;
@@ -20,7 +20,7 @@ async function screen({fail=false,delay=false,detailDelay=false}={}){
       return Promise.resolve(result).then(resolve,reject);
     }};return q;
   }});
-  w.ZEEROO_ADMIN_CONFIG={supabasePublishableKey:'test'};w.eval(source);await new Promise(r=>setImmediate(r));
+  w.eval(fs.readFileSync(`${__dirname}/navigation.js`,'utf8'));w.ZEEROO_ADMIN_CONFIG={supabasePublishableKey:'test'};w.eval(source);await new Promise(r=>setImmediate(r));
   const tab=async name=>{w.document.querySelector(`[data-tab="${name}"]`).click();await new Promise(r=>setImmediate(r))};
   return {w,calls,tab,held,close:()=>w.close()};
 }
@@ -37,3 +37,26 @@ test('closing a detail ignores its pending response',async()=>{const s=await scr
 
 
 test('courier subscriber detail uses the courier ID',async()=>{const s=await screen();try{await s.tab('subscriptions');const select=s.w.document.querySelector('#content select');select.value='courierSubscriptions';select.dispatchEvent(new s.w.Event('change'));await new Promise(r=>setImmediate(r));[...s.w.document.querySelectorAll('#content button')].find(b=>b.textContent==='Voir la fiche').click();await new Promise(r=>setImmediate(r));assert.equal(s.calls.at(-1).args.p_kind,'courier');assert.equal(s.calls.at(-1).args.p_id,'c1');assert.match(s.w.document.querySelector('.subscriber-detail').textContent,/Livreur test/)}finally{s.close()}});
+
+
+test('mobile drawer closes after navigation and Escape, search opens an existing module',async()=>{
+ const s=await screen({mobile:true});try{
+  const d=s.w.document;
+  assert.equal(d.getElementById('sidebar').hidden,true);
+  d.getElementById('menu-toggle').click();
+  assert.equal(d.getElementById('sidebar').hidden,false);
+  assert.equal(d.querySelector('main').inert,true);
+  await s.tab('merchants');
+  assert.equal(d.getElementById('sidebar').hidden,true);
+  assert.equal(d.querySelector('main').inert,false);
+  assert.equal(d.getElementById('page-title').textContent,'Commerces');
+  const q=d.getElementById('module-query');q.value='evaluations';q.dispatchEvent(new s.w.Event('input'));
+  assert.equal(d.querySelectorAll('#module-results button').length,1);
+  d.querySelector('#module-results button').click();await new Promise(r=>setImmediate(r));
+  assert.equal(d.getElementById('page-title').textContent,'Évaluations');
+  assert.equal(d.getElementById('module-results').hidden,true);
+  d.getElementById('menu-toggle').click();d.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Escape'}));
+  assert.equal(d.getElementById('sidebar').hidden,true);
+  assert.equal(d.activeElement,d.getElementById('menu-toggle'));
+ }finally{s.close()}
+});

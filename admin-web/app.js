@@ -4,7 +4,7 @@ const URL='https://rgxesocsvhgsqoehxhgt.supabase.co';
 const sections=['setup','login','denied','dashboard'];
 const $=(id)=>document.getElementById(id);
 let client=null,user=null;
-const show=(id)=>sections.forEach(s=>$(s).hidden=s!==id);
+const show=(id)=>{sections.forEach(s=>$(s).hidden=s!==id);globalThis.ZEEROO_NAV?.sync(id)};
 const prefers=matchMedia('(prefers-color-scheme: dark)');
 let theme='system';
 try{theme=localStorage.getItem('zeeroo-admin-theme')||'system'}catch{}
@@ -84,7 +84,17 @@ async function renderData(content,tab,version){
     const results=await Promise.all(specs.map(async([label,name,key,filter,value])=>{let q=client.from(name).select(key,{count:'exact',head:true});if(filter)q=q.eq(filter,value);const result=await q;if(result.error)throw result.error;return [label,result.count]}));
     if(!fresh())return;
     const grid=node('div');grid.className='metrics';results.forEach(([label,count])=>{const card=node('div');card.className='metric';card.append(node('strong',count??'Indisponible'),node('span',label));grid.append(card)});content.append(grid,node('p','Compteurs issus de la base ZEEROO, tous statuts confondus sauf indication contraire.'));
-    content.append(node('p','Dernière lecture : '+dateText(new Date())));return;
+    content.append(node('p','Dernière lecture : '+dateText(new Date())));
+    const recent=node('section');recent.className='recent-orders';recent.append(node('h3','Dernières commandes'));content.append(recent);
+    try{
+      const config=lists.orders;
+      const {data,error}=await client.from('orders').select(config.select+',merchants(name)').order('created_at',{ascending:false}).range(0,4);
+      if(error)throw error;if(!fresh())return;
+      if(data?.length)recent.append(table(['Commande','Client / commerce','Montant','Statut'],data.map(r=>[r.id.slice(0,8),[r.customer_name,r.merchants?.name||r.merchant_id].filter(Boolean).join(' → '),new Intl.NumberFormat('fr-FR',{style:'currency',currency:(r.currency||'EUR').trim()}).format(r.total_cents/100),statusText(r.status)])));
+      else recent.append(node('p','Aucune commande enregistrée pour le moment.'));
+      const all=node('button','Voir toutes les commandes');all.type='button';all.onclick=()=>renderTab('orders');recent.append(all);
+    }catch(error){if(fresh())recent.append(node('p','Commandes indisponibles : '+errorText(error)))}
+    return;
   }
   let kind=tab;
   if(tab==='subscriptions'){
@@ -113,6 +123,7 @@ async function renderData(content,tab,version){
 
 async function renderTab(tab){
   if($('dashboard').hidden||!user)return;
+  globalThis.ZEEROO_NAV?.select(tab,titles[tab]);
   const version=++renderVersion;
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
   const content=$('content');content.replaceChildren();

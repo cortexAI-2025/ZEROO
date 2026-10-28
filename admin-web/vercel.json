@@ -1,6 +1,6 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "mkdir -p dist && cp index.html app.js crm.js styles.css config.js logo-officiel.jpg dist/",
+  "buildCommand": "mkdir -p dist && cp index.html app.js crm.js navigation.js styles.css config.js logo-officiel.jpg dist/",
   "outputDirectory": "dist"
 }
