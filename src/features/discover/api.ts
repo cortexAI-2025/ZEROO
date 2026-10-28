@@ -25,20 +25,32 @@ export type MerchantSummary = {
   longitude: number | null;
 };
 
+/**
+ * `affiliatedOnly` : client connecté, qui ne voit que les établissements affiliés à ZeeRoo
+ * (abonnement actif ou en essai, paiement configuré). Le public voit tous les commerces publiés.
+ */
 export async function fetchNearbyMerchants(
   latitude: number,
   longitude: number,
+  affiliatedOnly: boolean,
 ): Promise<MerchantSummary[]> {
   const { data, error } = await supabase.rpc('nearby_merchants', {
     p_latitude: latitude,
     p_longitude: longitude,
+    p_affiliated_only: affiliatedOnly,
   });
   if (error) throw error;
   return data;
 }
 
-export async function searchMerchants(query: string): Promise<MerchantSummary[]> {
-  const { data, error } = await supabase.rpc('search_merchants', { p_query: query });
+export async function searchMerchants(
+  query: string,
+  affiliatedOnly: boolean,
+): Promise<MerchantSummary[]> {
+  const { data, error } = await supabase.rpc('search_merchants', {
+    p_query: query,
+    p_affiliated_only: affiliatedOnly,
+  });
   if (error) throw error;
   return data;
 }

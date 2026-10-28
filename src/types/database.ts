@@ -2549,7 +2549,13 @@ export type Database = {
         Returns: { name: string; quantity: number; revenue_cents: number }[];
       };
       nearby_merchants: {
-        Args: { p_latitude: number; p_limit?: number; p_longitude: number; p_radius_m?: number };
+        Args: {
+          p_affiliated_only?: boolean;
+          p_latitude: number;
+          p_limit?: number;
+          p_longitude: number;
+          p_radius_m?: number;
+        };
         Returns: {
           address_line: string | null;
           category: string;
@@ -2600,7 +2606,7 @@ export type Database = {
         };
       };
       search_merchants: {
-        Args: { p_limit?: number; p_query: string };
+        Args: { p_affiliated_only?: boolean; p_limit?: number; p_query: string };
         Returns: {
           address_line: string | null;
           category: string;
