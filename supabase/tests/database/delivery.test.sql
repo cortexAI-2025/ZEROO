@@ -1,6 +1,13 @@
 begin;
 select plan(91);
 
+-- Ce fichier ne teste pas la livraison de nuit (voir plans.test.sql, qui la teste avec des horaires
+-- explicites). Le livreur de démo est de formule Start : sans cette neutralisation, la règle « nuit
+-- (22 h – 6 h, Paris) réservée aux Pro » le privait de missions quand le test tournait la nuit.
+-- Le remplacement est annulé par le rollback final.
+create or replace function public.is_night_delivery(p_at timestamptz)
+returns boolean language sql immutable set search_path = '' as $$ select false $$;
+
 -- Contexte (seed) : « Chez Samir » (48.8686, 2.3314) livre à 3 km pour 3,50 € ; Karim est
 -- livreur, rattaché, actif et disponible. Nadia est cliente, Samir le commerçant.
 delete from public.orders;
