@@ -45,6 +45,11 @@ const hours = [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
   opens_at: '11:00:00',
   closes_at: '23:00:00',
 }));
+// Horloge figée à 08:00 UTC (9 h ou 10 h à Paris), avant l'ouverture de 11 h : le nombre de créneaux du
+// premier jour ne dépend plus de l'heure à laquelle le test est lancé (la CI tournait à 21 h 35 à
+// Paris : il ne restait que 3 créneaux avant la fermeture de 23 h et le test échouait à tort).
+const NOW = new Date();
+NOW.setUTCHours(8, 0, 0, 0);
 const cart = (slug) => ({
   state: {
     merchant: { id: slug, slug, name: 'Chez Samir' },
@@ -87,6 +92,7 @@ const cart = (slug) => ({
     ['snack-simple', false],
   ]) {
     const context = await browser.newContext({ viewport: { width: 900, height: 1500 } });
+    await context.clock.setFixedTime(NOW);
     await context.addInitScript(
       (c) => localStorage.setItem('zeroo.cart', JSON.stringify(c)),
       cart(slug),
@@ -145,7 +151,7 @@ const cart = (slug) => ({
         .getAttribute('data-testid');
       check(
         `${slug} : délai de 24 h respecté (premier jour ${day.slice(-10)})`,
-        new Date(day.slice(-10) + 'T23:59:00').getTime() >= Date.now() + 23 * 3600e3,
+        new Date(day.slice(-10) + 'T23:59:00').getTime() >= NOW.getTime() + 23 * 3600e3,
       );
     }
     await page.screenshot({ path: `/tmp/schedule-${slug}.png` });
