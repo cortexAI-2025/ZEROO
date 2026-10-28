@@ -634,3 +634,8 @@ Reprise : les comptes possédant un seul profil professionnel retrouvent cet esp
 ## Administration web autonome — authentification (28/10/2026)
 
 Le site statique `admin-web/` utilise Supabase Auth (email et mot de passe), valide la session avec `getUser()` puis vérifie l’appartenance du compte à `public.platform_admins` sous RLS. À la demande explicite du propriétaire, aucun enrôlement TOTP ni niveau AAL2 n’est requis par ce site. Les politiques RLS et les droits administrateur restent inchangés. Le site ne modifie ni les facteurs MFA existants ni les autres applications du projet.
+
+
+### Données réelles du dashboard administrateur (28/10/2026)
+
+Le navigateur lit `merchants`, `couriers`, `orders`, `subscriptions` et `courier_subscriptions` avec la session utilisateur et les règles RLS. Cinq politiques SELECT autorisent la lecture transversale uniquement si `is_platform_admin()` confirme une appartenance à `platform_admins`. Aucun accès métier en écriture ni clé privilégiée n’est ajouté. La vue d’ensemble utilise des comptages exacts ; les listes sont paginées par 25 avec projection explicite des colonnes et jointures de noms. Les demandes devenues obsolètes après navigation sont ignorées. Les litiges n’ont pas de source locale et restent signalés non connectés.

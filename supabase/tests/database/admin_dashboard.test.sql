@@ -1,0 +1,13 @@
+begin;
+select plan(6);
+select is((select count(*)::int from pg_policies where schemaname='public' and policyname like 'platform admin read %' and cmd='SELECT' and roles='{authenticated}'),5,'five read-only policies scoped to authenticated');
+select is((select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('merchants','couriers','orders','subscriptions','courier_subscriptions') and c.relrowsecurity),5,'RLS remains enabled on all source tables');
+select set_config('request.jwt.claims','{"sub":"ffffffff-ffff-ffff-ffff-ffffffffffff","role":"authenticated"}',true);
+set local role authenticated;
+select is(public.is_platform_admin(),false,'ordinary account is not an administrator');
+select is((select count(*)::int from public.courier_subscriptions),0,'unrelated account cannot read courier subscriptions');
+select is((select count(*)::int from public.subscriptions),0,'unrelated account cannot read merchant subscriptions');
+select is((select count(*)::int from public.orders),0,'unrelated account cannot read orders');
+reset role;
+select * from finish();
+rollback;

@@ -7,7 +7,9 @@ Cette application statique est maintenue dans GitHub, dossier `admin-web/`, ind�
 - Connexion Supabase Auth email/mot de passe ; vérification `getUser()` ; appartenance à `platform_admins` sous RLS.
 - Connexion sans double authentification, conformément au choix du propriétaire du 28/10/2026. Le dashboard exige une session valide et l’appartenance à `platform_admins` ; les règles RLS restent actives.
 - Profil administrateur personnel avec RLS, nom, langue et thème.
-- Les rubriques métiers restent volontairement désactivées jusqu'à audit des schémas et politiques RLS. **Ce n'est pas encore un dashboard métier de production.**
+- Vue d’ensemble : compteurs exacts. Commerces, livreurs, commandes et abonnements : lecture réelle paginée (25 lignes), avec actualisation manuelle. Les abonnements proviennent des tables synchronisées par les webhooks, sans appel Stripe direct.
+- Litiges : source absente de la base, état explicitement non connecté. Aucune donnée inventée.
+- Lecture transversale accordée uniquement aux membres de `platform_admins` par cinq politiques SELECT dédiées ; aucun droit d’écriture métier ajouté.
 - L'autorisation serveur reste déterminée par les politiques RLS, pas par la navigation. Ne jamais déployer une API privilégiée qui ferait confiance à l'interface.
 - Ne pas exposer de service_role ou secret dans les fichiers publics.
 
