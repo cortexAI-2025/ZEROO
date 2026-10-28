@@ -1,0 +1,105 @@
+-- Paginated client order history for dispute handling.
+create or replace function admin_private.console(p_action text,p_id uuid default null,p_data jsonb default '{}',p_offset int default 0,p_request uuid default null)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare v_result jsonb; total bigint; uid uuid:=auth.uid(); v_uid uuid; v_id uuid:=p_id; v_kind text:=p_data->>'kind'; v_status text; reason text:=btrim(p_data->>'reason'); existing record; inserted int; offer public.happy_hours; v_row public.orders%rowtype;
+begin
+ if uid is null or not exists(select 1 from public.platform_admins where user_id=uid) then raise exception 'Accès réservé aux administrateurs' using errcode='42501';end if;
+ if p_offset is null or p_offset<0 or p_offset>1000000 or jsonb_typeof(p_data) is distinct from 'object' or length(p_data::text)>20000 then raise exception 'Paramètres invalides' using errcode='22023';end if;
+ if p_action='clients' then
+  select count(*) into total from public.profiles p join auth.users u on u.id=p.id where (p.account_space='client' or exists(select 1 from public.orders o where o.customer_id=p.id)) and (coalesce(p_data->>'search','')='' or concat_ws(' ',p.display_name,u.email,p.phone) ilike '%'||(p_data->>'search')||'%');
+  select coalesce(jsonb_agg(x),'[]') into v_result from (select p.id,p.display_name,p.phone,p.admin_status,u.email,p.created_at,(select count(*) from public.orders o where o.customer_id=p.id) as orders_count,(select delivery_city from public.orders o where o.customer_id=p.id and delivery_city is not null order by created_at desc limit 1) as last_city from public.profiles p join auth.users u on u.id=p.id where (p.account_space='client' or exists(select 1 from public.orders o where o.customer_id=p.id)) and (coalesce(p_data->>'search','')='' or concat_ws(' ',p.display_name,u.email,p.phone) ilike '%'||(p_data->>'search')||'%') order by p.created_at desc,p.id limit 25 offset p_offset)x;
+  return jsonb_build_object('rows',v_result,'total',total);
+ elsif p_action='client_orders' then
+  select count(*) into total from public.orders where customer_id=p_id;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select o.id,m.name as merchant,o.status,o.total_cents,o.currency,o.created_at,o.delivery_city,o.delivery_postal_code,o.delivery_address_line,o.delivery_phone,o.delivery_instructions,o.courier_name,o.paid_at,o.meal_payment_method,o.delivery_payment_method from public.orders o join public.merchants m on m.id=o.merchant_id where o.customer_id=p_id order by o.created_at desc,o.id limit 25 offset p_offset)x;
+  return jsonb_build_object('rows',v_result,'total',total);
+ elsif p_action='client_detail' then
+  select jsonb_build_object('id',p.id,'display_name',p.display_name,'phone',p.phone,'admin_status',p.admin_status,'email',u.email,'created_at',p.created_at,'last_sign_in_at',u.last_sign_in_at) into v_result from public.profiles p join auth.users u on u.id=p.id where p.id=p_id;
+  if v_result is null then raise exception 'Client introuvable' using errcode='P0002';end if;
+  return v_result||jsonb_build_object('orders_total',(select count(*) from public.orders where customer_id=p_id),'orders',(select coalesce(jsonb_agg(x),'[]') from(select o.id,m.name as merchant,o.status,o.total_cents,o.currency,o.created_at,o.delivery_city,o.delivery_postal_code,o.delivery_address_line,o.delivery_phone,o.delivery_instructions,o.courier_name,o.paid_at,o.meal_payment_method,o.delivery_payment_method from public.orders o join public.merchants m on m.id=o.merchant_id where o.customer_id=p_id order by o.created_at desc limit 25)x),'loyalty',(select coalesce(jsonb_agg(x),'[]') from(select m.name,c.paid_menus_count,c.rewards_available,c.rewards_redeemed,c.updated_at from public.loyalty_cards c join public.merchants m on m.id=c.merchant_id where c.user_id=p_id order by c.updated_at desc limit 50)x));
+ elsif p_action='entity_state' then
+  if v_kind='merchant' then select jsonb_build_object('admin_status',admin_status,'is_published',is_published) into v_result from public.merchants where id=p_id;
+  elsif v_kind='courier' then select jsonb_build_object('admin_status',admin_status) into v_result from public.couriers where id=p_id;
+  else select jsonb_build_object('admin_status',admin_status) into v_result from public.profiles where id=p_id;end if;
+  if v_result is null then raise exception 'Compte introuvable' using errcode='P0002';end if;return v_result;
+ elsif p_action='reviews' then
+  select count(*) into total from public.order_reviews;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select r.*,m.name as merchant,c.display_name as courier,p.display_name as customer from public.order_reviews r join public.merchants m on m.id=r.merchant_id left join public.couriers c on c.id=r.courier_id left join public.profiles p on p.id=r.customer_id order by r.created_at desc,r.order_id limit 25 offset p_offset)x;
+ elsif p_action='loyalty' then
+  select count(*) into total from public.loyalty_cards;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select c.*,m.name as merchant,p.display_name as customer,u.email from public.loyalty_cards c join public.merchants m on m.id=c.merchant_id join public.profiles p on p.id=c.user_id join auth.users u on u.id=p.id order by c.updated_at desc,c.user_id,c.merchant_id limit 25 offset p_offset)x;
+ elsif p_action='disputes' then
+  select count(*) into total from public.admin_cases;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select * from public.admin_cases order by created_at desc,id limit 25 offset p_offset)x;
+ elsif p_action='communications' then
+  select count(*) into total from public.admin_contact_tasks;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select t.*,u.email,p.display_name,p.phone from public.admin_contact_tasks t join auth.users u on u.id=t.recipient_user_id join public.profiles p on p.id=u.id order by t.created_at desc,t.id limit 25 offset p_offset)x;
+ elsif p_action='audit' then
+  select count(*) into total from public.admin_audit_logs;
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select id,actor_user_id,action,target_type,target_id,details,created_at from public.admin_audit_logs order by created_at desc,id desc limit 25 offset p_offset)x;
+ elsif p_action='offers' then
+  select count(*) into total from public.happy_hours h join public.merchants m on m.id=h.merchant_id where coalesce(p_data->>'city','')='' or m.city ilike '%'||(p_data->>'city')||'%';
+  select coalesce(jsonb_agg(x),'[]') into v_result from(select h.*,m.name as merchant,m.city,m.latitude,m.longitude from public.happy_hours h join public.merchants m on m.id=h.merchant_id where coalesce(p_data->>'city','')='' or m.city ilike '%'||(p_data->>'city')||'%' order by h.created_at desc,h.id limit 25 offset p_offset)x;
+ else
+  if p_action not in('set_status','edit_entity','add_entity','publish','review_visibility','loyalty_adjust','case_create','case_update','contact_create','contact_done','offer_create','offer_toggle') then raise exception 'Action inconnue' using errcode='22023';end if;
+  if reason is null or length(reason) not between 3 and 1000 or p_request is null then raise exception 'Motif et identifiant de requête requis' using errcode='22023';end if;
+  insert into admin_private.operation_keys(request_id,actor,action) values(p_request,uid,p_action) on conflict do nothing;
+  get diagnostics inserted=row_count;
+  if inserted=0 then select * into existing from admin_private.operation_keys where request_id=p_request; if existing.actor<>uid or existing.action<>p_action then raise exception 'Requête déjà utilisée' using errcode='22023';end if;return existing.result;end if;
+  if p_action='set_status' then
+   v_status=p_data->>'status';if v_status is null or v_status not in('active','suspended','archived') then raise exception 'Statut invalide' using errcode='22023';end if;
+   if v_kind='merchant' then update public.merchants set admin_status=v_status where id=p_id;
+   elsif v_kind='courier' then update public.couriers set admin_status=v_status where id=p_id;
+   elsif v_kind='client' then
+    if exists(select 1 from public.platform_admins where user_id=p_id) then raise exception 'Compte administrateur protégé' using errcode='42501';end if;
+    update public.profiles set admin_status=v_status where id=p_id;
+   else raise exception 'Type invalide' using errcode='22023';end if;
+   if not found then raise exception 'Compte introuvable' using errcode='P0002';end if;
+  elsif p_action in('add_entity','edit_entity') then
+   if p_action='add_entity' then
+    select id into v_uid from auth.users where lower(email)=lower(btrim(p_data->>'email'));
+    if v_uid is null then raise exception 'Le compte doit d’abord être inscrit sur app.zeeroo.fr' using errcode='22023';end if;
+   end if;
+   if v_kind='merchant' then
+    if p_action='add_entity' then
+     insert into public.merchants(owner_id,name,slug,category,address_line,postal_code,city,latitude,longitude,phone,contact_email) values(v_uid,p_data->>'name',p_data->>'slug',p_data->>'category',p_data->>'address_line',p_data->>'postal_code',p_data->>'city',(p_data->>'latitude')::float8,(p_data->>'longitude')::float8,p_data->>'phone',p_data->>'email') returning id into v_id;
+    else update public.merchants set name=p_data->>'name',phone=p_data->>'phone',contact_email=p_data->>'contact_email',legal_name=p_data->>'legal_name',siret=p_data->>'siret',vat_number=p_data->>'vat_number',address_line=p_data->>'address_line',postal_code=p_data->>'postal_code',city=p_data->>'city',latitude=(p_data->>'latitude')::float8,longitude=(p_data->>'longitude')::float8 where id=p_id;if not found then raise exception 'Commerce introuvable' using errcode='P0002';end if;end if;
+   elsif v_kind='courier' then
+    if p_action='add_entity' then insert into public.couriers(user_id,display_name,phone,legal_status,siret,vehicle,work_zone) values(v_uid,p_data->>'display_name',p_data->>'phone',(p_data->>'legal_status')::public.courier_legal_status,p_data->>'siret',(p_data->>'vehicle')::public.courier_vehicle,p_data->>'work_zone') returning id into v_id;
+    else update public.couriers set display_name=p_data->>'display_name',phone=p_data->>'phone',legal_status=(p_data->>'legal_status')::public.courier_legal_status,siret=p_data->>'siret',vehicle=(p_data->>'vehicle')::public.courier_vehicle,work_zone=p_data->>'work_zone' where id=p_id;if not found then raise exception 'Livreur introuvable' using errcode='P0002';end if;end if;
+   else raise exception 'Type invalide' using errcode='22023';end if;
+  elsif p_action='publish' then
+   update public.merchants set is_published=(p_data->>'published')::boolean,is_paused=case when (p_data->>'published')::boolean then false else is_paused end where id=p_id and admin_status='active';if not found then raise exception 'Commerce absent ou modéré' using errcode='22023';end if;
+  elsif p_action='review_visibility' then
+   update public.order_reviews set is_hidden=(p_data->>'hidden')::boolean where order_id=p_id;if not found then raise exception 'Avis introuvable' using errcode='P0002';end if;
+  elsif p_action='loyalty_adjust' then
+   if (p_data->>'delta')::int not between -10 and 10 or (p_data->>'delta')::int=0 then raise exception 'Ajustement entre -10 et 10 requis' using errcode='22023';end if;
+   update public.loyalty_cards set rewards_available=rewards_available+(p_data->>'delta')::int where user_id=p_id and merchant_id=(p_data->>'merchant_id')::uuid returning merchant_id into v_id;if not found then raise exception 'Carte introuvable' using errcode='P0002';end if;
+  elsif p_action='case_create' then
+   if nullif(p_data->>'order_id','') is not null then select * into v_row from public.orders where id=(p_data->>'order_id')::uuid;if not found then raise exception 'Commande introuvable' using errcode='P0002';end if;end if;
+   insert into public.admin_cases(order_id,customer_id,merchant_id,courier_id,subject,description,created_by) values(nullif(p_data->>'order_id','')::uuid,coalesce(v_row.customer_id,nullif(p_data->>'customer_id','')::uuid),v_row.merchant_id,v_row.courier_id,p_data->>'subject',p_data->>'description',uid) returning id into v_id;
+  elsif p_action='case_update' then
+   if p_data->>'status' in('resolved','closed') and length(coalesce(p_data->>'resolution',''))<3 then raise exception 'Conclusion requise' using errcode='22023';end if;
+   update public.admin_cases set status=p_data->>'status',resolution=p_data->>'resolution',updated_at=now() where id=p_id;if not found then raise exception 'Litige introuvable' using errcode='P0002';end if;
+  elsif p_action='contact_create' then
+   select id into v_uid from auth.users where lower(email)=lower(btrim(p_data->>'email'));
+   if v_uid is null then raise exception 'Destinataire introuvable' using errcode='P0002';end if;
+   insert into public.admin_contact_tasks(recipient_user_id,subject,body,due_at,status,created_by) values(v_uid,p_data->>'subject',p_data->>'body',nullif(p_data->>'due_at','')::timestamptz,case when nullif(p_data->>'due_at','') is null then 'draft' else 'follow_up' end,uid) returning id into v_id;
+  elsif p_action='contact_done' then
+   update public.admin_contact_tasks set status='done',updated_at=now() where id=p_id;if not found then raise exception 'Relance introuvable' using errcode='P0002';end if;
+  elsif p_action='offer_create' then
+   if not exists(select 1 from public.menu_items where merchant_id=(p_data->>'merchant_id')::uuid and is_available) then raise exception 'Aucun produit disponible pour ce commerce' using errcode='22023';end if;
+   insert into public.happy_hours(merchant_id,name,discount_type,percent_off,starts_on,ends_on,is_active) values((p_data->>'merchant_id')::uuid,p_data->>'name','percent',(p_data->>'percent_off')::smallint,(p_data->>'starts_on')::date,(p_data->>'ends_on')::date,false) returning * into offer;
+   v_id=offer.id;
+   insert into public.happy_hour_slots(happy_hour_id,merchant_id,weekday,starts_at,ends_at) select offer.id,offer.merchant_id,d,'00:00'::time,'23:59'::time from generate_series(1,7)d;
+   insert into public.happy_hour_items(happy_hour_id,merchant_id,item_id) select offer.id,offer.merchant_id,id from public.menu_items where merchant_id=offer.merchant_id and is_available;
+  elsif p_action='offer_toggle' then
+   update public.happy_hours set is_active=(p_data->>'active')::boolean where id=p_id;if not found then raise exception 'Offre introuvable' using errcode='P0002';end if;
+  end if;
+  v_result=jsonb_build_object('ok',true,'id',v_id);
+  insert into public.admin_audit_logs(actor_user_id,action,target_type,target_id,details) values(uid,p_action,coalesce(v_kind,p_action),v_id::text,jsonb_build_object('reason',reason,'request_id',p_request,'status',p_data->>'status'));
+  update admin_private.operation_keys set result=v_result where request_id=p_request;
+  return v_result;
+ end if;
+ return jsonb_build_object('rows',v_result,'total',total);
+end;$$;

@@ -26,7 +26,7 @@ async function verify(){
   show('dashboard');await renderTab('overview');
 }
 $('login-form').onsubmit=async(e)=>{e.preventDefault();$('login-error').textContent='';const f=new FormData(e.target);const {error}=await client.auth.signInWithPassword({email:String(f.get('email')),password:String(f.get('password'))});if(error){$('login-error').textContent=errorText(error);return}await verify()};
-const titles={overview:'Vue d’ensemble',merchants:'Commerces',couriers:'Livreurs',orders:'Commandes',subscriptions:'Abonnements',disputes:'Litiges',profile:'Mon profil'};
+const titles={overview:'Vue d’ensemble',merchants:'Commerces',couriers:'Livreurs',orders:'Commandes',subscriptions:'Abonnements',disputes:'Litiges',profile:'Mon profil',clients:'Clients',reviews:'Évaluations',loyalty:'Fidélité',offers:'Offres géolocalisées',communications:'Communications et relances',audit:'Journal des actions'};
 const PAGE_SIZE=25;
 let renderVersion=0;
 const dateText=value=>value?new Date(value).toLocaleString('fr-FR'):'—';
@@ -62,19 +62,21 @@ async function subscriberDetails(panel,kind,id,fresh){
       if(!value)section.append(node('p','Aucune information enregistrée.'));
       else{const dl=node('dl');dl.className='subscriber-fields';Object.entries(value).forEach(([field,val])=>{if(!detailLabels[field])return;const pair=node('div');pair.append(node('dt',detailLabels[field]),node('dd',detailValue(field,val)));dl.append(pair)});section.append(dl)}
       panel.append(section);
-    });title.focus();
+    });if(globalThis.ZEEROO_CRM)await globalThis.ZEEROO_CRM.actions(panel,kind,id,data,client,()=>fresh()&&!closed);title.focus();
   }catch(error){if(fresh()&&!closed)panel.replaceChildren(close,node('p','Fiche inaccessible : '+errorText(error)))}
 }
 
 const lists={
-  merchants:{table:'merchants',select:'id,name,city,category,is_published,is_paused,created_at',order:'created_at',headers:['Commerce','Ville','Catégorie','Publication','Activité','Inscription'],row:r=>[r.name,r.city,r.category,r.is_published?'Publié':'Non publié',r.is_paused?'En pause':'Ouvert',dateText(r.created_at)]},
-  couriers:{table:'couriers',select:'id,display_name,vehicle,work_zone,is_available,created_at',order:'created_at',headers:['Livreur','Véhicule','Zone','Disponibilité','Inscription'],row:r=>[r.display_name,r.vehicle,r.work_zone,r.is_available?'Disponible':'Indisponible',dateText(r.created_at)]},
+  merchants:{table:'merchants',select:'id,name,city,category,is_published,is_paused,created_at,admin_status',order:'created_at',headers:['Commerce','Ville','Catégorie','Publication','Activité','Inscription','État admin'],row:r=>[r.name,r.city,r.category,r.is_published?'Publié':'Non publié',r.is_paused?'En pause':'Ouvert',dateText(r.created_at),r.admin_status||'active']},
+  couriers:{table:'couriers',select:'id,display_name,vehicle,work_zone,is_available,created_at,admin_status',order:'created_at',headers:['Livreur','Véhicule','Zone','Disponibilité','Inscription','État admin'],row:r=>[r.display_name,r.vehicle,r.work_zone,r.is_available?'Disponible':'Indisponible',dateText(r.created_at),r.admin_status||'active']},
   orders:{table:'orders',select:'id,customer_name,merchant_id,status,total_cents,currency,fulfillment,created_at,paid_at',order:'created_at',headers:['Commande','Client','Commerce','Statut','Total commande','Paiement enregistré','Création'],row:r=>[r.id.slice(0,8),r.customer_name,r.merchants?.name||r.merchant_id,statusText(r.status),new Intl.NumberFormat('fr-FR',{style:'currency',currency:(r.currency||'EUR').trim()}).format(r.total_cents/100),r.paid_at?dateText(r.paid_at):'Non',dateText(r.created_at)]},
   merchantSubscriptions:{table:'subscriptions',select:'merchant_id,status,plan,current_period_end,cancel_at_period_end',order:'merchant_id',headers:['Commerce','Offre','Statut','Fin de période','Résiliation prévue'],row:r=>[r.merchants?.name||r.merchant_id,r.plan,statusText(r.status),dateText(r.current_period_end),r.cancel_at_period_end?'Oui':'Non']},
   courierSubscriptions:{table:'courier_subscriptions',select:'courier_id,status,plan,current_period_end,cancel_at_period_end',order:'courier_id',headers:['Livreur','Offre','Statut','Fin de période','Résiliation prévue'],row:r=>[r.couriers?.display_name||r.courier_id,r.plan,statusText(r.status),dateText(r.current_period_end),r.cancel_at_period_end?'Oui':'Non']},
 };
 async function renderData(content,tab,version){
   const fresh=()=>version===renderVersion&&user&&!$('dashboard').hidden;
+  if(['clients','reviews','loyalty','offers','disputes','communications','audit'].includes(tab)&&globalThis.ZEEROO_CRM)return globalThis.ZEEROO_CRM.render({content,tab,client,fresh});
+  if(['merchants','couriers'].includes(tab)&&globalThis.ZEEROO_CRM)globalThis.ZEEROO_CRM.addEntity(content,tab==='merchants'?'merchant':'courier',client,()=>renderTab(tab));
   const refresh=node('button','Actualiser');refresh.type='button';refresh.onclick=()=>renderTab(tab);content.append(refresh);
   if(tab==='disputes'){content.append(node('p','Le suivi des litiges n’est pas encore connecté : aucune source de litiges n’est enregistrée dans la base ZEEROO. Les litiges Stripe ne sont pas synchronisés ici.'));return}
   if(tab==='overview'){

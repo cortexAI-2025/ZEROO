@@ -28,3 +28,16 @@ Le projet Vercel autonome est `zeeroo-admin` (ID `prj_0SGgjAZpLb3PcRAySIcJIrnIi5
 ## Fiches abonnés
 
 Les listes Commerces, Livreurs et Abonnements proposent « Voir la fiche ». La fonction publique `admin_subscriber_details` (SECURITY INVOKER) appelle une fonction en schéma non exposé `admin_private` qui contrôle `auth.uid()` et `platform_admins` à chaque requête. La projection des champs est explicite : coordonnées, identité professionnelle, profil, e-mail et dates du compte, état d’abonnement, indicateurs Stripe Connect et activité. Aucun mot de passe, jeton, secret MFA, numéro de carte ou compte bancaire n’est retourné. Toutes les fiches sont en lecture seule.
+
+## Console de gestion
+
+- Clients : recherche nom/e-mail/téléphone, coordonnées, état, historique de commandes paginé (25), adresses de livraison enregistrées et fidélité.
+- Commerces/livreurs : ajout depuis un compte déjà inscrit dans le bon espace, édition des coordonnées professionnelles, suspension, réactivation, suppression par archivage. Aucune suppression physique d’historique.
+- Litiges : dossiers opérationnels, rattachement à une commande/client, analyse et conclusion ; aucun remboursement financier automatique.
+- Avis : masquage/restauration, avec exclusion des avis masqués dans les lecteurs RLS et les agrégats de notes.
+- Fidélité : consultation du programme existant (9 menus = 1 offert), ajustement justifié des récompenses disponibles de -10 à +10, sans solde négatif.
+- Offres : Happy Hours existantes, recherche par ville et lien cartographique du commerce ; création en brouillon sur tous les produits disponibles du commerce, calendrier quotidien 00:00–23:59, activation explicite et règles de prix serveur existantes.
+- Communications : brouillons persistés, échéances manuelles de relance, ouverture du message dans la messagerie de l’administrateur et appel téléphonique. Aucun envoi automatique, suivi de livraison ou tâche de fond.
+- Journal : toutes les mutations via `admin_console` nécessitent un motif et un identifiant d’idempotence. Les opérations sont contrôlées côté serveur contre `platform_admins`.
+
+Les suspensions empêchent les nouvelles commandes et nouvelles affectations ; les commandes historiques restent traitables. Un propriétaire ne peut pas annuler une modération. Les comptes administrateur sont protégés des suspensions client. Les nouvelles tables de support ont RLS activée et des politiques de lecture administrateur.

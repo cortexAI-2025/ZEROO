@@ -644,3 +644,16 @@ Le navigateur lit `merchants`, `couriers`, `orders`, `subscriptions` et `courier
 ### Fiches abonnés administrateur (28/10/2026)
 
 La RPC `public.admin_subscriber_details(text,uuid)` est SECURITY INVOKER. Elle délègue la lecture transversale à `admin_private.subscriber_details`, SECURITY DEFINER avec search_path vide, contrôle explicite de la session et de l’appartenance à `platform_admins`, et projection fermée des champs. Le schéma privé n’est pas exposé au Data API. La RPC n’est pas exécutable par anon/PUBLIC et refuse tout utilisateur non administrateur. Elle accepte uniquement merchant/courier, ne modifie aucune donnée, et omet les secrets d’authentification et données bancaires. Les réponses obsolètes ou fermées sont ignorées dans l’interface.
+
+
+### Console CRM et opérations (28/10/2026)
+
+`public.admin_console` est une façade SECURITY INVOKER vers `admin_private.console`, SECURITY DEFINER avec search_path vide et contrôle serveur de l’appartenance à `platform_admins` avant toute lecture/écriture. Les opérations sont une liste fermée, sans SQL dynamique ni modification de secrets d’authentification. Chaque mutation requiert un motif et une clé UUID ; `admin_private.operation_keys` garantit l’idempotence transactionnelle et `admin_audit_logs` conserve acteur/action/cible/motif.
+
+`admin_status` sur commerces, livreurs et profils distingue active/suspended/archived. Des triggers empêchent un propriétaire de lever une suspension ; les commerces modérés sont dépubliés et en pause, les livreurs deviennent indisponibles. Les insertions de commandes et nouvelles affectations revérifient les états ; les mises à jour des commandes historiques restent possibles. Un archivage préserve la comptabilité et les litiges. Les comptes admin sont protégés de la modération client.
+
+`admin_cases` et `admin_contact_tasks` stockent les dossiers support et brouillons/relances, avec RLS et lecture admin ; les écritures passent uniquement par la RPC. Les relances sont manuelles et les e-mails sont ouverts comme brouillons dans le logiciel de messagerie de l’administrateur. Aucun message n’est envoyé automatiquement. Les litiges ne déclenchent pas de remboursement Stripe.
+
+La modération des avis ajoute `is_hidden`, une politique SELECT restrictive et un filtre dans les agrégats SECURITY DEFINER existants. La fidélité conserve sa règle métier (9 menus payés/récupérés = 1 offert), avec ajustements auditables limités aux récompenses disponibles. Les offres utilisent les tables Happy Hour et les règles de prix existantes : brouillon par défaut, produits disponibles du commerce, plage quotidienne et activation explicite. La géolocalisation correspond aux coordonnées du commerce, pas à un suivi des clients.
+
+Le dossier client utilise une projection fermée d’auth.users/profiles, un historique paginé des commandes et les cartes de fidélité. Les adresses affichées proviennent des commandes de livraison enregistrées. L’ajout d’un professionnel lie un compte déjà inscrit dans le bon espace, sans créer de mot de passe ni d’abonnement facturé.
