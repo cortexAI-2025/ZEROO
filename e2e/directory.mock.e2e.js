@@ -95,30 +95,7 @@ const merchants = [
     permissions: ['geolocation'],
     geolocation: { latitude: 48.8686, longitude: 2.3314 },
   });
-  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
-  const exp = Math.floor(Date.now() / 1000) + 86400;
-  const jwt = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: '20000000-0000-0000-0000-000000000001', role: 'authenticated', aud: 'authenticated', exp, email: 'nadia@test.fr' })}.sig`;
-  const user = {
-    id: '20000000-0000-0000-0000-000000000001',
-    aud: 'authenticated',
-    role: 'authenticated',
-    email: 'nadia@test.fr',
-    app_metadata: {},
-    user_metadata: {},
-    created_at: new Date().toISOString(),
-  };
-  const session = {
-    access_token: jwt,
-    refresh_token: 'r',
-    expires_at: exp,
-    expires_in: 86400,
-    token_type: 'bearer',
-    user,
-  };
-  await context.addInitScript(
-    (s) => localStorage.setItem('sb-x-auth-token', JSON.stringify(s)),
-    session,
-  );
+  // Annuaire public : tester un visiteur sans session, sans espace client artificiel.
   const page = await context.newPage();
   page.on(
     'console',
