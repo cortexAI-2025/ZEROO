@@ -17,13 +17,13 @@ insert into auth.users (
 values
   ('00000000-0000-0000-0000-000000000000', '10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'commercant@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Samir"}', now(), now(), '', '', '', '', '33612345601', now()),
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Samir", "signup_profile_version": 1, "first_name": "Samir", "last_name": "Démo", "address_line": "12 rue de la Paix", "postal_code": "75002", "city": "Paris", "contact_phone": "+33612345601"}', now(), now(), '', '', '', '', '33612345601', now()),
   ('00000000-0000-0000-0000-000000000000', '20000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'client@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Nadia"}', now(), now(), '', '', '', '', null, null),
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Nadia", "signup_profile_version": 1, "first_name": "Nadia", "last_name": "Démo", "address_line": "12 rue de la Paix", "postal_code": "75002", "city": "Paris", "contact_phone": "+33612345602"}', now(), now(), '', '', '', '', null, null),
   ('00000000-0000-0000-0000-000000000000', '70000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated',
    'livreur@zeroo.test', extensions.crypt('motdepasse1', extensions.gen_salt('bf')), now(),
-   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Karim"}', now(), now(), '', '', '', '', '33612345603', now());
+   '{"provider": "email", "providers": ["email"]}', '{"full_name": "Karim", "signup_profile_version": 1, "first_name": "Karim", "last_name": "Démo", "address_line": "12 rue de la Paix", "postal_code": "75002", "city": "Paris", "contact_phone": "+33612345603"}', now(), now(), '', '', '', '', '33612345603', now());
 
 insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
 select gen_random_uuid(), id, id::text, 'email',
