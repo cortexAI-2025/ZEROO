@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm';
+import { createClient } from './vendor/supabase.js';
 const CONFIG=globalThis.ZEEROO_ADMIN_CONFIG||{};
 const URL='https://rgxesocsvhgsqoehxhgt.supabase.co';
 const sections=['setup','login','denied','dashboard'];

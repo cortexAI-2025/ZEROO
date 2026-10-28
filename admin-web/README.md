@@ -19,7 +19,7 @@ Cette application statique est maintenue dans GitHub, dossier `admin-web/`, ind�
 3. Configurer le domaine `admin.zeeroo.fr` **après** tests d'authentification et de RLS.
 4. Vérifier la connexion par mot de passe, les comptes non-admin, les sessions expirées, les appareils mobiles et la persistance du profil.
 
-Le client JavaScript Supabase est chargé depuis un CDN avec version figée. Pour une production durcie, installer la dépendance localement, verrouiller le lockfile et bundler les assets afin d'éviter une dépendance runtime au CDN.
+Le client JavaScript Supabase est **embarqué localement** (`vendor/supabase.js`, version figée 2.117.3, voir `vendor/README.md`) : aucun script externe n'est chargé. La politique de sécurité du contenu (CSP) de `vercel.json` n'autorise que `script-src 'self'` et les connexions vers `https://rgxesocsvhgsqoehxhgt.supabase.co`.
 
 ## IONOS / domaine
 
