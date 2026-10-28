@@ -38,7 +38,11 @@ end $$;
 
 select pg_temp.accepted_delivery(k, '30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', pg_temp.kebab())
 from unnest(array['a', 'b', 'n']) k;
-update public.orders set estimated_ready_at = now() + interval '10 minutes';
+-- Heure de préparation fixe, de jour (11 h à Paris) : « maintenant + 10 min » faisait passer ces commandes
+-- en « livraison de nuit » (22 h – 6 h, réservée aux livreurs Pro) quand le test tournait la nuit, et les
+-- assertions sur la formule Start échouaient selon l'heure d'exécution. La règle de nuit est testée plus
+-- bas avec des horaires explicites.
+update public.orders set estimated_ready_at = timestamptz '2099-01-02 10:00:00+00';
 
 -- -----------------------------------------------------------------------------
 -- Établissement : droits par formule
