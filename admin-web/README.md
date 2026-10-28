@@ -5,7 +5,7 @@ Cette application statique est maintenue dans GitHub, dossier `admin-web/`, ind�
 ## Sécurité et état
 - Aucun mode démo et aucune fixture dans le dashboard réel.
 - Connexion Supabase Auth email/mot de passe ; vérification `getUser()` ; appartenance à `platform_admins` sous RLS.
-- MFA TOTP AAL2 requise avant ouverture du dashboard. La configuration initiale d'un facteur MFA doit être faite via un parcours sécurisé existant ou un écran d'enrôlement à développer.
+- MFA TOTP AAL2 requise avant ouverture du dashboard. Le parcours d'enrôlement TOTP est inclus, mais nécessite un test avec un vrai compte avant production.
 - Profil administrateur personnel avec RLS, nom, langue et thème.
 - Les rubriques métiers restent volontairement désactivées jusqu'à audit des schémas et politiques RLS. **Ce n'est pas encore un dashboard métier de production.**
 - L'autorisation serveur reste déterminée par les politiques RLS, pas par la navigation. Ne jamais déployer une API privilégiée qui ferait confiance à l'interface.
@@ -18,3 +18,7 @@ Cette application statique est maintenue dans GitHub, dossier `admin-web/`, ind�
 4. Vérifier l'enrôlement MFA, les comptes non-admin, les sessions expirées, les appareils mobiles et la persistance du profil.
 
 Le client JavaScript Supabase est chargé depuis un CDN avec version figée. Pour une production durcie, installer la dépendance localement, verrouiller le lockfile et bundler les assets afin d'éviter une dépendance runtime au CDN.
+
+## IONOS / domaine
+
+Le projet Vercel autonome est `zeeroo-admin` (ID `prj_0SGgjAZpLb3PcRAySIcJIrnIi5dQ`). Après validation des tests, supprimer l'association Lovable de `admin.zeeroo.fr`, puis chez IONOS remplacer l'enregistrement `admin` existant par un CNAME vers `441819a6ee9b4995.vercel-dns-017.com` (valeur recommandée par Vercel le 28/10/2026). Ne pas changer les NS ni les enregistrements de la racine ou de `app`. Vérifier à nouveau les valeurs dans Vercel avant bascule.
