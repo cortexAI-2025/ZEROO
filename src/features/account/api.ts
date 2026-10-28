@@ -1,3 +1,5 @@
+import { authCallbackUrl } from '@/features/auth/api';
+import { profileSchema, resetRequestSchema, type ProfileValues } from '@/features/auth/schemas';
 import type { MerchantSummary } from '@/features/discover/api';
 import { supabase } from '@/lib/supabase';
 import type { Tables, TablesInsert } from '@/types/database';
@@ -13,12 +15,30 @@ export async function fetchProfile(userId: string) {
   return data;
 }
 
-export async function updateProfile(
-  userId: string,
-  patch: { display_name: string | null; phone: string | null },
-) {
-  const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+export async function updateProfile(values: ProfileValues) {
+  const parsed = profileSchema.parse(values);
+  const { error } = await supabase.rpc('update_client_profile', {
+    p_profile: {
+      first_name: parsed.firstName,
+      last_name: parsed.lastName,
+      address_line: parsed.addressLine,
+      postal_code: parsed.postalCode,
+      city: parsed.city,
+      phone: parsed.phone,
+    },
+  });
   if (error) throw error;
+}
+
+/** L'adresse de connexion reste gérée par Auth et son circuit de confirmation. */
+export async function requestEmailChange(value: string) {
+  const { email } = resetRequestSchema.parse({ email: value });
+  const { data, error } = await supabase.auth.updateUser(
+    { email },
+    { emailRedirectTo: authCallbackUrl() },
+  );
+  if (error) throw error;
+  return { email, confirmed: data.user?.email?.toLowerCase() === email };
 }
 
 // ---- Adresses ------------------------------------------------------------------------------

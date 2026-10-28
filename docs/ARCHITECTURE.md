@@ -654,3 +654,28 @@ continuent de s’appliquer.
 Les avatars ne sont pas un champ de l’inscription commune ni du profil client.
 Les restaurants conservent leur logo/photo dans leur espace professionnel, les
 livreurs leur photo dans le leur, avec les contrôles de propriété Storage existants.
+
+
+### Consultation et modification du profil client
+
+`/account` affiche prénom, nom, rue, code postal, ville et téléphone depuis le
+profil privé, avec un bouton « Modifier mes informations ». Les anciennes
+valeurs absentes sont signalées sans déduire un nom ou une adresse. Le formulaire
+réutilise les validations de l’inscription et impose les coordonnées complètes ;
+il peut être annulé. Après une sauvegarde réussie, le cache du profil est relu.
+Les erreurs de lecture et d’écriture sont visibles, sans faux message de succès.
+
+`public.update_client_profile(jsonb)` est un wrapper SECURITY INVOKER vers
+`account_private.update_client_profile`, SECURITY DEFINER avec search_path vide.
+L’opération vérifie auth.uid() et l’espace client serveur, verrouille le profil
+correspondant, rejette les clés non autorisées et les champs invalides puis
+modifie uniquement ses six coordonnées et son nom affiché. Aucun identifiant de
+cible ni droit UPDATE supplémentaire sur la table n’est donné au client API.
+Les adresses de livraison sauvegardées et les anciennes commandes restent
+distinctes de l’adresse personnelle du profil.
+
+Le changement d’e-mail de connexion utilise séparément Auth.updateUser et le
+callback d’authentification existant. L’interface garde l’e-mail effectif et
+indique la nouvelle adresse en attente de confirmation. Aucune mise à jour de
+l’e-mail ou du téléphone vérifié n’est effectuée par la fonction SQL. Les avatars
+restent réservés aux espaces professionnels.

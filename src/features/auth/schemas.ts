@@ -47,6 +47,9 @@ export const signUpSchema = z.object({
   password,
 });
 
+export const profileSchema = signUpSchema.omit({ email: true, password: true });
+export type ProfileValues = z.infer<typeof profileSchema>;
+
 export const resetRequestSchema = z.object({ email });
 
 export const newPasswordSchema = z.object({ password });

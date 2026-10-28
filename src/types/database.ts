@@ -1590,6 +1590,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      update_client_profile: { Args: { p_profile: Json }; Returns: undefined };
+
       get_my_account_space: { Args: never; Returns: string | null };
       claim_account_space: { Args: { p_space: string }; Returns: string };
 
