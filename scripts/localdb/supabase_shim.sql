@@ -20,6 +20,7 @@ create table if not exists auth.users (
   email text,
   encrypted_password text,
   email_confirmed_at timestamptz,
+  last_sign_in_at timestamptz,
   phone text,
   phone_confirmed_at timestamptz,
   raw_app_meta_data jsonb default '{}',
