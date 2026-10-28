@@ -48,6 +48,6 @@ async function renderTab(tab){
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));
 if(!CONFIG.supabasePublishableKey||typeof CONFIG.supabasePublishableKey!=='string'){show('setup')}else{
   client=createClient(URL,CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT')queueMicrotask(()=>logout())});
+  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){user=null;$('logout').hidden=true;queueMicrotask(()=>show('login'))}});
   verify().catch(()=>show('denied'));
 }
