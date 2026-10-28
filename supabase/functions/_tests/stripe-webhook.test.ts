@@ -283,3 +283,59 @@ scenario('échec d’écriture : 500 et événement non enregistré (Stripe le r
   assertEquals(db.rows('subscriptions')[0].status, 'active');
   assertEquals(db.rows('stripe_events').length, 1);
 });
+
+// --- Événements tardifs ou dans le désordre -------------------------------------------------------
+
+scenario('événement « active » tardif après résiliation : l’état réel de Stripe prime', async ({ send, db, stripe }) => {
+  stripe.addSubscription('sub_1', 'canceled', 'price_m_start_month', 'cus_m');
+  const res = await send(event('customer.subscription.updated', subscription({ status: 'active' })));
+  assertEquals(res.status, 200);
+  assertEquals(db.rows('subscriptions')[0].status, 'canceled');
+});
+
+scenario('événement « canceled » tardif après renouvellement : l’abonnement reste actif', async ({ send, db, stripe }) => {
+  stripe.addSubscription('sub_1', 'active', 'price_m_start_month', 'cus_m');
+  const res = await send(event('customer.subscription.deleted', subscription({ status: 'canceled' })));
+  assertEquals(res.status, 200);
+  assertEquals(db.rows('subscriptions')[0].status, 'active');
+});
+
+scenario('ancien abonnement terminé reçu après le nouveau : le nouveau n’est pas suspendu', async ({ send, db, stripe }) => {
+  Object.assign(db.rows('subscriptions')[0], { stripe_subscription_id: 'sub_new', status: 'active' });
+  stripe.addSubscription('sub_new', 'active', 'price_m_start_month', 'cus_m');
+  stripe.addSubscription('sub_old', 'canceled', 'price_m_start_month', 'cus_m');
+  const res = await send(event('customer.subscription.deleted', subscription({ id: 'sub_old', status: 'canceled' })));
+  assertEquals(res.status, 200);
+  const row = db.rows('subscriptions')[0];
+  assertEquals(row.status, 'active');
+  assertEquals(row.stripe_subscription_id, 'sub_new');
+});
+
+scenario('nouvel abonnement après un ancien terminé : il remplace l’ancien', async ({ send, db, stripe }) => {
+  Object.assign(db.rows('subscriptions')[0], { stripe_subscription_id: 'sub_old', status: 'canceled' });
+  stripe.addSubscription('sub_new', 'active', 'price_m_start_month', 'cus_m');
+  const res = await send(event('customer.subscription.created', subscription({ id: 'sub_new', status: 'active' })));
+  assertEquals(res.status, 200);
+  const row = db.rows('subscriptions')[0];
+  assertEquals(row.status, 'active');
+  assertEquals(row.stripe_subscription_id, 'sub_new');
+});
+
+scenario('abonnement supprimé côté Stripe (404) : l’instantané de l’événement s’applique', async ({ send, db }) => {
+  Object.assign(db.rows('subscriptions')[0], { stripe_subscription_id: 'sub_1', status: 'active' });
+  const res = await send(event('customer.subscription.deleted', subscription({ status: 'canceled' })));
+  assertEquals(res.status, 200);
+  assertEquals(db.rows('subscriptions')[0].status, 'canceled');
+});
+
+scenario('même événement livré deux fois : traité une fois, le second est ignoré', async ({ send, db, stripe }) => {
+  stripe.addSubscription('sub_1', 'active', 'price_m_start_month', 'cus_m');
+  const evt = event('customer.subscription.updated', subscription(), 'evt_twice');
+  assertEquals((await send(evt)).status, 200);
+  const writes = db.writes.length;
+  const retrievals = stripe.calls('GET', '/v1/subscriptions/sub_1').length;
+  const second = await send(evt);
+  assertEquals((await second.json()).duplicate, true);
+  assertEquals(db.writes.length, writes);
+  assertEquals(stripe.calls('GET', '/v1/subscriptions/sub_1').length, retrievals);
+});

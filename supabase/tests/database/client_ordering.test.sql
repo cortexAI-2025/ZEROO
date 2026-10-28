@@ -131,6 +131,8 @@ select is(
 update public.subscriptions set status = 'past_due' where merchant_id = '30000000-0000-0000-0000-000000000001';
 select ok(not public.is_accepting_orders(m), 'abonnement impayé : plus de commandes') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
 update public.subscriptions set status = 'active' where merchant_id = '30000000-0000-0000-0000-000000000001';
+-- Suspendue, la fiche a été dépubliée : le professionnel la republie une fois en règle.
+update public.merchants set is_published = true where id = '30000000-0000-0000-0000-000000000001';
 update public.merchants set payment_link = null, accepts_cash_pickup = false where id = '30000000-0000-0000-0000-000000000001';
 select ok(not public.is_accepting_orders(m), 'ni lien de paiement ni espèces : plus de commandes') from public.merchants m where m.id = '30000000-0000-0000-0000-000000000001';
 update public.merchants set payment_link = 'https://pay.sumup.com/b2c/chez-samir-demo' where id = '30000000-0000-0000-0000-000000000001';

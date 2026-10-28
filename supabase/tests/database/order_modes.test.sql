@@ -94,6 +94,8 @@ select throws_ok(
 
 -- Formule Start : la livraison est incluse. L'abonnement est revérifié à chaque commande.
 update public.subscriptions set status = 'active', plan = 'start' where merchant_id = 'd0000000-0000-0000-0000-000000000001';
+-- La résiliation a dépublié la fiche : le professionnel la republie une fois réabonné.
+update public.merchants set is_published = true where id = 'd0000000-0000-0000-0000-000000000001';
 update public.merchants set delivery_enabled = true, offers_pickup = true where id = 'd0000000-0000-0000-0000-000000000001';
 select lives_ok(
   $$ select public.create_order('20000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',

@@ -54,6 +54,24 @@ function courierPlan(subscription: Stripe.Subscription): 'start' | 'pro' {
   return subscription.metadata?.plan === 'pro' ? 'pro' : 'start';
 }
 
+/** Statuts définitifs : l'abonnement ne reviendra pas. */
+const TERMINAL_STATUSES = ['canceled', 'incomplete_expired'];
+
+/**
+ * État réel de l'abonnement chez Stripe. Les événements peuvent arriver en retard ou dans le
+ * désordre : leur instantané ne fait pas foi (un « active » tardif ne doit pas réactiver un
+ * abonnement résilié, ni un « canceled » tardif suspendre un abonnement renouvelé). Sans
+ * abonnement connu de Stripe (supprimé), on garde l'instantané de l'événement.
+ */
+async function currentSubscription(stripe: Stripe, snapshot: Stripe.Subscription) {
+  try {
+    return await stripe.subscriptions.retrieve(snapshot.id);
+  } catch (error) {
+    if ((error as { statusCode?: number }).statusCode === 404) return snapshot;
+    throw error;
+  }
+}
+
 /** Abonnement d'un restaurant ou d'un livreur (même offre), retrouvé par son client Stripe. */
 async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscription) {
   const customerId =
@@ -64,10 +82,18 @@ async function syncSubscription(db: SupabaseClient, subscription: Stripe.Subscri
   for (const table of ['subscriptions', 'courier_subscriptions']) {
     const { data: existing } = await db
       .from(table)
-      .select('trial_used')
+      .select('trial_used, stripe_subscription_id')
       .eq('stripe_customer_id', customerId)
       .maybeSingle();
     if (!existing) continue;
+    // Événement tardif d'un ancien abonnement terminé : le nouvel abonnement en cours prime.
+    if (
+      existing.stripe_subscription_id &&
+      existing.stripe_subscription_id !== subscription.id &&
+      TERMINAL_STATUSES.includes(subscription.status)
+    ) {
+      continue;
+    }
     unwrap(
       await db
         .from(table)
@@ -100,7 +126,7 @@ async function processEvent(db: SupabaseClient, stripe: Stripe, event: Stripe.Ev
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
-      await syncSubscription(db, event.data.object);
+      await syncSubscription(db, await currentSubscription(stripe, event.data.object));
       break;
     default:
       // Événement non utilisé : accusé de réception simple.

@@ -23,6 +23,7 @@ import {
   useUpdateMerchant,
 } from '@/features/merchant/hooks';
 import { useMenu } from '@/features/menu/hooks';
+import { canPublishMerchant, isAffiliated } from '@/features/merchant/status';
 import { PaymentLinkCard } from '@/features/payments/PaymentLinkCard';
 import { formatTime } from '@/lib/dates';
 import { errorKey } from '@/lib/errors';
@@ -54,7 +55,9 @@ export default function ShopScreen() {
     (c) => c.is_active && c.menu_items.some((i) => i.is_available),
   );
   const hasHours = (hours.data ?? []).length > 0;
-  const canPublish = hasAvailableItem && hasHours;
+  // Publication réservée aux affiliés (la base le garantit aussi : cet écran ne fait que l'expliquer).
+  const affiliated = isAffiliated(merchant);
+  const canPublish = canPublishMerchant(merchant, { hasAvailableItem, hasHours });
 
   const pause = (minutes: number | null) =>
     update.mutate({
@@ -82,7 +85,16 @@ export default function ShopScreen() {
           disabled={!merchant.is_published && !canPublish}
           onValueChange={(value) => update.mutate({ is_published: value })}
         />
-        {!merchant.is_published && !canPublish && !menu.isPending && !hours.isPending ? (
+        {!merchant.is_published && !affiliated ? (
+          <AppText testID="publish-needs-affiliation" variant="muted">
+            {t('merchant.shop.publishNeedsAffiliation')}
+          </AppText>
+        ) : null}
+        {!merchant.is_published &&
+        affiliated &&
+        !canPublish &&
+        !menu.isPending &&
+        !hours.isPending ? (
           <AppText variant="muted">{t('merchant.shop.publishBlocked')}</AppText>
         ) : null}
       </Card>

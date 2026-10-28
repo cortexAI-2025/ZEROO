@@ -72,6 +72,11 @@ set local request.jwt.claims = '{"role": "anon"}';
 select is((select count(*)::int from public.merchants), 0, 'un visiteur ne voit pas les commerces non publiés');
 reset role;
 
+-- Publication réservée aux professionnels affiliés : abonnement en cours et encaissement configuré.
+insert into public.subscriptions (merchant_id, stripe_customer_id, status, plan)
+  select id, 'cus_merchants_test', 'active', 'start' from public.merchants where slug = 'chez-samir-snack-delices';
+update public.merchants set payment_link = 'https://pay.exemple.test/chez-samir' where slug = 'chez-samir-snack-delices';
+
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "aaaaaaaa-0000-0000-0000-000000000001", "role": "authenticated"}';
 select is(

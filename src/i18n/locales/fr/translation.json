@@ -839,6 +839,7 @@
       "visibility": "Visible des clients",
       "visibilityHint": "Votre commerce apparaît dans l'app et peut recevoir des commandes pendant vos horaires.",
       "publishBlocked": "Ajoutez au moins un produit disponible et un créneau d'ouverture avant de publier.",
+      "publishNeedsAffiliation": "Votre fiche reste privée tant que votre abonnement ZeeRoo n'est pas actif et que vous n'avez pas indiqué comment être payé (lien de paiement ou espèces au comptoir). Si votre abonnement s'arrête, la fiche est retirée de l'annuaire mais conservée : vous la republiez une fois en règle.",
       "pause": "Pause",
       "pauseHint": "Coupez temporairement les nouvelles commandes, par exemple en cas de rush.",
       "pausedUntil": "En pause jusqu'à {{time}}",
@@ -1009,6 +1010,7 @@
   },
   "errors": {
     "merchantAlreadyExists": "Ce compte gère déjà un commerce.",
+    "merchantNotAffiliated": "Votre fiche ne peut pas être publiée : il faut un abonnement ZeeRoo actif et un moyen d'encaissement (lien de paiement ou espèces).",
     "invalidPickupCode": "Code de retrait incorrect. Demandez au client de vous montrer son code.",
     "invalidTransition": "Cette commande a déjà changé de statut. La liste a été actualisée.",
     "prepMinutesRequired": "Indiquez un délai de préparation.",

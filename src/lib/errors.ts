@@ -4,6 +4,7 @@ import { authErrorKey } from '@/features/auth/errors';
 const businessErrors = {
   account_space_locked: 'space.locked',
   merchant_already_exists: 'errors.merchantAlreadyExists',
+  merchant_not_affiliated: 'errors.merchantNotAffiliated',
   invalid_pickup_code: 'errors.invalidPickupCode',
   invalid_transition: 'errors.invalidTransition',
   prep_minutes_required: 'errors.prepMinutesRequired',
