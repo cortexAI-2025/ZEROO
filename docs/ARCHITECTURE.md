@@ -629,3 +629,8 @@ Un compte Auth appartient définitivement à un seul espace : client, restaurant
 Les créations de commerce, de livreur et de commande contrôlent l'espace en base. Les helpers de propriété et les fonctions serveur de facturation/création de commande le contrôlent aussi. Les routes privées sont fermées pendant la lecture du rôle ; un lien direct vers un autre espace ne l'accorde pas. Les menus publics restent consultables.
 
 Reprise : les comptes possédant un seul profil professionnel retrouvent cet espace automatiquement. Les anciens comptes de démonstration multi-profils doivent choisir une fois leur espace définitif. Les données et abonnements historiques restent conservés. Avant le déploiement, examiner ces comptes et leurs éventuels abonnements : une réaffectation de données à un compte distinct demande un traitement administratif explicite. Cette migration ne refond pas toutes les anciennes RPC métier ; leur contrôle d'identité et leurs RLS restent en place. Ne pas appliquer la migration en production sans déployer aussi les fonctions serveur et le frontend correspondants.
+
+
+## Administration web autonome — authentification (28/10/2026)
+
+Le site statique `admin-web/` utilise Supabase Auth (email et mot de passe), valide la session avec `getUser()` puis vérifie l’appartenance du compte à `public.platform_admins` sous RLS. À la demande explicite du propriétaire, aucun enrôlement TOTP ni niveau AAL2 n’est requis par ce site. Les politiques RLS et les droits administrateur restent inchangés. Le site ne modifie ni les facteurs MFA existants ni les autres applications du projet.
