@@ -1,3 +1,4 @@
+import * as Linking from 'expo-linking';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -53,11 +54,22 @@ export function AccountScreen({ children }: { children?: ReactNode }) {
       </AppText>
       {children}
       {admin.data ? (
-        <ListRow
-          testID="admin-entry"
-          title={t('admin.open')}
-          onPress={() => router.push('/admin')}
-        />
+        <>
+          <ListRow
+            testID="admin-console-entry"
+            title={t('admin.consoleOpen')}
+            onPress={() =>
+              void run(async () => {
+                await Linking.openURL('https://zeeroo-admin.vercel.app');
+              })
+            }
+          />
+          <ListRow
+            testID="admin-entry"
+            title={t('admin.campaignsOpen')}
+            onPress={() => router.push('/admin')}
+          />
+        </>
       ) : null}
 
       <Button

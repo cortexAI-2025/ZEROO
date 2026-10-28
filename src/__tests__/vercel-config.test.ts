@@ -47,3 +47,16 @@ describe('vercel.json : anciens liens zeroo.online', () => {
     expect(config.rewrites).toEqual([{ source: '/(.*)', destination: '/index.html' }]);
   });
 });
+
+describe('security headers for the app and administrator', () => {
+  it('blocks embedding and MIME sniffing while preserving same-origin geolocation', () => {
+    const root = config.headers.find((rule) => rule.source === '/(.*)');
+    const headers = Object.fromEntries(
+      (root?.headers ?? []).map((h) => [h.key.toLowerCase(), h.value]),
+    );
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['content-security-policy']).toContain("frame-ancestors 'none'");
+    expect(headers['permissions-policy']).toContain('geolocation=(self)');
+  });
+});

@@ -46,6 +46,8 @@ jobs:
           files=$(npx prettier --list-different src || true)
           for f in $files; do echo "::error file=$f::Fichier non formaté (npx prettier --write $f)"; done
           test -z "$files"
+      - name: Tests du dashboard administrateur
+        run: node --test admin-web/*.test.cjs
       - name: Tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npx jest --ci --reporters=default --reporters=github-actions

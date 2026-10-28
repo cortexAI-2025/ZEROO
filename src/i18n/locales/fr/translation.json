@@ -1630,6 +1630,8 @@
     "requeue": "Reprogrammer",
     "attempts_one": "{{count}} tentative",
     "attempts_other": "{{count}} tentatives",
-    "open": "Administration"
+    "open": "Administration",
+    "consoleOpen": "Dashboard administrateur ZEEROO",
+    "campaignsOpen": "Gestion des campagnes"
   }
 }
