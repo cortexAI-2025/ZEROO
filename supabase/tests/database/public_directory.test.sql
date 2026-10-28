@@ -9,6 +9,8 @@ insert into public.platform_admins(user_id) values('d1000000-0000-0000-0000-0000
 insert into public.directory_businesses(siret,display_name,legal_name,naf_code,administrative_status,address_line,postal_code,city,department,source_url,source_checked_on,source_sha256)
 select case when n=1 then '73282932000074' else '9990000000000'||n end,'Fixture revendication '||n,'Entreprise fixture','56.10C','A','1 rue de test','78190','TRAPPES','78','https://annuaire-entreprises.data.gouv.fr/etablissement/9990000000000'||n,current_date,repeat('0',64) from generate_series(1,6)n;
 create temp table claim_test(id uuid);grant all on claim_test to authenticated;
+-- Les revendications désignent l'établissement par son identifiant public, plus par son SIRET.
+create temp table dir_ids as select siret,public_id from public.directory_businesses;grant select on dir_ids to anon,authenticated;
 set local role anon;
 do $$begin
  if (public.search_pro_directory('Fixture revendication')->>'total')::int<>6 then raise exception 'public_listing_failed';end if;
@@ -18,9 +20,9 @@ end;$$;
 reset role;
 set local request.jwt.claims='{"sub":"d1000000-0000-0000-0000-000000000001","role":"authenticated"}';
 set local role authenticated;
-insert into claim_test select public.request_directory_claim('73282932000074','Gérant','Je représente ce commerce et peux fournir des justificatifs.');
+insert into claim_test select public.request_directory_claim((select public_id from dir_ids where siret='73282932000074'),'Gérant','Je représente ce commerce et peux fournir des justificatifs.');
 do $$begin
- if public.request_directory_claim('73282932000074','Gérant','Je représente ce commerce et peux fournir des justificatifs.')<>(select id from claim_test) then raise exception 'pending_not_idempotent';end if;
+ if public.request_directory_claim((select public_id from dir_ids where siret='73282932000074'),'Gérant','Je représente ce commerce et peux fournir des justificatifs.')<>(select id from claim_test) then raise exception 'pending_not_idempotent';end if;
  if (select count(*) from public.directory_claims where id=(select id from claim_test))<>1 then raise exception 'own_claim_not_visible';end if;
  if not exists(select 1 from public.directory_claims where id=(select id from claim_test) and status='pending' and contact_email='directory-owner-fixture@example.test') then raise exception 'email_or_pending_state_failed';end if;
 end;$$;
@@ -42,14 +44,14 @@ reset role;
 set local request.jwt.claims='{"sub":"d1000000-0000-0000-0000-000000000004","role":"authenticated"}';
 set local role authenticated;
 do $$begin
- begin perform public.request_directory_claim('99900000000002','Gérant','Justificatifs professionnels disponibles sur demande.');raise exception 'unconfirmed_claim_allowed';exception when insufficient_privilege then null;end;
+ begin perform public.request_directory_claim((select public_id from dir_ids where siret='99900000000002'),'Gérant','Justificatifs professionnels disponibles sur demande.');raise exception 'unconfirmed_claim_allowed';exception when insufficient_privilege then null;end;
 end;$$;
 reset role;
 set local request.jwt.claims='{"sub":"d1000000-0000-0000-0000-000000000001","role":"authenticated"}';
 set local role authenticated;
 do $$declare n int;begin
- for n in 2..5 loop perform public.request_directory_claim('9990000000000'||n,'Gérant','Justificatifs professionnels disponibles sur demande.');end loop;
- begin perform public.request_directory_claim('99900000000006','Gérant','Justificatifs professionnels disponibles sur demande.');raise exception 'claim_rate_limit_failed';exception when invalid_parameter_value then null;end;
+ for n in 2..5 loop perform public.request_directory_claim((select public_id from dir_ids where siret='9990000000000'||n),'Gérant','Justificatifs professionnels disponibles sur demande.');end loop;
+ begin perform public.request_directory_claim((select public_id from dir_ids where siret='99900000000006'),'Gérant','Justificatifs professionnels disponibles sur demande.');raise exception 'claim_rate_limit_failed';exception when invalid_parameter_value then null;end;
 end;$$;
 reset role;
 -- An approved claim links an existing matching professional, never a subscription.

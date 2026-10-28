@@ -8,12 +8,13 @@ update public.profiles set account_space='client',first_name='Léa',last_name='M
 insert into public.directory_businesses(siret,display_name,legal_name,naf_code,administrative_status,address_line,postal_code,city,department,source_url,source_checked_on,source_sha256)
 values('99900000000001','Audit resto','Audit resto','56.10C','A','8 avenue de la Gare','78190','Trappes','78','https://annuaire-entreprises.data.gouv.fr/etablissement/99900000000001',current_date,'fixture');
 create temp table audit_claim(id uuid);grant all on audit_claim to authenticated;
+create temp table dir_ids as select siret,public_id from public.directory_businesses;grant select on dir_ids to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a9100000-0000-4000-8000-000000000001',true);
 select throws_ok($q$select public.admin_profile_identity('a9100000-0000-4000-8000-000000000002')$q$,'42501','admin_required','a client cannot read another identity through the admin API');
 select throws_ok($q$select public.admin_directory_claims()$q$,'42501','admin_required','a client cannot list other claimants');
 select is((select count(*)::integer from public.platform_admins),0,'ordinary client sees no administrator memberships');
-insert into audit_claim select public.request_directory_claim('99900000000001','Gérant','Demande de test pour contrôle transactionnel');
+insert into audit_claim select public.request_directory_claim((select public_id from dir_ids where siret='99900000000001'),'Gérant','Demande de test pour contrôle transactionnel');
 select set_config('request.jwt.claim.sub','a9100000-0000-4000-8000-000000000002',true);
 select is((select count(*)::integer from public.platform_admins),1,'administrator sees only their own membership');
 select is(public.admin_profile_identity('a9100000-0000-4000-8000-000000000001')->>'address_line','8 avenue de la Gare','administrator reads current profile address');
