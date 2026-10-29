@@ -7,7 +7,9 @@
 | --- | --- | --- |
 | Base de données | `docs/production/merchants_private_production.sql` (transaction unique, contrôles internes) | Éditeur SQL Supabase, par le propriétaire |
 | Application web (app.zeeroo.fr) + Edge Function `create-order` | Partie applicative de la PR #60 | **Branche `ccr-cbee9612-jsmce8-merchants-app-on-main` → PR vers `main`** (uniquement les fichiers applicatifs, appliqués proprement sur `main` ; tsc, eslint, prettier, jest 214 OK). La PR #60 elle-même repose sur la chaîne #59 ← #51 et n'est **pas** le véhicule de déploiement. |
-Ordre obligatoire : **base d'abord, application et `create-order` aussitôt après**. Fusionner la PR applicative avant la migration casserait l'application (colonnes calculées absentes).
+Ordre obligatoire : **`create-order` (version tolérante) d'abord, puis la base, puis l'application aussitôt après**.
+- La nouvelle `create-order` lit le lien de paiement dans `merchant_private` **et**, à défaut, dans la colonne historique de `merchants` : elle fonctionne avant la migration, après la migration et après un retour arrière (prouvé par `recette_http.sh`, étapes 12 et 53). Elle se déploie donc **en avance, sans risque**, ce qui supprime toute fenêtre où les paiements par carte seraient refusés.
+- Il ne reste qu'une fenêtre : l'application web (ancienne version) entre la migration et le déploiement de la PR applicative. Fusionner la PR applicative **avant** la migration casserait l'application (colonnes calculées absentes) : interdit.
 
 ## 1. Conditions du GO production (toutes requises)
 - [ ] Relecture du SQL final : empreintes SHA-256 vérifiées sur le fichier téléchargé de GitHub (`merchants_private_production.sql` `ba8c9300…4502`, `merchants_private_ROLLBACK.sql` `401ae67d…b0db` ; migration `73c7aec1…4c3` ; **à recalculer si le fichier change**).
@@ -16,6 +18,16 @@ Ordre obligatoire : **base d'abord, application et `create-order` aussitôt apr�
 - [ ] `http_checks.sh avant` exécuté sur la production et archivé.
 - [ ] Garde du jour J (§3, étape 1) : **aucun commerce publié, aucune commande en cours**. État relevé en lecture seule le 29/10/2026 : 1 commerce (avec données administratives réelles), **0 publié**, 0 abonnement actif, 0 commande. Si un commerce est publié d'ici là → **STOP** : une bascule « expand / contract » en deux migrations (double écriture, puis vidage) devient nécessaire ; ne pas improviser.
 - [ ] Aucun restaurateur connecté pendant la fenêtre (un onglet ancien est géré par la convention `''`/`null`, mais on évite le risque).
+
+## 1bis. Dépendances SQL (audit exhaustif, lecture seule)
+`docs/recette/sql_dependencies_audit.sql` (à relancer sur la production avant la bascule) recense fonctions, vues, politiques RLS, tâches `pg_cron`, index, contraintes et déclencheurs touchant les six colonnes. **Résultat du 29/10/2026 sur la production** :
+| Type | Trouvé | Traitement |
+| --- | --- | --- |
+| Fonctions (10) | `is_payments_ready`, `admin_private.subscriber_details`, `admin_private.review_directory_claim`, `admin_private.console`, `public.create_merchant` ; **plus** `admin_private.directory_claims`, `create_courier`, `is_courier_active`, `order_courier_profile`, `set_courier_availability` (colonnes d'un autre objet : annuaire Sirene, livreurs) | les trois premières sont **réécrites par le script** ; `console` et `create_merchant` **écrivent** dans `merchants` → déclencheurs d'écriture (null = conserver, `''` = effacer) ; les cinq dernières ne lisent pas `merchants` |
+| Vues, politiques RLS, tâches `pg_cron`, index | **aucune** | — |
+| Contraintes (6) | `CHECK` sur les six colonnes de `merchants` | reprises sur `merchant_private` ; passent à vide dans `merchants` |
+| Déclencheurs sur `merchants` (11) | identiques à ceux de la recette locale | les nouveaux `a00_*` passent avant eux |
+**Toute ligne supplémentaire le jour J = STOP.** Limite connue : la console admin qui omet un champ ne peut plus l'effacer (null = conserver) ; pour effacer, envoyer `''`.
 
 ## 2. Préparation (J-1)
 1. Sauvegarde (Database > Backups) ; noter l'heure.
@@ -30,12 +42,23 @@ Ordre obligatoire : **base d'abord, application et `create-order` aussitôt apr�
 | 1 | Garde : `select (select count(*) from public.merchants where is_published) as publies, (select count(*) from public.orders where status::text not in ('collected','delivered','cancelled')) as commandes_en_cours;` | `0` et `0`. Sinon **STOP** |
 | 2 | Coller `merchants_private_production.sql` en une fois → Run | Dernier tableau : `commerces_avant = commerces_apres`, `avec_donnees_avant = lignes_privees`. **Toute exception = rien n'est appliqué** (transaction) ; ne pas relancer sans analyse |
 | 3 | `checks.sql` ; empreinte des valeurs privées (même requête sur `merchant_private`) | `table_privee_existe=t`, `commerces_avec_colonnes_brutes=0`, `lignes_privees=1`, `valeurs_privees_non_nulles>0`, **empreinte identique à celle du J-1** |
-| 4 | **Aussitôt** : fusionner la PR applicative dans `main` (déploiement Vercel de app.zeeroo.fr) et déployer `create-order` (`supabase functions deploy create-order`) | Déploiements « Ready » |
+| 4 | **Aussitôt** : fusionner la PR applicative dans `main` (déploiement Vercel de app.zeeroo.fr). `create-order` est déjà déployée (J-1) | Déploiement « Ready » en moins de 15 min (sinon §3bis) |
 | 5 | `http_checks.sh apres preuves/prod-apres.txt` | 0 échec, 0 erreur technique ; `NON-PROBANT` toléré tant qu'aucun commerce n'est publié |
 | 6 | Parcours restaurateur (compte propriétaire) : boutique (lien de paiement affiché), informations (SIRET, TVA, e-mail, téléphone pré-remplis), **Enregistrer sans rien changer**, console admin (fiche abonné) | Valeurs identiques avant/après (re-vérifier l'empreinte) |
 | 7 | Archiver les preuves ; noter l'heure de fin | — |
 
 Fenêtre de dégradation (étapes 2 → 4) : l'ancienne application ne voit plus téléphone ni lien de paiement ; l'ancienne `create-order` refuse les paiements par carte. **Impact nul tant que 0 commerce est publié** (état du 29/10/2026).
+
+## 3bis. Procédure d'arrêt si le déploiement échoue après la migration SQL
+Principe : **après la migration, on avance, on ne revient pas en arrière côté application** (une ancienne application ne voit plus téléphone ni lien de paiement ; elle ne détruit plus de données grâce à la règle `''`/`null`, mais elle est dégradée). Horloge : T0 = fin du script SQL.
+| Panne | Détection | Action (dans l'ordre) |
+| --- | --- | --- |
+| Build Vercel en échec | job rouge / déploiement « Error » | 1. lire le journal ; 2. corriger **en avançant** (nouveau commit sur la PR applicative, ou re-déploiement) ; 3. **ne pas** promouvoir/restaurer l'ancien déploiement Vercel. Tant que 0 commerce est publié : aucun impact, pas d'urgence |
+| Déploiement « Ready » mais application cassée (`400` sur `merchants`, colonnes calculées) | parcours restaurateur (§3 étape 6), `http_checks.sh apres` | vérifier que la migration est bien enregistrée (`checks.sql`) ; relancer le déploiement ; si la cause est le SQL → §4 (retour arrière sûr) |
+| `create-order` en échec (déploiement J-1 manqué ou erreur) | journal de la fonction ; commande de test refusée | redéployer ; la fonction tolérante ne dépend pas de l'ordre. Si impossible : commerces dépubliés (aucune commande possible) plutôt que paiements refusés |
+| Les deux en échec | — | ne pas improviser : T0 + 30 min sans application fonctionnelle **et** un commerce publié → retour arrière sûr (§4, niveau 2) |
+| Un commerce est publié pendant la fenêtre | garde étape 1 / alerte propriétaire | **STOP immédiat**, ne pas migrer ; si déjà migré : accélérer le déploiement applicatif ou dépublier le temps de la fenêtre |
+Critère de fin de fenêtre : déploiement « Ready », `http_checks.sh apres` sans échec, parcours restaurateur sans perte de valeur (empreinte).
 
 ## 4. Retour arrière — sans réexposer les données
 Hiérarchie (du moins au plus coûteux) :
@@ -45,6 +68,14 @@ Hiérarchie (du moins au plus coûteux) :
    - Redéployer ensuite l'**ancienne** application et l'**ancienne** `create-order`, vérifier avec `http_checks.sh avant`.
    - **La republication réexpose** les données (ancien modèle) : `merchants_private_ROLLBACK_REPUBLISH.sql`, refusé sans l'ordre explicite `set zeeroo.accept_exposure = 'oui';` et seulement après décision du propriétaire. Elle ne republie que les commerces encore éligibles.
    - Effet de bord assumé : commerces hors annuaire et sans commandes jusqu'à la republication.
+   - **Visibilité par profil après le retour arrière sûr** (mesurée par `safe_rollback_check.sh`, comparée au modèle d'origine d'avant la migration) :
+     | Profil | Lignes de `merchants` visibles | Champs administratifs lisibles |
+     | --- | --- | --- |
+     | Visiteur anonyme, client sans commande | **0** | aucun |
+     | Autre restaurateur | sa propre fiche seulement | la sienne |
+     | **Client ayant commandé**, **livreur rattaché** | la fiche du commerce concerné | **oui : SIRET, TVA, e-mail, raison sociale** (politiques d'origine : ils lisent la ligne entière) |
+     | Propriétaire, administrateur | sa fiche / toutes | oui |
+     Ce n'est jamais **plus** que le modèle d'origine, mais c'est une **exposition résiduelle** pour les clients ayant déjà commandé et les livreurs rattachés pendant la durée du retour arrière (commerces dépubliés, donc peu de monde). À accepter explicitement ou à réduire (variante possible : ne restaurer que téléphone et lien de paiement, garder le reste dans `merchant_private` ; non implémentée, à décider).
    - Vérifié en local : `docs/recette/safe_rollback_check.sh` (anonyme 0 ligne, valeurs restaurées à l'identique, republication refusée sans ordre, puis effective avec l'ordre).
 3. **Ancien script `merchants_private_ROLLBACK.sql`** (restauration brute) : **réexpose immédiatement** les commerces publiés ; ne l'utiliser que si aucun commerce n'est publié (état actuel) ou sur décision explicite.
 4. **Restauration de la sauvegarde / point dans le temps** : perd les écritures postérieures (avec 0 commande, impact limité) ; décision du propriétaire.

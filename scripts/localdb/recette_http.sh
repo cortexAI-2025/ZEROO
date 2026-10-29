@@ -33,6 +33,7 @@ psql -X -At -F, -f docs/recette/checks.sql > "$OUT/checks-1-avant.csv"; F_BEFORE
 step "1. AVANT migration — ancienne application + ancienne fonction create-order"
 run 10-avant-http docs/production/http_checks.sh avant
 run 11-avant-fonctions node docs/recette/functions_http.mjs --phase avant --create-order-url http://127.0.0.1:8111/
+run 12-avant-nouvelle-fonction node docs/recette/functions_http.mjs --phase avant   # NOUVELLE create-order AVANT la migration (déployable en avance)
 
 step "2. Application du script de production (Postgres Supabase officiel)"
 psql -X -v ON_ERROR_STOP=1 -f docs/production/merchants_private_production.sql > "$OUT/20-migration.txt" 2>&1 && echo "script appliqué" || { echo "ÉCHEC du script"; tail -5 "$OUT/20-migration.txt"; exit 1; }
@@ -60,6 +61,7 @@ psql -X -At -F, -f docs/recette/checks.sql > "$OUT/checks-3-rollback.csv"; F_RB=
 [ "$F_BEFORE" = "$F_RB" ] && echo "OK colonnes brutes restaurées à l'identique ($F_RB)" || { echo "ÉCHEC colonnes brutes différentes"; fail=1; }
 run 51-rollback-http docs/production/http_checks.sh avant
 run 52-rollback-fonctions node docs/recette/functions_http.mjs --phase avant --create-order-url http://127.0.0.1:8111/
+run 53-rollback-nouvelle-fonction node docs/recette/functions_http.mjs --phase avant   # la nouvelle fonction reste valable après un retour arrière
 
 step "6. Réapplication puis nouvelle bascule complète"
 psql -X -v ON_ERROR_STOP=1 -f docs/production/merchants_private_production.sql > "$OUT/60-reapply.txt" 2>&1 && echo "réapplication validée" || { echo "ÉCHEC réapplication"; fail=1; }
