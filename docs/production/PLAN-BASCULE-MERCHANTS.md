@@ -11,6 +11,20 @@ Ordre obligatoire : **`create-order` (version tolérante) d'abord, puis la base,
 - La nouvelle `create-order` lit le lien de paiement dans `merchant_private` **et**, à défaut, dans la colonne historique de `merchants` : elle fonctionne avant la migration, après la migration et après un retour arrière (prouvé par `recette_http.sh`, étapes 12 et 53). Elle se déploie donc **en avance, sans risque**, ce qui supprime toute fenêtre où les paiements par carte seraient refusés.
 - Il ne reste qu'une fenêtre : l'application web (ancienne version) entre la migration et le déploiement de la PR applicative. Fusionner la PR applicative **avant** la migration casserait l'application (colonnes calculées absentes) : interdit.
 
+## 0bis. Ordre de fusion et dépendances entre PR (vérifié le 29/10/2026)
+| PR | Base | Rôle | Dépend de |
+| --- | --- | --- | --- |
+| #51 | `main` | intégration de 16 commits (sécurité, admin, affiliation) | sa propre recette (non validée) |
+| #59 | branche de #51 | annuaire des affiliés + base de prospection privée (SQL **déjà appliqué en production**, site #64 fusionné) | #51 |
+| #60 | branche de #59 | `merchant_private`, scripts, recettes, plan | #59 → #51 |
+| **#61** | **`main`** | **partie applicative de #60 seule** (véhicule de déploiement) + `create-order` tolérante | **aucune** (indépendante de #51) |
+Constats :
+- La fusion de #61 avec la chaîne #60 est **propre dans les deux sens** (simulation `git merge-tree` : aucun conflit ; les changements applicatifs sont identiques). Fusionner #61 dans `main` **avant** la chaîne #51 → #59 → #60 n'entraînera donc pas de conflit sur ces fichiers ; elle les rend simplement déjà présents.
+- `create-order` est **identique** dans #60 et #61 (diff vide) ; les deux branches ont une CI verte.
+- **Dérive des fichiers de migration** : `main` contient 37 fichiers de migration, la chaîne #60 en contient 53 ; la production a déjà appliqué ceux de #59 par scripts SQL (historique renseigné à la main). Le fichier `20261029120000_merchants_private_details.sql` n'atteindra `main` que par la chaîne (#51 → #59 → #60) ou par une PR dédiée. **Ne pas lancer `supabase db push` depuis `main` avant que la chaîne soit fusionnée** : l'historique distant a des versions sans fichier correspondant sur `main`.
+- Séquence recommandée : (1) bascule SQL manuelle + (2) fusion de #61 (déploiement) comme au §3 ; (3) plus tard seulement, la chaîne #51 → #59 → #60 après la recette de #51 (les fichiers de migration rejoignent alors `main` ; vérifier qu'aucune migration n'est ré-exécutée).
+- Aucune de ces fusions n'est autorisée à ce stade.
+
 ## 1. Conditions du GO production (toutes requises)
 - [ ] Relecture du SQL final : empreintes SHA-256 vérifiées sur le fichier téléchargé de GitHub (`merchants_private_production.sql` `ba8c9300…4502`, `merchants_private_ROLLBACK.sql` `401ae67d…b0db` ; migration `73c7aec1…4c3` ; **à recalculer si le fichier change**).
 - [ ] Webhook Stripe : test réel en **mode test** réussi (voir §6), ou acceptation écrite de cette limite.
