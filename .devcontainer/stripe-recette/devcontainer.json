@@ -1,0 +1,15 @@
+{
+  "name": "ZEEROO — recette Stripe en mode test (modèle, non testé)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "hostRequirements": { "cpus": 4, "memory": "8gb", "storage": "32gb" },
+  "secrets": {
+    "STRIPE_TEST_SECRET_KEY": {
+      "description": "Clé Stripe DE TEST (sk_test_… ou rk_test_… restreinte). Jamais de clé live. Stockée comme secret Codespaces, pas dans le dépôt ni dans une conversation."
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/stripe-recette/setup.sh"
+}

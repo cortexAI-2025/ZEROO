@@ -87,13 +87,23 @@ Hiérarchie (du moins au plus coûteux) :
 4. **Restauration de la sauvegarde / point dans le temps** : perd les écritures postérieures (avec 0 commande, impact limité) ; décision du propriétaire.
 Critères de déclenchement : valeurs privées différentes (empreinte), `http_checks.sh apres` en échec, application inutilisable, erreur Postgres récurrente. Une `ERREUR-TECHNIQUE` seule (réseau) n'est pas un critère : refaire le contrôle.
 
+## 4bis. Compatibilité application × état de la base (testée)
+| Application déployée | Base : modèle fermé (après migration / réapplication) | Base : mode réduit (retour arrière réduit) |
+| --- | --- | --- |
+| **Nouvelle** (PR #61) | ✅ nominal (recette : 102 + 12 + 9 contrôles) | ❌ **à éviter** : téléphone et lien de paiement illisibles par la nouvelle application (`has_payment_link` faux → carte indisponible au panier) ; `create-order` reste valable (`compat-nouvelle-app-mode-reduit.txt`) |
+| **Ancienne** | ⚠️ dégradée mais **sans perte de données** (téléphone, lien invisibles ; règle `''`/`null`) | ✅ nominal (7 contrôles navigateur, commandes, 2 cycles) |
+Conséquences opérationnelles :
+- **Retour arrière réduit = base ET application** : appliquer `…_ROLLBACK_REDUCED.sql` **et** redéployer l'ancienne application (précédent déploiement Vercel) ; ne jamais laisser la nouvelle application sur une base en mode réduit.
+- **Réapplication = base puis nouvelle application** : `…_REAPPLY_AFTER_REDUCED.sql`, puis déploiement immédiat de la nouvelle application (même fenêtre qu'à la migration initiale : l'ancienne application est alors dégradée, sans perte), puis `…_REAPPLY_REPUBLISH.sql` si des commerces sont encore dépubliés. La réapplication est donc compatible avec la version déployée **à condition** que la nouvelle application soit redéployée aussitôt après ; si l'ancienne application reste en place, la dégradation (sans perte de données) persiste.
+- `create-order` (tolérante) est valable dans **tous** les états ; elle n'est jamais la cause d'une incompatibilité.
+
 ## 5. Après la bascule
 - Surveiller 24 h : journaux API / Postgres / Edge Functions (`permission denied for table merchants`, `column … does not exist`).
 - Quand un premier commerce est publié : relancer `http_checks.sh apres` (le contrôle sera alors probant) et `scenarios.mjs` sur un commerce de test **de recette**, pas sur un vrai commerce.
 - Étapes suivantes (non incluses) : fiche légale publique (cadrage `docs/LEGAL-SHEET.md`), QR codes (PR #41), vue « Prospects » admin.
 
 ## 6. Test Stripe réel en mode test (à faire avant le GO, ou à accepter comme limite)
-Le webhook réel n'a pas été prouvé (la recette locale signe les événements avec un secret local). Deux options :
+Le webhook réel n'a pas été prouvé (la recette locale signe les événements avec un secret local). Le script `scripts/localdb/recette_stripe_cli.sh` a été **durci** (clé uniquement en variable d'environnement et jamais en argument, affichage et journaux filtrés, compte et objets vérifiés `livemode=false` avant/après chaque écriture, signature invalide refusée, événements retrouvés chez Stripe, résiliation → dépublication, refus si l'environnement référence un Supabase distant ; garde-fous testés avec un faux `stripe`). **Mode d'emploi depuis Android : `docs/recette/STRIPE-TEST-DEPUIS-ANDROID.md`** (Codespaces, secret Codespaces, aucune clé dans une conversation). Options :
 - **A. Stripe CLI en local** (compte Stripe en mode test, par le propriétaire) : `scripts/localdb/http_stack.sh up` puis `docs/recette/functions_serve.sh start` avec `STRIPE_SECRET_KEY=<clé sk_test_ du compte>` (sans `STRIPE_API_BASE`) et `STRIPE_WEBHOOK_SECRET=<whsec_ affiché par la CLI>` ; `stripe listen --forward-to http://127.0.0.1:54321/functions/v1/stripe-webhook` ; `billing` crée une session Checkout réelle en mode test ; payer avec la carte de test ; vérifier la ligne `subscriptions` et la publication. Aucune carte réelle, aucune production.
 - **B. Projet hébergé de recette** (`zeeroo-recette-e2e`, en pause : réactivation payante, décision du propriétaire).
 - **C. Accepter la limite** par écrit (la recette locale couvre la signature, la déduplication et la logique ; pas la livraison réelle des événements Stripe).
