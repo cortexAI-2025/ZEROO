@@ -20,3 +20,10 @@ Migration `20261029120000_merchants_private_details` : SIRET, TVA, raison social
 
 ## http_checks.sh — preuves HTTP réelles (avant / après)
 `SUPABASE_URL=… ANON_KEY=… [USER_JWT=…] ./http_checks.sh avant > preuves/avant.txt`, puis `… apres > preuves/apres.txt`. Lecture seule. Vérifie : `directory_businesses`, `directory_claims`, `merchant_private` refusés ; anciennes fonctions introuvables (404) ; aucun SIRET/TVA/e-mail/téléphone privé/lien de paiement dans `merchants` ni `public_merchants` ; aucune suite de 14 chiffres. Avant la migration `20261029120000`, les contrôles sur `merchants` et `merchant_private` échouent : c'est l'état « avant » à archiver.
+
+## Compatibilité pendant le déploiement (merchants)
+Les colonnes vidées de `merchants` (legal_name, siret, vat_number, contact_email, phone, payment_link) sont lues par :
+- **fonctions SQL** : toutes les fonctions `SECURITY DEFINER` qui les lisaient sont migrées dans le même script (`is_payments_ready`, fiche abonné admin, revue de revendication) ; inventaire par recherche du texte de toutes les fonctions `public`/`admin_private`, plus les tâches `pg_cron` (une seule : expiration des paniers, sans rapport) ; les écritures (création, console admin, application) passent par les déclencheurs ;
+- **Edge Functions** : seul `create-order` lisait `payment_link` (migré vers `merchant_private`, à déployer **avec** l'application) ; les autres ne lisent aucune de ces colonnes ;
+- **ancienne version de l'application** (onglet ouvert, cache) : lit `null` pour le téléphone et le lien de paiement tant qu'elle n'est pas rechargée ; le paiement par carte y apparaît indisponible. Impact nul avec 0 commerce publié ; sinon prévoir une courte fenêtre.
+- **Ordre** : sauvegarde → `http_checks.sh avant` → script SQL → déploiement de l'application et de `create-order` → `http_checks.sh apres`.
