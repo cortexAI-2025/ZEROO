@@ -24,9 +24,9 @@ Migration `20261029120000_merchants_private_details` : SIRET, TVA, raison social
 ## Compatibilité pendant le déploiement (merchants)
 Les colonnes vidées de `merchants` (legal_name, siret, vat_number, contact_email, phone, payment_link) sont lues par :
 - **fonctions SQL** : toutes les fonctions `SECURITY DEFINER` qui les lisaient sont migrées dans le même script (`is_payments_ready`, fiche abonné admin, revue de revendication) ; inventaire par recherche du texte de toutes les fonctions `public`/`admin_private`, plus les tâches `pg_cron` (une seule : expiration des paniers, sans rapport) ; les écritures (création, console admin, application) passent par les déclencheurs ;
-- **Edge Functions** : seul `create-order` lisait `payment_link` (migré vers `merchant_private`, à déployer **avec** l'application) ; les autres ne lisent aucune de ces colonnes ;
+- **Edge Functions** : seul `create-order` lisait `payment_link` (migré vers `merchant_private`, version tolérante à déployer **avant** la migration) ; les autres ne lisent aucune de ces colonnes ;
 - **ancienne version de l'application** (onglet ouvert, cache) : lit `null` pour le téléphone et le lien de paiement tant qu'elle n'est pas rechargée ; le paiement par carte y apparaît indisponible. Impact nul avec 0 commerce publié ; sinon prévoir une courte fenêtre.
-- **Ordre** : sauvegarde → `http_checks.sh avant` → script SQL → déploiement de l'application et de `create-order` → `http_checks.sh apres`.
+- **Ordre** : sauvegarde → `http_checks.sh avant` → déploiement de `create-order` → script SQL → fusion de la PR applicative → `http_checks.sh apres`. Feuille à cocher complète : `CHECKLIST-JOUR-J-SUPABASE.md`.
 
 ## Plan de bascule et retour arrière sûr (merchants)
 - `PLAN-BASCULE-MERCHANTS.md` : plan complet (véhicule de déploiement, GO, préparation, jour J, critères d'arrêt, retour arrière, Stripe test).
