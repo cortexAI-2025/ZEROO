@@ -1,0 +1,18 @@
+Anomalies trouvées PENDANT la recette HTTP/navigateur locale (avant correction), conservées comme preuve :
+
+1. DROITS DE COLONNE — scenarios.mjs --write, avant correction :
+   ERREUR-TECHNIQUE autorisation du numéro public — PATCH HTTP 403
+   Cause : pas de GRANT UPDATE (public_phone, public_phone_authorized) pour authenticated ; les tests pgTAP écrivaient en rôle postgres.
+   Correction : grant dans la migration + 5 contrôles pgTAP (merchants_private_security.test.sql, section 8).
+
+2. PERTE DE DONNÉES PAR UNE ANCIENNE APPLICATION — ui_old_app.mjs, avant correction :
+   # État base avant le parcours : Samir Food Recette SAS|73282932000074|FR32732829320|contact-recette@example.test|0102030405|https://pay.example.test/recette-samir
+   OBSERVATION [ANCIENNE APP] formulaire « informations » : champ SIRET pré-rempli = «  »
+   # État base après « Enregistrer » dans l'ancienne application : ∅|∅|∅|∅|∅|https://pay.example.test/recette-samir
+   RÉSULTAT : ⚠ RISQUE DE PERTE DE DONNÉES
+   Cause : l'ancienne application ne peut plus lire les valeurs (colonnes vidées) et renvoie null pour tout en enregistrant la fiche ; le déclencheur interprétait null comme « effacer ».
+   Correction : convention '' = effacer / null = non renseigné (valeur privée conservée) pour legal_name, siret, vat_number, contact_email, phone ; la nouvelle application envoie ''. Tests pgTAP + jest. Résultat actuel : 35-apres-ancienne-application.txt -> « valeurs privées INCHANGÉES ».
+
+3. BASCULE NON COORDONNÉE (comportement attendu, à respecter en production) — 30-apres-ancienne-fonction.txt :
+   l'ancienne Edge Function create-order, après la migration, refuse toute commande par carte (merchant_no_payment_link) ;
+   -> create-order doit être redéployée AVEC la migration.

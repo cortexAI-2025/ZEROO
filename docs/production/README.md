@@ -27,3 +27,8 @@ Les colonnes vidées de `merchants` (legal_name, siret, vat_number, contact_emai
 - **Edge Functions** : seul `create-order` lisait `payment_link` (migré vers `merchant_private`, à déployer **avec** l'application) ; les autres ne lisent aucune de ces colonnes ;
 - **ancienne version de l'application** (onglet ouvert, cache) : lit `null` pour le téléphone et le lien de paiement tant qu'elle n'est pas rechargée ; le paiement par carte y apparaît indisponible. Impact nul avec 0 commerce publié ; sinon prévoir une courte fenêtre.
 - **Ordre** : sauvegarde → `http_checks.sh avant` → script SQL → déploiement de l'application et de `create-order` → `http_checks.sh apres`.
+
+## Plan de bascule et retour arrière sûr (merchants)
+- `PLAN-BASCULE-MERCHANTS.md` : plan complet (véhicule de déploiement, GO, préparation, jour J, critères d'arrêt, retour arrière, Stripe test).
+- `merchants_private_ROLLBACK_SAFE.sql` : retour arrière qui **dépublie d'abord** (aucune donnée restaurée visible des visiteurs) ; `merchants_private_ROLLBACK_REPUBLISH.sql` : republication explicite (réexpose les données, garde-fou `set zeeroo.accept_exposure = 'oui'`). Test : `docs/recette/safe_rollback_check.sh`.
+- `merchants_private_ROLLBACK.sql` (brut) : réexpose immédiatement ; à éviter si un commerce est publié.

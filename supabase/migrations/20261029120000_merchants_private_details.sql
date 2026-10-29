@@ -24,6 +24,10 @@ alter table public.merchants
   add column public_phone text,
   add column public_phone_authorized boolean not null default false;
 
+-- Le restaurateur modifie ces deux colonnes depuis l'application (rôle authenticated) : les droits de
+-- colonne de merchants sont explicites, comme pour phone, payment_link, etc.
+grant update (public_phone, public_phone_authorized) on public.merchants to authenticated;
+
 create table public.merchant_private (
   merchant_id   uuid primary key references public.merchants (id) on delete cascade
                      deferrable initially deferred,
@@ -60,16 +64,29 @@ where coalesce(legal_name, siret, vat_number, contact_email, phone, payment_link
 -- Un déclencheur par colonne : « UPDATE OF » permet de distinguer « effacé » de « non modifié ».
 -- Noms en « a00_ » : ils passent avant les contrôles (mode de commande, publication, ...) qui lisent
 -- merchant_private.
+-- Convention d'effacement des cinq champs « fiche » (legal_name, siret, vat_number, contact_email, phone) :
+--   * chaîne vide '' = effacer ; null = « non renseigné par ce client », la valeur privée est CONSERVÉE.
+-- Pourquoi : une ancienne version de l'application, restée ouverte pendant la bascule, ne peut plus lire ces valeurs
+-- (colonnes vidées) et renverrait null pour tout en enregistrant la fiche : sans cette règle elle effacerait les données
+-- privées du restaurateur (constaté en recette navigateur). La nouvelle application envoie '' pour effacer.
+-- Les autres colonnes (payment_link, public_phone) : null = effacer (action explicite d'un champ isolé).
 create function public.route_merchant_private()
 returns trigger language plpgsql security definer set search_path = '' as $$
 declare
   col text := tg_argv[0];
+  legacy boolean := coalesce(tg_argv[1], '') = 'legacy';
   val text := to_jsonb(new) ->> col;
 begin
-  if tg_op = 'INSERT' and val is null then return new; end if;
+  if tg_op = 'INSERT' and (val is null or val = '') then
+    new := jsonb_populate_record(new, jsonb_build_object(col, null));
+    return new;
+  end if;
+  if legacy and val is null then
+    return new;                                   -- « non renseigné » : on ne touche pas à la valeur privée
+  end if;
   execute format(
-    'insert into public.merchant_private (merchant_id, %1$I) values ($1, $2)
-       on conflict (merchant_id) do update set %1$I = excluded.%1$I', col)
+    'insert into public.merchant_private (merchant_id, %1$I) values ($1, nullif($2, %2$L))
+       on conflict (merchant_id) do update set %1$I = nullif(excluded.%1$I::text, %2$L)', col, '')
     using new.id, val;
   new := jsonb_populate_record(new, jsonb_build_object(col, null));
   return new;
@@ -83,8 +100,9 @@ begin
   foreach c in array array['legal_name', 'siret', 'vat_number', 'contact_email', 'phone', 'public_phone', 'payment_link'] loop
     execute format(
       'create trigger %I before insert or update of %I on public.merchants
-         for each row execute function public.route_merchant_private(%L)',
-      'a00_merchants_private_' || c, c, c);
+         for each row execute function public.route_merchant_private(%L, %L)',
+      'a00_merchants_private_' || c, c, c,
+      case when c in ('legal_name', 'siret', 'vat_number', 'contact_email', 'phone') then 'legacy' else '' end);
   end loop;
 end $$;
 

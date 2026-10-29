@@ -1,0 +1,6 @@
+# État base avant le parcours : Samir Food Recette SAS|73282932000074|FR32732829320|contact-recette@example.test|0102030405|https://pay.example.test/recette-samir
+OBSERVATION [ANCIENNE APP] mini-site public : se charge (fiche « Chez Samir » affichée), erreurs JS : 0
+OBSERVATION [ANCIENNE APP] écran boutique du restaurateur : badge « Lien actif » ABSENT (le lien de paiement n'est plus lisible par l'ancienne application)
+OBSERVATION [ANCIENNE APP] formulaire « informations » : champ SIRET pré-rempli = «  »
+# État base après « Enregistrer » dans l'ancienne application : Samir Food Recette SAS|73282932000074|FR32732829320|contact-recette@example.test|0102030405|https://pay.example.test/recette-samir
+RÉSULTAT : valeurs privées INCHANGÉES après enregistrement par l'ancienne application.

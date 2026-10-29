@@ -1,5 +1,5 @@
 begin;
-select plan(33);
+select plan(35);
 
 -- Seed : Samir (10…01) possède « Chez Samir » (30…01), publié ; Nadia (20…01) est cliente ;
 -- Karim (utilisateur 70…01, livreur 80…01) est rattaché au restaurant.
@@ -69,7 +69,9 @@ select is((select merchant_siret(m) from public.merchants m where id='30000000-0
 -- 7. Propriétaire : tout, y compris après effacement d'une valeur.
 select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
 select is((select merchant_siret(m) from public.merchants m where id='30000000-0000-0000-0000-000000000001'),'73282932000074','propriétaire : siret');
-select lives_ok($$update public.merchants set phone=null where id='30000000-0000-0000-0000-000000000001'$$,'propriétaire : efface son téléphone');
+select lives_ok($$update public.merchants set siret=null, vat_number=null, legal_name=null, contact_email=null, phone=null where id='30000000-0000-0000-0000-000000000001'$$,'ancienne application : enregistre la fiche avec des null (non renseigné)');
+select is((select merchant_siret(m) from public.merchants m where id='30000000-0000-0000-0000-000000000001'),'73282932000074','null = non renseigné : les valeurs privées sont conservées (pas d''effacement par un client périmé)');
+select lives_ok($$update public.merchants set phone='' where id='30000000-0000-0000-0000-000000000001'$$,'propriétaire : efface son téléphone (chaîne vide)');
 select is((select merchant_phone(m) from public.merchants m where id='30000000-0000-0000-0000-000000000001'),null,'téléphone effacé');
 select is((select merchant_siret(m) from public.merchants m where id='30000000-0000-0000-0000-000000000001'),'73282932000074','l''effacement d''une colonne ne touche pas les autres');
 select throws_ok($$update public.merchants set siret='12345678901234' where id='30000000-0000-0000-0000-000000000001'$$,'23514',null,'SIRET invalide refusé');

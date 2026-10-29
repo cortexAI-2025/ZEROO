@@ -1,5 +1,5 @@
 begin;
-select plan(28);
+select plan(34);
 
 -- Revue des fonctions privilégiées, droits EXECUTE, search_path et écritures sur merchant_private.
 -- Seed : Samir (10…01) possède « Chez Samir » (30…01), publié ; Nadia (20…01) est cliente.
@@ -84,6 +84,19 @@ set local role authenticated;
 select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
 select is((select count(*)::int from public.public_merchants where id='30000000-0000-0000-0000-000000000001'),0,'commerce dépublié : absent de public_merchants même pour son propriétaire');
 reset role;
+
+-- 8. Droits de colonne : le restaurateur enregistre son numéro public avec le rôle de l'API (régression
+-- trouvée en recette HTTP : sans GRANT UPDATE la requête était refusée en 403).
+select ok(has_column_privilege('authenticated','public.merchants','public_phone','UPDATE') and has_column_privilege('authenticated','public.merchants','public_phone_authorized','UPDATE'),'authenticated : UPDATE sur public_phone et public_phone_authorized');
+select ok(not has_column_privilege('anon','public.merchants','public_phone','UPDATE') and not has_column_privilege('anon','public.merchants','public_phone_authorized','UPDATE'),'anon : aucun UPDATE sur ces colonnes');
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
+select lives_ok($$update public.merchants set public_phone='0155667788', public_phone_authorized=true where id='30000000-0000-0000-0000-000000000001'$$,'propriétaire : enregistre et autorise son numéro public (rôle authenticated)');
+select is((select merchant_public_phone(m) from public.merchants m where id='30000000-0000-0000-0000-000000000001'),'0155667788','le numéro enregistré par l''API est relu');
+select pg_temp.as_user('bb000000-0000-0000-0000-000000000003');
+select lives_ok($$update public.merchants set public_phone='0100000000' where id='30000000-0000-0000-0000-000000000001'$$,'autre restaurateur : requête sans erreur mais sans effet (RLS)');
+reset role;
+select is((select public_phone from public.merchant_private where merchant_id='30000000-0000-0000-0000-000000000001'),'0155667788','autre restaurateur : numéro public inchangé');
 
 select * from finish();
 rollback;

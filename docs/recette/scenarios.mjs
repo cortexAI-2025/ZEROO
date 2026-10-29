@@ -13,7 +13,8 @@ if (!URL_ || !ANON) { console.error('SUPABASE_URL et ANON_KEY requis'); process.
 const args = process.argv.slice(2);
 const WRITE = args.includes('--write');
 const proof = args.find((a) => !a.startsWith('--'));
-const PASSWORD = process.env.RECETTE_PASSWORD ?? 'motdepasse1';
+const PASSWORD = process.env.RECETTE_PASSWORD; // mot de passe des comptes fictifs du seed (supabase/seed.sql)
+if (!PASSWORD) { console.error('RECETTE_PASSWORD requis'); process.exit(64); }
 const mask = (s) => String(s).replace(/eyJ[A-Za-z0-9_-]{8,}(\.[A-Za-z0-9_-]+){0,2}/g, '[JETON-MASQUÉ]').replaceAll(ANON, '[CLÉ-MASQUÉE]').replaceAll(PASSWORD, '[MDP-MASQUÉ]');
 if (proof) writeFileSync(proof, '', { mode: 0o600 });
 const out = (line) => { const l = mask(line); console.log(l); if (proof) appendFileSync(proof, l + '\n'); };
