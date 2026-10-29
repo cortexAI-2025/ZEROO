@@ -42,6 +42,8 @@ export type MerchantPatch = Pick<
   | 'legal_name'
   | 'photo_url'
   | 'payment_link'
+  | 'public_phone'
+  | 'public_phone_authorized'
   | 'siret'
   | 'vat_number'
   | 'contact_email'
@@ -85,17 +87,19 @@ export function formValuesToPatch(values: MerchantFormValues): MerchantPatch {
     name: values.name,
     category: values.category,
     description: values.description || null,
-    phone: values.phone || null,
+    // Champs « fiche » (stockés dans merchant_private) : '' = effacer, null = non renseigné par ce client
+    // (la valeur privée est conservée : voir migration 20261029120000).
+    phone: values.phone || '',
     default_prep_minutes: values.defaultPrepMinutes,
     address_line: values.address.addressLine,
     postal_code: values.address.postalCode,
     city: values.address.city,
     latitude: values.address.latitude,
     longitude: values.address.longitude,
-    legal_name: values.legalName || null,
-    siret: values.siret ? values.siret.replace(/\s/g, '') : null,
-    vat_number: values.vatNumber ? values.vatNumber.replace(/\s/g, '').toUpperCase() : null,
-    contact_email: values.contactEmail || null,
+    legal_name: values.legalName || '',
+    siret: values.siret ? values.siret.replace(/\s/g, '') : '',
+    vat_number: values.vatNumber ? values.vatNumber.replace(/\s/g, '').toUpperCase() : '',
+    contact_email: values.contactEmail || '',
   };
 }
 

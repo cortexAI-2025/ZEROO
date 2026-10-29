@@ -193,11 +193,13 @@ export default function MerchantPageScreen() {
               }
             />
           ) : null}
-          {merchant.phone ? (
+          {merchant.public_phone ? (
             <Button
               variant="secondary"
               title={t('client.merchant.call')}
-              onPress={() => void Linking.openURL(`tel:${merchant.phone!.replace(/\s/g, '')}`)}
+              onPress={() =>
+                void Linking.openURL(`tel:${merchant.public_phone!.replace(/\s/g, '')}`)
+              }
             />
           ) : null}
           <Button

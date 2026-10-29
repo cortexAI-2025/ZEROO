@@ -23,6 +23,7 @@ import {
   useUpdateMerchant,
 } from '@/features/merchant/hooks';
 import { useMenu } from '@/features/menu/hooks';
+import { PublicPhoneCard } from '@/features/merchant/PublicPhoneCard';
 import { canPublishMerchant, isAffiliated } from '@/features/merchant/status';
 import { PaymentLinkCard } from '@/features/payments/PaymentLinkCard';
 import { formatTime } from '@/lib/dates';
@@ -73,6 +74,11 @@ export default function ShopScreen() {
         role="merchant"
         link={merchant.payment_link}
         onSave={(link) => update.mutateAsync({ payment_link: link })}
+      />
+      <PublicPhoneCard
+        phone={merchant.public_phone}
+        authorized={merchant.public_phone_authorized}
+        onSave={(patch) => update.mutateAsync(patch)}
       />
       <BillingCards target={{ role: 'merchant', id: merchant.id }} />
 
