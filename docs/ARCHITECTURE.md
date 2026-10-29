@@ -656,11 +656,11 @@ Les restaurants conservent leur logo/photo dans leur espace professionnel, les
 livreurs leur photo dans le leur, avec les contrôles de propriété Storage existants.
 
 
-### Annuaire public des pros : aucun SIRET affiché (28 octobre 2026)
-Décision du propriétaire : l'annuaire public (`directory_businesses`, 2 390 références issues de la base Sirene) n'affiche ni SIREN ni SIRET. Le numéro reste **enregistré** : dans la table (usage interne), dans `merchants.siret` (saisi à l'inscription du professionnel) et dans `directory_claims` (visible de son auteur et des administrateurs).
-- `search_pro_directory` ne renvoie plus `siret` ni `source_url` (dont l'adresse contient le SIRET) ; elle renvoie un identifiant public opaque `id` (colonne `public_id`). La recherche par SIRET est retirée ; le nom, la raison sociale, l'adresse, la ville et le code postal restent recherchables.
-- La table n'est plus lisible directement par `anon` ni `authenticated` (`revoke select`) : seules les fonctions `search_pro_directory` et `pro_directory_cities` (SECURITY DEFINER, `search_path` vide) exposent des champs choisis.
-- `request_directory_claim(p_directory_id uuid, …)` remplace la version par SIRET : le SIRET est retrouvé côté serveur. La revue administrateur (`admin_directory_claims`) continue d'afficher le SIRET et exige toujours qu'il corresponde à celui du compte professionnel.
+### Annuaire public des affiliés + CRM privé des prospects (29 octobre 2026)
+Décision du propriétaire : l'annuaire public ne contient **que les restaurants (et livreurs) affiliés** à ZEEROO, avec mini-sites et QR codes (`merchants` publiés, garde de publication). Il n'existe plus d'annuaire général.
+- Les 2 390 fiches Sirene de `directory_businesses` **ne sont pas supprimées** : elles forment une base privée de prospection (CRM). Aucun accès `anon`/`authenticated` (ni `select`, ni politique RLS), aucune fonction publique : `search_pro_directory`, `pro_directory_cities` et `request_directory_claim` sont supprimées (migration `20261029110000_private_prospects`). SIRET, raison sociale et lien source ne sont lisibles que par le propriétaire de la base et par les fonctions `SECURITY DEFINER` de l'administration (`admin_directory_claims`, `review_directory_claim`).
+- `directory_claims` est fermée de la même façon ; la revue administrateur des demandes historiques reste possible.
+- Test : `private_prospects.test.sql` (anonyme et connecté refusés, fonctions absentes, RLS active, fiche conservée, SIRET visible de l'administrateur).
 - Hors périmètre : les fiches des professionnels inscrits (`merchants`) gardent leurs mentions légales publiques (SIRET, TVA, raison sociale), publiques par décision du propriétaire du commerce.
 
 ### Consultation et modification du profil client
