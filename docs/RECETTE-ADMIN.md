@@ -136,6 +136,28 @@ Chaque rubrique doit s'afficher sans erreur de console, avec des données réell
 
 Variables : `SUPABASE_URL`, `ANON_KEY` ; `USER_JWT` = jeton d'un compte connecté (non administrateur).
 
+### État avant / après la migration (éditeur SQL, lecture seule — à relancer et archiver les deux résultats)
+
+1. Nombre de fiches (attendu : 2390 avant **et** après)
+```sql
+SELECT count(*) AS total FROM public.directory_businesses;
+```
+2. Permissions des rôles publics (attendu : avant `true/true` pour `anon` et `authenticated` ; après `false/false`)
+```sql
+SELECT rolname,
+  has_table_privilege(rolname, 'public.directory_businesses', 'SELECT') AS can_read_businesses,
+  has_table_privilege(rolname, 'public.directory_claims', 'SELECT') AS can_read_claims
+FROM pg_roles WHERE rolname IN ('anon', 'authenticated');
+```
+3. Fonctions de l'ancien annuaire (attendu : 4 lignes avant ; **0 ligne** après)
+```sql
+SELECT n.nspname AS schema_name, p.proname AS function_name,
+  pg_get_function_identity_arguments(p.oid) AS arguments
+FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+WHERE p.proname IN ('search_pro_directory', 'pro_directory_cities', 'request_directory_claim')
+ORDER BY n.nspname, p.proname;
+```
+
 - [ ] Anonyme : `curl -s "$SUPABASE_URL/rest/v1/directory_businesses?select=siret&limit=1" -H "apikey: $ANON_KEY"` est **refusé** (`42501`) ; avant la migration : 2 390 SIRET lisibles.
 - [ ] Même appel avec `-H "Authorization: Bearer $USER_JWT"` : refusé.
 - [ ] `…/rest/v1/directory_claims?select=*` : refusé en anonyme et en connecté.
