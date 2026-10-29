@@ -49,6 +49,15 @@ Projet Vercel **`zeeroo.online`** = application `app.zeeroo.fr` (dépôt `cortex
 - [ ] 🔍 Noter l'identifiant du déploiement actuel : c'est la cible du **retour arrière applicatif** (« Promote / Instant Rollback » sur ce déploiement). Il doit être marqué éligible au retour arrière.
 - [ ] 🔍 Après la fusion (étape F6) : le nouveau déploiement de production porte le commit de fusion attendu et passe « Ready » en moins de 15 min.
 
+### B bis. Migrations de la PR #51 vs production (lecture seule, 29/10/2026)
+
+Comparaison de `supabase_migrations.schema_migrations` (production) avec les fichiers du dépôt :
+- Les **15 migrations ajoutées par la PR #51** (`20261028090600` … `20261028184115`) sont **toutes déjà enregistrées en production** : fusionner #51 dans `main` n'exige aucun SQL.
+- **`20261028220000_hide_directory_siret`** (dans #51, #55) est **absente de production** : elle a été remplacée par `20261029110000_private_prospects`, appliquée à la main (qui supprime les mêmes fonctions et ferme les mêmes tables). **Ne jamais exécuter `supabase db push` ni ce fichier sur la production** ; décision à prendre par le propriétaire : l'enregistrer comme appliquée (`supabase migration repair`) ou la laisser, sans jamais l'appliquer.
+- **`20261028210227_reconcile_missing_affiliation_migrations`** est enregistrée en production **sans fichier dans le dépôt** (réconciliation faite à la main). À consigner dans le dépôt ou à documenter avant tout usage du CLI Supabase.
+- `20261029110000_private_prospects` (production) : enregistrée sans détail des instructions.
+- Le déploiement actuel `d5d24a6` est antérieur de 4 fusions de PR à la tête de #51 (`f46156b` : PR #53, #54, #55, #56, essentiellement CI, tests et masquage du SIRET dans l'annuaire) : fusionner #51 déploierait donc aussi ces changements.
+
 ## C. Sauvegarde Supabase et restauration
 
 - [ ] 🔍 Supabase > Database > Backups : une sauvegarde **de moins de 24 h** existe ; noter son horodatage. Vérifier le type de sauvegarde offert par l'abonnement (quotidienne ou PITR) : la procédure de restauration en dépend.
