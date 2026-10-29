@@ -17,3 +17,6 @@ Migration `20261029120000_merchants_private_details` : SIRET, TVA, raison social
 - État de production relevé en lecture seule (29/10/2026) : 1 commerce, 0 publié ; `anon` et `authenticated` ont aujourd'hui SELECT sur les six colonnes.
 - **Ordre** : l'ancienne version de l'application lit les colonnes brutes (qui deviennent `null`) et la nouvelle lit les colonnes calculées (absentes avant la migration). Appliquer la migration, puis déployer l'application aussitôt (fusion de la PR). Avec 0 commerce publié, l'impact visible est nul ; il faut le refaire dans cet ordre dès qu'un commerce est publié.
 - Sauvegarde avant ; retour arrière : `merchants_private_ROLLBACK.sql` (réexpose les données).
+
+## http_checks.sh — preuves HTTP réelles (avant / après)
+`SUPABASE_URL=… ANON_KEY=… [USER_JWT=…] ./http_checks.sh avant > preuves/avant.txt`, puis `… apres > preuves/apres.txt`. Lecture seule. Vérifie : `directory_businesses`, `directory_claims`, `merchant_private` refusés ; anciennes fonctions introuvables (404) ; aucun SIRET/TVA/e-mail/téléphone privé/lien de paiement dans `merchants` ni `public_merchants` ; aucune suite de 14 chiffres. Avant la migration `20261029120000`, les contrôles sur `merchants` et `merchant_private` échouent : c'est l'état « avant » à archiver.

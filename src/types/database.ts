@@ -983,6 +983,9 @@ export type Database = {
           merchant_vat_number: string | null;
           merchant_contact_email: string | null;
           merchant_phone: string | null;
+          merchant_public_phone: string | null;
+          public_phone: string | null;
+          public_phone_authorized: boolean;
           merchant_payment_link: string | null;
           has_payment_link: boolean | null;
         };
@@ -1003,6 +1006,7 @@ export type Database = {
           | 'merchant_vat_number'
           | 'merchant_contact_email'
           | 'merchant_phone'
+          | 'merchant_public_phone'
           | 'merchant_payment_link'
           | 'has_payment_link'
           | 'is_paused_now'
@@ -1016,6 +1020,8 @@ export type Database = {
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
           payment_link?: string | null;
+          public_phone?: string | null;
+          public_phone_authorized?: boolean;
           photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;
@@ -1059,6 +1065,8 @@ export type Database = {
           marketing_consent?: boolean;
           marketing_consent_at?: string | null;
           payment_link?: string | null;
+          public_phone?: string | null;
+          public_phone_authorized?: boolean;
           photo_url?: string | null;
           legal_name?: string | null;
           siret?: string | null;

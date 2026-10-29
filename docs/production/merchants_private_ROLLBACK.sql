@@ -10,6 +10,7 @@ drop trigger if exists a00_merchants_private_siret on public.merchants;
 drop trigger if exists a00_merchants_private_vat_number on public.merchants;
 drop trigger if exists a00_merchants_private_contact_email on public.merchants;
 drop trigger if exists a00_merchants_private_phone on public.merchants;
+drop trigger if exists a00_merchants_private_public_phone on public.merchants;
 drop trigger if exists a00_merchants_private_payment_link on public.merchants;
 update public.merchants m set legal_name = p.legal_name, siret = p.siret, vat_number = p.vat_number,
        contact_email = p.contact_email, phone = p.phone, payment_link = p.payment_link
@@ -81,11 +82,12 @@ end;$function$
 drop view if exists public.public_merchants;
 drop function if exists public.merchant_legal_name(public.merchants), public.merchant_siret(public.merchants),
   public.merchant_vat_number(public.merchants), public.merchant_contact_email(public.merchants),
-  public.merchant_phone(public.merchants), public.merchant_payment_link(public.merchants),
+  public.merchant_phone(public.merchants), public.merchant_public_phone(public.merchants), public.merchant_payment_link(public.merchants),
   public.has_payment_link(public.merchants);
 drop function if exists public.can_see_merchant_private(uuid, boolean);
 drop function if exists public.route_merchant_private();
 drop table public.merchant_private;
+alter table public.merchants drop column public_phone, drop column public_phone_authorized;
 delete from supabase_migrations.schema_migrations where version = '20261029120000';
 commit;
 -- Côté code : revenir au commit précédent de l'application (alias merchant_* → colonnes) et de la

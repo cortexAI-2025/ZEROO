@@ -1,7 +1,7 @@
 -- ZeeRoo : données administratives des commerces fermées à l'API (migration 20261029120000_merchants_private_details).
 -- À coller en une seule fois dans l'éditeur SQL Supabase du projet rgxesocsvhgsqoehxhgt, puis « Run ».
 -- Transaction unique : en cas d'erreur, rien n'est appliqué. Aucune donnée supprimée (recopie avant vidage).
--- ORDRE : déployer d'abord l'application (alias merchant_* de PR #60) ... voir docs/production/README.md.
+-- ORDRE : appliquer ce script, puis déployer aussitôt l'application compatible (PR #60) : voir docs/production/README.md.
 begin;
 set local lock_timeout = '5s';
 set local statement_timeout = '120s';
@@ -34,6 +34,13 @@ end $$;
 -- dans `merchants`. Aucune donnée n'est supprimée : elles sont recopiées avant d'être vidées.
 -- Retour arrière : docs/production/merchants_private_ROLLBACK.sql.
 
+-- Numéro professionnel public : distinct du téléphone de contact privé, publié seulement si le
+-- restaurateur l'autorise (`public_phone_authorized`, faux par défaut). Le numéro lui-même vit dans
+-- merchant_private ; l'autorisation est un simple booléen non sensible.
+alter table public.merchants
+  add column public_phone text,
+  add column public_phone_authorized boolean not null default false;
+
 create table public.merchant_private (
   merchant_id   uuid primary key references public.merchants (id) on delete cascade
                      deferrable initially deferred,
@@ -42,6 +49,7 @@ create table public.merchant_private (
   vat_number    text check (vat_number ~ '^FR[0-9A-Z]{2}[0-9]{9}$'),
   contact_email text check (contact_email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' and char_length(contact_email) <= 120),
   phone         text check (char_length(phone) <= 20),
+  public_phone  text check (char_length(public_phone) <= 20),
   payment_link  text check (payment_link ~ '^https://[^[:space:]]{4,}$' and char_length(payment_link) <= 500)
 );
 alter table public.merchant_private enable row level security;
@@ -83,7 +91,7 @@ revoke execute on function public.route_merchant_private() from public, anon, au
 do $$
 declare c text;
 begin
-  foreach c in array array['legal_name', 'siret', 'vat_number', 'contact_email', 'phone', 'payment_link'] loop
+  foreach c in array array['legal_name', 'siret', 'vat_number', 'contact_email', 'phone', 'public_phone', 'payment_link'] loop
     execute format(
       'create trigger %I before insert or update of %I on public.merchants
          for each row execute function public.route_merchant_private(%L)',
@@ -131,12 +139,18 @@ $$;
 create function public.merchant_payment_link(m public.merchants) returns text language sql stable security definer set search_path = '' as $$
   select p.payment_link from public.merchant_private p where p.merchant_id = m.id and public.can_see_merchant_private(m.id, true);
 $$;
+-- Numéro professionnel : public seulement si le restaurateur l'a autorisé ; sinon propriétaire et administrateurs.
+create function public.merchant_public_phone(m public.merchants) returns text language sql stable security definer set search_path = '' as $$
+  select p.public_phone from public.merchant_private p
+  where p.merchant_id = m.id and (m.public_phone_authorized or public.can_see_merchant_private(m.id, false));
+$$;
 -- Information non sensible : le restaurant accepte-t-il le paiement par carte (lien configuré) ?
 create function public.has_payment_link(m public.merchants) returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.merchant_private p where p.merchant_id = m.id and p.payment_link is not null);
 $$;
 grant execute on function public.merchant_legal_name, public.merchant_siret, public.merchant_vat_number,
-  public.merchant_contact_email, public.merchant_phone, public.merchant_payment_link, public.has_payment_link
+  public.merchant_contact_email, public.merchant_phone, public.merchant_public_phone, public.merchant_payment_link,
+  public.has_payment_link
   to anon, authenticated;
 
 -- Lectures internes qui lisaient les colonnes vidées.
@@ -205,7 +219,8 @@ select m.id, m.slug, m.name, m.description, m.category, m.postal_code, m.city,
        m.photo_url, m.logo_url, m.tagline, m.about, m.accent_color,
        m.offers_pickup, m.delivery_enabled,
        public.merchant_address_line(m) as address_line,
-       public.has_minisite(m) as has_minisite
+       public.has_minisite(m) as has_minisite,
+       public.merchant_public_phone(m) as public_phone
 from public.merchants m
 where m.is_published and m.admin_status = 'active';
 revoke all on public.public_merchants from public, anon, authenticated;
