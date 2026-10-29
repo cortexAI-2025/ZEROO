@@ -112,7 +112,14 @@
       "phoneTaken": "Ce numéro est déjà utilisé par un autre compte",
       "smsFailed": "Le SMS n'a pas pu être envoyé. Vérifiez le numéro et réessayez.",
       "smsUnavailable": "La vérification par SMS n'est pas encore activée. Réessayez plus tard.",
-      "codeInvalid": "Saisissez le code à 6 chiffres reçu par SMS"
+      "codeInvalid": "Saisissez le code à 6 chiffres reçu par SMS",
+      "firstNameRequired": "Indiquez votre prénom.",
+      "lastNameRequired": "Indiquez votre nom.",
+      "nameTooLong": "80 caractères maximum.",
+      "addressRequired": "Indiquez votre adresse complète (numéro et rue).",
+      "postalCodeInvalid": "Indiquez un code postal à 5 chiffres.",
+      "cityRequired": "Indiquez votre ville.",
+      "phoneRequired": "Indiquez un numéro valide, par exemple 06 12 34 56 78 ou +33 6 12 34 56 78."
     },
     "proVerification": {
       "title": "Vérifiez votre compte professionnel",
@@ -134,7 +141,15 @@
       "resendCode": "Renvoyer le code",
       "changePhone": "Modifier le numéro",
       "done": "Compte vérifié"
-    }
+    },
+    "firstName": "Prénom *",
+    "lastName": "Nom *",
+    "addressLine": "Adresse (numéro et rue) *",
+    "postalCode": "Code postal *",
+    "city": "Ville *",
+    "phone": "Numéro de téléphone *",
+    "requiredFields": "Tous les champs sont obligatoires.",
+    "proAvatarHint": "L’avatar ou le logo est réservé aux restaurants et aux livreurs, dans leur espace professionnel."
   },
   "space": {
     "title": "Quel type de compte souhaitez-vous créer ?",
@@ -430,7 +445,26 @@
       "profile": "Mes informations",
       "name": "Prénom et nom",
       "phone": "Téléphone",
-      "saved": "Informations enregistrées."
+      "saved": "Informations enregistrées.",
+      "edit": "Modifier mes informations",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "address": "Adresse",
+      "postalCode": "Code postal",
+      "city": "Ville",
+      "email": "Adresse e-mail",
+      "missing": "Non renseigné",
+      "profileError": "Impossible de charger vos informations. Réessayez.",
+      "emailEdit": "Modifier mon e-mail",
+      "newEmail": "Nouvelle adresse e-mail",
+      "emailSubmit": "Demander le changement d’e-mail",
+      "emailHint": "La modification sera effective après les confirmations demandées par e-mail.",
+      "emailPending": "Changement en attente pour {{email}}. Consultez votre ancienne et votre nouvelle boîte mail et suivez les instructions reçues.",
+      "emailUpdated": "Votre adresse e-mail a été modifiée.",
+      "emailSame": "Saisissez une adresse différente de votre e-mail actuel.",
+      "required": "Tous les champs sont obligatoires.",
+      "mainAddressHint": "Cette adresse est celle de votre profil. Vos adresses de livraison enregistrées se gèrent séparément ci-dessous.",
+      "invalid": "Vérifiez le nom, le prénom, l’adresse complète et le téléphone."
     },
     "addresses": {
       "title": "Mes adresses",
@@ -1596,6 +1630,8 @@
     "requeue": "Reprogrammer",
     "attempts_one": "{{count}} tentative",
     "attempts_other": "{{count}} tentatives",
-    "open": "Administration"
+    "open": "Administration",
+    "consoleOpen": "Dashboard administrateur ZEEROO",
+    "campaignsOpen": "Gestion des campagnes"
   }
 }

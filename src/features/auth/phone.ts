@@ -18,7 +18,7 @@ export function toE164(input: string): string | null {
   }
   if (digits.startsWith('330')) digits = `33${digits.slice(3)}`; // +33 0 6… : zéro en trop
   if (digits.startsWith('33') && digits.length !== 11) return null;
-  if (digits.length < 8 || digits.length > 15) return null;
+  if (!/^[1-9]\d{7,14}$/.test(digits)) return null;
   return `+${digits}`;
 }
 

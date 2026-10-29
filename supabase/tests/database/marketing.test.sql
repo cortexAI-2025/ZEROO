@@ -72,7 +72,7 @@ select is((select count(*)::int from public.marketing_campaigns), 1, 'un autre �
 select throws_ok($$ select * from public.admin_list_campaigns() $$, '42501', 'admin_required', 'un propriétaire n''est pas administrateur');
 select throws_ok($$ select public.admin_review_campaign('c0000000-0000-0000-0000-000000000003', true, current_date + 1) $$,
                  '42501', 'admin_required', 'un propriétaire ne valide pas sa propre campagne');
-select throws_ok($$ select * from public.platform_admins $$, '42501', null, 'la liste des administrateurs est fermée');
+select is((select count(*)::int from public.platform_admins), 0, 'un propriétaire ne voit aucun autre administrateur');
 select throws_ok($$ select public.update_campaign_caption('c0000000-0000-0000-0000-000000000001', 'Un texte assez long') $$,
                  'P0002', 'campaign_not_found', 'on ne modifie pas la campagne d''un autre');
 reset role;

@@ -3,7 +3,13 @@ import * as Linking from 'expo-linking';
 import { unregisterPush } from '@/features/notifications/push';
 import { supabase } from '@/lib/supabase';
 
-import type { NewPasswordValues, ResetRequestValues, SignInValues, SignUpValues } from './schemas';
+import {
+  signUpSchema,
+  type NewPasswordValues,
+  type ResetRequestValues,
+  type SignInValues,
+  type SignUpValues,
+} from './schemas';
 
 /** URL vers laquelle renvoient les liens des e-mails d'authentification. */
 export const authCallbackUrl = () => Linking.createURL('auth-callback');
@@ -14,13 +20,24 @@ export async function signInWithEmail({ email, password }: SignInValues) {
 }
 
 /** Retourne `true` si l'utilisateur doit encore confirmer son e-mail. */
-export async function signUpWithEmail({ email, password, displayName }: SignUpValues) {
+export async function signUpWithEmail(values: SignUpValues) {
+  const { email, password, firstName, lastName, addressLine, postalCode, city, phone } =
+    signUpSchema.parse(values);
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: authCallbackUrl(),
-      data: displayName ? { full_name: displayName } : undefined,
+      data: {
+        signup_profile_version: 1,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`.slice(0, 80),
+        address_line: addressLine,
+        postal_code: postalCode,
+        city,
+        contact_phone: phone,
+      },
     },
   });
   if (error) throw error;

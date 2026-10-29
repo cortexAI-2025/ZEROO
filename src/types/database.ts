@@ -1440,6 +1440,11 @@ export type Database = {
       };
       profiles: {
         Row: {
+          first_name: string | null;
+          last_name: string | null;
+          address_line: string | null;
+          postal_code: string | null;
+          city: string | null;
           account_space: string | null;
           created_at: string;
           display_name: string | null;
@@ -1450,6 +1455,11 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          first_name?: string | null;
+          last_name?: string | null;
+          address_line?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
           created_at?: string;
           display_name?: string | null;
           id: string;
@@ -1458,6 +1468,11 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          first_name?: string | null;
+          last_name?: string | null;
+          address_line?: string | null;
+          postal_code?: string | null;
+          city?: string | null;
           created_at?: string;
           display_name?: string | null;
           id?: string;
@@ -1575,6 +1590,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      update_client_profile: { Args: { p_profile: Json }; Returns: undefined };
+
       get_my_account_space: { Args: never; Returns: string | null };
       claim_account_space: { Args: { p_space: string }; Returns: string };
 

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/features/auth/AuthProvider';
+import type { ProfileValues } from '@/features/auth/schemas';
 import type { TablesInsert } from '@/types/database';
 
 import {
@@ -40,8 +41,7 @@ export function useUpdateProfile() {
   const userId = useUserId();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (patch: { display_name: string | null; phone: string | null }) =>
-      updateProfile(userId!, patch),
+    mutationFn: (values: ProfileValues) => updateProfile(values),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.profile(userId) }),
   });
 }

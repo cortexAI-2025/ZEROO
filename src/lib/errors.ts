@@ -2,6 +2,8 @@ import { authErrorKey } from '@/features/auth/errors';
 
 /** Erreurs métier levées par nos fonctions SQL (raise exception '<code>'). */
 const businessErrors = {
+  invalid_client_profile: 'client.account.invalid',
+  client_profile_required: 'client.account.profileError',
   account_space_locked: 'space.locked',
   merchant_already_exists: 'errors.merchantAlreadyExists',
   merchant_not_affiliated: 'errors.merchantNotAffiliated',

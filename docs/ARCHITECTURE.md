@@ -629,3 +629,60 @@ Un compte Auth appartient définitivement à un seul espace : client, restaurant
 Les créations de commerce, de livreur et de commande contrôlent l'espace en base. Les helpers de propriété et les fonctions serveur de facturation/création de commande le contrôlent aussi. Les routes privées sont fermées pendant la lecture du rôle ; un lien direct vers un autre espace ne l'accorde pas. Les menus publics restent consultables.
 
 Reprise : les comptes possédant un seul profil professionnel retrouvent cet espace automatiquement. Les anciens comptes de démonstration multi-profils doivent choisir une fois leur espace définitif. Les données et abonnements historiques restent conservés. Avant le déploiement, examiner ces comptes et leurs éventuels abonnements : une réaffectation de données à un compte distinct demande un traitement administratif explicite. Cette migration ne refond pas toutes les anciennes RPC métier ; leur contrôle d'identité et leurs RLS restent en place. Ne pas appliquer la migration en production sans déployer aussi les fonctions serveur et le frontend correspondants.
+
+
+### Identité requise à l’inscription (28 octobre 2026)
+
+L’inscription par e-mail exige prénom, nom, rue, code postal, ville, téléphone et
+e-mail, en plus du mot de passe existant. Le schéma partagé valide le formulaire
+et l’appel API, normalise l’e-mail et le téléphone (E.164). Auth reçoit ces
+coordonnées dans les métadonnées ; le trigger `handle_new_user` les copie dans
+le profil privé au sein de la même transaction, avant confirmation de l’e-mail.
+Le numéro reste un contact : il ne renseigne ni `auth.users.phone` ni un statut
+vérifié, et ne déclenche aucun SMS.
+
+Le trigger refuse les nouvelles inscriptions Auth par e-mail incomplètes
+(`raw_app_meta_data.provider=email`, fourni par Auth) ainsi que les demandes
+versionnées `signup_profile_version=1`. Les insertions internes de comptes
+historiques ou les autres fournisseurs restent compatibles ; leurs éventuels
+champs personnels sont soumis aux contraintes de la table. Les comptes déjà
+créés ne sont ni bloqués ni complétés artificiellement. L’e-mail de référence
+reste dans Auth. Les nouvelles colonnes privées ne reçoivent aucun droit public,
+aucun droit de modification supplémentaire ; les politiques RLS existantes
+continuent de s’appliquer.
+
+Les avatars ne sont pas un champ de l’inscription commune ni du profil client.
+Les restaurants conservent leur logo/photo dans leur espace professionnel, les
+livreurs leur photo dans le leur, avec les contrôles de propriété Storage existants.
+
+
+### Annuaire public des pros : aucun SIRET affiché (28 octobre 2026)
+Décision du propriétaire : l'annuaire public (`directory_businesses`, 2 390 références issues de la base Sirene) n'affiche ni SIREN ni SIRET. Le numéro reste **enregistré** : dans la table (usage interne), dans `merchants.siret` (saisi à l'inscription du professionnel) et dans `directory_claims` (visible de son auteur et des administrateurs).
+- `search_pro_directory` ne renvoie plus `siret` ni `source_url` (dont l'adresse contient le SIRET) ; elle renvoie un identifiant public opaque `id` (colonne `public_id`). La recherche par SIRET est retirée ; le nom, la raison sociale, l'adresse, la ville et le code postal restent recherchables.
+- La table n'est plus lisible directement par `anon` ni `authenticated` (`revoke select`) : seules les fonctions `search_pro_directory` et `pro_directory_cities` (SECURITY DEFINER, `search_path` vide) exposent des champs choisis.
+- `request_directory_claim(p_directory_id uuid, …)` remplace la version par SIRET : le SIRET est retrouvé côté serveur. La revue administrateur (`admin_directory_claims`) continue d'afficher le SIRET et exige toujours qu'il corresponde à celui du compte professionnel.
+- Hors périmètre : les fiches des professionnels inscrits (`merchants`) gardent leurs mentions légales publiques (SIRET, TVA, raison sociale), publiques par décision du propriétaire du commerce.
+
+### Consultation et modification du profil client
+
+`/account` affiche prénom, nom, rue, code postal, ville et téléphone depuis le
+profil privé, avec un bouton « Modifier mes informations ». Les anciennes
+valeurs absentes sont signalées sans déduire un nom ou une adresse. Le formulaire
+réutilise les validations de l’inscription et impose les coordonnées complètes ;
+il peut être annulé. Après une sauvegarde réussie, le cache du profil est relu.
+Les erreurs de lecture et d’écriture sont visibles, sans faux message de succès.
+
+`public.update_client_profile(jsonb)` est un wrapper SECURITY INVOKER vers
+`account_private.update_client_profile`, SECURITY DEFINER avec search_path vide.
+L’opération vérifie auth.uid() et l’espace client serveur, verrouille le profil
+correspondant, rejette les clés non autorisées et les champs invalides puis
+modifie uniquement ses six coordonnées et son nom affiché. Aucun identifiant de
+cible ni droit UPDATE supplémentaire sur la table n’est donné au client API.
+Les adresses de livraison sauvegardées et les anciennes commandes restent
+distinctes de l’adresse personnelle du profil.
+
+Le changement d’e-mail de connexion utilise séparément Auth.updateUser et le
+callback d’authentification existant. L’interface garde l’e-mail effectif et
+indique la nouvelle adresse en attente de confirmation. Aucune mise à jour de
+l’e-mail ou du téléphone vérifié n’est effectuée par la fonction SQL. Les avatars
+restent réservés aux espaces professionnels.

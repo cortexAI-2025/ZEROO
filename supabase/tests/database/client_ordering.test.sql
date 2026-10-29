@@ -1,7 +1,7 @@
 begin;
 select plan(34);
 
--- Données de démo (seed.sql) : « Chez Samir », cliente Nadia. On écarte tout le reste
+-- Données de démo (seed.sql) : « Chez Samir », cliente Nadia Démo. On écarte tout le reste
 -- (commandes et commerces créés par d'autres tests), le rollback final restaure l'état.
 delete from public.orders;
 delete from public.merchants where id <> '30000000-0000-0000-0000-000000000001';
@@ -84,7 +84,7 @@ select * from public.create_order(
 
 select is(
   (select row(status, total_cents, customer_name, customer_note)::text from placed),
-  '(pending_payment,3050,Nadia,"Sans oignons")',
+  '(pending_payment,3050,"Nadia Démo","Sans oignons")',
   'commande créée en attente de paiement : 2 × (10,50 + 1,00) + 7,50 = 30,50 €, au nom du client'
 );
 select is(

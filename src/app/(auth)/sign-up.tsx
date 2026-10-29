@@ -17,7 +17,16 @@ export default function SignUpScreen() {
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const { control, handleSubmit, formState } = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { displayName: '', email: '', password: '' },
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      addressLine: '',
+      postalCode: '',
+      city: '',
+      phone: '',
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -46,12 +55,55 @@ export default function SignUpScreen() {
     <Screen scroll>
       <AppText variant="title">{t('auth.signUp')}</AppText>
       <SocialButtons intro={t('auth.signUpIntro')} />
+      <AppText variant="muted">{t('auth.requiredFields')}</AppText>
       <FormTextField
         control={control}
-        name="displayName"
-        label={t('auth.displayName')}
+        name="firstName"
+        label={t('auth.firstName')}
+        maxLength={80}
         autoComplete="given-name"
         textContentType="givenName"
+      />
+      <FormTextField
+        control={control}
+        name="lastName"
+        label={t('auth.lastName')}
+        maxLength={80}
+        autoComplete="family-name"
+        textContentType="familyName"
+      />
+      <FormTextField
+        control={control}
+        name="addressLine"
+        label={t('auth.addressLine')}
+        maxLength={240}
+        autoComplete="street-address"
+        textContentType="streetAddressLine1"
+      />
+      <FormTextField
+        control={control}
+        name="postalCode"
+        label={t('auth.postalCode')}
+        maxLength={5}
+        keyboardType="number-pad"
+        autoComplete="postal-code"
+        textContentType="postalCode"
+      />
+      <FormTextField
+        control={control}
+        name="city"
+        label={t('auth.city')}
+        maxLength={100}
+        textContentType="addressCity"
+      />
+      <FormTextField
+        control={control}
+        name="phone"
+        label={t('auth.phone')}
+        maxLength={30}
+        keyboardType="phone-pad"
+        autoComplete="tel"
+        textContentType="telephoneNumber"
       />
       <FormTextField
         control={control}
@@ -78,6 +130,7 @@ export default function SignUpScreen() {
         onPress={() => void onSubmit()}
       />
       <AppText variant="muted">{t('auth.proHint')}</AppText>
+      <AppText variant="muted">{t('auth.proAvatarHint')}</AppText>
       <Link href="/sign-in">
         <AppText variant="link">{t('auth.hasAccount')}</AppText>
       </Link>

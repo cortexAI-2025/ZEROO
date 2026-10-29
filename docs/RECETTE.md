@@ -74,6 +74,7 @@ Avec le restaurant en Pro :
 ## 8. Sécurité et confidentialité
 - [ ] Une dark kitchen (livraison uniquement) : son **adresse n'apparaît ni sur `/decouvrir`, ni dans la page publique, ni dans les réponses de l'API publique** ; elle n'est donnée qu'au livreur affecté.
 - [ ] Un client ne voit pas les commandes d'un autre ; un restaurant ne voit pas celles d'un autre restaurant.
+- [ ] **Annuaire public des pros** : aucune ligne n'affiche de SIREN ni de SIRET (ni dans un lien) ; la recherche par numéro ne retrouve rien ; `GET /rest/v1/directory_businesses` en anonyme est refusé. Le SIRET saisi à l'inscription d'un professionnel est bien conservé.
 - [ ] Les identités publiques des commerçants (SIRET, TVA, e-mail de contact, raison sociale, téléphone) sont publiques **par décision du propriétaire**.
 - [ ] Anciens liens profonds `zeroo://` toujours ouverts par l'application mobile.
 
