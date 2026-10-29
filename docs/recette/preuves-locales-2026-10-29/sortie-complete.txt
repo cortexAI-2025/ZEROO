@@ -1,0 +1,59 @@
+== 1. État AVANT (base peuplée)
+checks: f,f,2,1,2,0,t,0,0,0,0,,f
+OK    base peuplée : 2 commerces avec valeurs administratives
+== 2. Application du script de production (docs/production/merchants_private_production.sql)
+OK    script appliqué (transaction validée, contrôles internes passés)
+checks: t,t,2,1,0,2,t,12,7,8,0,t,t
+OK    valeurs privées IDENTIQUES avant/après, valeur par valeur (ac44a44ef7dac6d0…)
+OK    colonnes brutes de merchants vidées
+== 3. Matrice RLS par persona (commerce publié « Chez Samir », commerce non publié, public_merchants)
+OK    persona anon : valeurs, commerce non publié (0), public_merchants lisible (1 ligne)
+OK    persona client2 : valeurs, commerce non publié (0), public_merchants lisible (1 ligne)
+OK    persona commercant2 : valeurs, commerce non publié (1), public_merchants lisible (1 ligne)
+OK    persona client : valeurs, commerce non publié (0), public_merchants lisible (1 ligne)
+OK    persona livreur : valeurs, commerce non publié (0), public_merchants lisible (1 ligne)
+OK    persona commercant : valeurs, commerce non publié (0), public_merchants lisible (1 ligne)
+OK    persona admin : valeurs, commerce non publié (1), public_merchants lisible (1 ligne)
+OK    rôle anon : colonnes brutes sans valeur
+OK    rôle anon : merchant_private refusée
+OK    rôle anon : directory_businesses refusée
+OK    rôle anon : directory_claims refusée
+OK    rôle authenticated : colonnes brutes sans valeur
+OK    rôle authenticated : merchant_private refusée
+OK    rôle authenticated : directory_businesses refusée
+OK    rôle authenticated : directory_claims refusée
+== 4. Commandes (couche base de données)
+OK    création d'une commande de test sur le commerce publié
+OK    page commande du client : téléphone + lien de paiement via le commerce lié à sa commande
+OK    commandes avant 1 -> après 2 (aucune perdue)
+OK    pgTAP dashboards (37 contrôles)
+OK    pgTAP merchants_private (33 contrôles)
+OK    pgTAP merchants_private_security (28 contrôles)
+OK    pgTAP client_ordering (34 contrôles)
+OK    pgTAP plans (26 contrôles)
+OK    pgTAP delivery (91 contrôles)
+OK    pgTAP publication_guard (13 contrôles)
+== 5. Retour arrière puis réapplication (cycle 1)
+OK    retour arrière appliqué
+checks: f,f,2,1,2,0,t,0,0,0,0,,f
+OK    après retour arrière : colonnes brutes IDENTIQUES à l'état d'origine
+OK    merchant_private supprimée
+OK    réapplication validée
+OK    après réapplication : valeurs privées IDENTIQUES
+OK    état structurel identique à celui de la première application
+== 6. Retour arrière puis réapplication (cycle 2)
+OK    retour arrière appliqué
+checks: f,f,2,1,2,0,t,0,0,0,0,,f
+OK    après retour arrière : colonnes brutes IDENTIQUES à l'état d'origine
+OK    merchant_private supprimée
+OK    réapplication validée
+OK    après réapplication : valeurs privées IDENTIQUES
+OK    état structurel identique à celui de la première application
+== 7. Empreintes SHA-256
+e06f0c1f55acc7e0f2d6ac124eba69cadc291c5af2a084d9bc3a7ba576b7d754  docs/production/merchants_private_production.sql
+401ae67dc00e1332d2d04140ba3b06d3fca5d69fc1a7f99fbc41473f2603b0db  docs/production/merchants_private_ROLLBACK.sql
+162fbe042c22ebc6580f9c43f1791acbb1c02fc47eac45b1a5c530028aae6446  supabase/migrations/20261029120000_merchants_private_details.sql
+72857f52e05379bcd7a604ee554e22008343d5a841cebcfc9757f2765bfccba3  docs/recette/merchants_recette_extra.sql
+d40e3ec89432bc4ab843c4d7121e163d83ec6124a8908b472fd1641b4e5f2828  docs/recette/checks.sql
+5ae550d30b86b4b2c7cdf03b0d43d4acb8b0fc1611bd60d2c73408f9efce69a1  scripts/localdb/recette_merchants.sh
+== Verdict recette locale : CONFORME (aucun échec)

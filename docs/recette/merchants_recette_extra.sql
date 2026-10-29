@@ -34,9 +34,15 @@ insert into public.platform_admins (user_id) values ('91000000-0000-0000-0000-00
 update public.merchants set
   legal_name = 'Samir Food Recette SAS', siret = '73282932000074', vat_number = 'FR32732829320',
   contact_email = 'contact-recette@example.test', phone = '0102030405',
-  payment_link = 'https://pay.example.test/recette-samir',
-  public_phone = '0144556677', public_phone_authorized = false
+  payment_link = 'https://pay.example.test/recette-samir'
 where id = '30000000-0000-0000-0000-000000000001';
+-- Numéro professionnel public (colonnes ajoutées par la migration) : posé seulement si elles existent,
+-- pour que ce seed serve aussi bien AVANT qu'APRÈS la migration. Non autorisé au départ.
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'public_phone') then
+    execute $q$update public.merchants set public_phone = '0144556677', public_phone_authorized = false where id = '30000000-0000-0000-0000-000000000001'$q$;
+  end if;
+end $$;
 
 -- Un second commerce, NON publié, avec ses propres données privées (ne doit être visible de personne d'autre).
 insert into public.merchants (id, owner_id, slug, name, category, address_line, postal_code, city, latitude, longitude,
