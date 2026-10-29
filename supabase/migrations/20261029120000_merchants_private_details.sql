@@ -50,6 +50,12 @@ returns boolean language sql stable security definer set search_path = '' as $$
          or m.accepts_cash_pickup;
 $$;
 
+-- Vidage des colonnes de merchants (les valeurs sont dans merchant_private). FAIT AVANT la création des
+-- déclencheurs d'écriture : sinon ils verraient « colonne mise à null » et effaceraient les valeurs recopiées.
+update public.merchants
+set legal_name = null, siret = null, vat_number = null, contact_email = null, phone = null, payment_link = null
+where coalesce(legal_name, siret, vat_number, contact_email, phone, payment_link) is not null;
+
 -- Écriture : la valeur part vers merchant_private, la colonne de merchants reste null.
 -- Un déclencheur par colonne : « UPDATE OF » permet de distinguer « effacé » de « non modifié ».
 -- Noms en « a00_ » : ils passent avant les contrôles (mode de commande, publication, ...) qui lisent
@@ -81,11 +87,6 @@ begin
       'a00_merchants_private_' || c, c, c);
   end loop;
 end $$;
-
--- Vidage des colonnes de merchants (les valeurs sont dans merchant_private).
-update public.merchants
-set legal_name = null, siret = null, vat_number = null, contact_email = null, phone = null, payment_link = null
-where coalesce(legal_name, siret, vat_number, contact_email, phone, payment_link) is not null;
 
 -- Colonnes calculées lues par l'app avec un alias (`siret:merchant_siret`, ...).
 create function public.can_see_merchant_private(p_merchant_id uuid, p_contact boolean)

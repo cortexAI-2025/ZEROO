@@ -5,7 +5,12 @@
 begin;
 set local lock_timeout = '5s';
 set local statement_timeout = '120s';
-create temp table zeeroo_avant as select count(*) as n, count(*) filter (where coalesce(legal_name,siret,vat_number,contact_email,phone,payment_link) is not null) as avec_donnees from public.merchants;
+create temp table zeeroo_avant as select count(*) as n,
+  count(*) filter (where coalesce(legal_name,siret,vat_number,contact_email,phone,payment_link) is not null) as avec_donnees,
+  count(legal_name) as c_legal_name, count(siret) as c_siret, count(vat_number) as c_vat, count(contact_email) as c_email,
+  count(phone) as c_phone, count(payment_link) as c_payment,
+  coalesce(string_agg(id::text || '|' || coalesce(legal_name,'') || '|' || coalesce(siret,'') || '|' || coalesce(vat_number,'') || '|' || coalesce(contact_email,'') || '|' || coalesce(phone,'') || '|' || coalesce(payment_link,''), ';' order by id), '') as empreinte_valeurs
+from public.merchants;
 do $$ begin
   if exists (select 1 from supabase_migrations.schema_migrations where version = '20261029120000') then
     raise exception 'Migration 20261029120000 déjà enregistrée : rien à faire';
@@ -67,6 +72,12 @@ returns boolean language sql stable security definer set search_path = '' as $$
          or m.accepts_cash_pickup;
 $$;
 
+-- Vidage des colonnes de merchants (les valeurs sont dans merchant_private). FAIT AVANT la création des
+-- déclencheurs d'écriture : sinon ils verraient « colonne mise à null » et effaceraient les valeurs recopiées.
+update public.merchants
+set legal_name = null, siret = null, vat_number = null, contact_email = null, phone = null, payment_link = null
+where coalesce(legal_name, siret, vat_number, contact_email, phone, payment_link) is not null;
+
 -- Écriture : la valeur part vers merchant_private, la colonne de merchants reste null.
 -- Un déclencheur par colonne : « UPDATE OF » permet de distinguer « effacé » de « non modifié ».
 -- Noms en « a00_ » : ils passent avant les contrôles (mode de commande, publication, ...) qui lisent
@@ -98,11 +109,6 @@ begin
       'a00_merchants_private_' || c, c, c);
   end loop;
 end $$;
-
--- Vidage des colonnes de merchants (les valeurs sont dans merchant_private).
-update public.merchants
-set legal_name = null, siret = null, vat_number = null, contact_email = null, phone = null, payment_link = null
-where coalesce(legal_name, siret, vat_number, contact_email, phone, payment_link) is not null;
 
 -- Colonnes calculées lues par l'app avec un alias (`siret:merchant_siret`, ...).
 create function public.can_see_merchant_private(p_merchant_id uuid, p_contact boolean)
@@ -232,6 +238,19 @@ grant select on public.public_merchants to anon, authenticated;
 do $$ begin
   if (select count(*) from public.merchants) <> (select n from zeeroo_avant) then raise exception 'Nombre de commerces modifié'; end if;
   if (select count(*) from public.merchant_private) <> (select avec_donnees from zeeroo_avant) then raise exception 'Données non recopiées intégralement'; end if;
+  -- Les VALEURS doivent être identiques (pas seulement le nombre de lignes) : colonne par colonne.
+  if (select count(legal_name) from public.merchant_private) <> (select c_legal_name from zeeroo_avant)
+     or (select count(siret) from public.merchant_private) <> (select c_siret from zeeroo_avant)
+     or (select count(vat_number) from public.merchant_private) <> (select c_vat from zeeroo_avant)
+     or (select count(contact_email) from public.merchant_private) <> (select c_email from zeeroo_avant)
+     or (select count(phone) from public.merchant_private) <> (select c_phone from zeeroo_avant)
+     or (select count(payment_link) from public.merchant_private) <> (select c_payment from zeeroo_avant) then
+    raise exception 'Valeurs privées perdues ou incomplètes : transaction annulée';
+  end if;
+  if coalesce((select string_agg(merchant_id::text || '|' || coalesce(legal_name,'') || '|' || coalesce(siret,'') || '|' || coalesce(vat_number,'') || '|' || coalesce(contact_email,'') || '|' || coalesce(phone,'') || '|' || coalesce(payment_link,''), ';' order by merchant_id) from public.merchant_private), '')
+     <> (select empreinte_valeurs from zeeroo_avant) then
+    raise exception 'Valeurs privées différentes des valeurs d''origine : transaction annulée';
+  end if;
   if exists (select 1 from public.merchants where coalesce(legal_name,siret,vat_number,contact_email,phone,payment_link) is not null) then raise exception 'Colonnes sensibles non vidées'; end if;
   if has_table_privilege('anon','public.merchant_private','SELECT') or has_table_privilege('authenticated','public.merchant_private','SELECT') then raise exception 'merchant_private lisible'; end if;
 end $$;
