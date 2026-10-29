@@ -197,7 +197,9 @@ end;$function$;
 
 -- Projection publique : seulement ce qui présente un restaurant affilié à ses clients. Pour les
 -- consommateurs externes de l'API (site, QR codes) ; aucune donnée administrative ni de contact.
-create view public.public_merchants with (security_invoker = false) as
+-- security_invoker = true : la RLS de merchants s'applique à l'appelant (pas de vue qui contourne la
+-- RLS) ; les colonnes calculées restent des fonctions security definer qui filtrent elles-mêmes.
+create view public.public_merchants with (security_invoker = true) as
 select m.id, m.slug, m.name, m.description, m.category, m.postal_code, m.city,
        m.photo_url, m.logo_url, m.tagline, m.about, m.accent_color,
        m.offers_pickup, m.delivery_enabled,

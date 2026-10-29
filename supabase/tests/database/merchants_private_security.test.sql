@@ -1,5 +1,5 @@
 begin;
-select plan(25);
+select plan(28);
 
 -- Revue des fonctions privilégiées, droits EXECUTE, search_path et écritures sur merchant_private.
 -- Seed : Samir (10…01) possède « Chez Samir » (30…01), publié ; Nadia (20…01) est cliente.
@@ -71,6 +71,19 @@ reset role;
 select is((select string_agg(column_name,',' order by column_name) from information_schema.columns where table_schema='public' and table_name='public_merchants'),
   'about,accent_color,address_line,category,city,delivery_enabled,description,has_minisite,id,logo_url,name,offers_pickup,photo_url,postal_code,public_phone,slug,tagline','public_merchants : liste exacte des colonnes');
 select ok(not has_table_privilege('anon','public.public_merchants','INSERT') and not has_table_privilege('anon','public.public_merchants','UPDATE'),'public_merchants : lecture seule');
+
+-- 7. La vue s'exécute avec les droits de l'appelant : un commerce non publié n'y figure pour personne,
+-- et l'anonyme ne voit pas plus de lignes que la RLS de merchants ne l'y autorise.
+select ok((select reloptions @> array['security_invoker=true'] from pg_class where oid='public.public_merchants'::regclass),'public_merchants : security_invoker = true');
+update public.merchants set is_published=false where id='30000000-0000-0000-0000-000000000001';
+set local role anon;
+select set_config('request.jwt.claims','{"role":"anon"}',true);
+select is((select count(*)::int from public.public_merchants where id='30000000-0000-0000-0000-000000000001'),0,'commerce dépublié : absent de public_merchants (anonyme)');
+reset role;
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-0000-0000-000000000001');
+select is((select count(*)::int from public.public_merchants where id='30000000-0000-0000-0000-000000000001'),0,'commerce dépublié : absent de public_merchants même pour son propriétaire');
+reset role;
 
 select * from finish();
 rollback;
