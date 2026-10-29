@@ -32,3 +32,9 @@ Les colonnes vidées de `merchants` (legal_name, siret, vat_number, contact_emai
 - `PLAN-BASCULE-MERCHANTS.md` : plan complet (véhicule de déploiement, GO, préparation, jour J, critères d'arrêt, retour arrière, Stripe test).
 - `merchants_private_ROLLBACK_SAFE.sql` : retour arrière qui **dépublie d'abord** (aucune donnée restaurée visible des visiteurs) ; `merchants_private_ROLLBACK_REPUBLISH.sql` : republication explicite (réexpose les données, garde-fou `set zeeroo.accept_exposure = 'oui'`). Test : `docs/recette/safe_rollback_check.sh`.
 - `merchants_private_ROLLBACK.sql` (brut) : réexpose immédiatement ; à éviter si un commerce est publié.
+
+## Retour arrière à exposition réduite (merchants) — variante validée, scénario distinct
+- `merchants_private_ROLLBACK_REDUCED.sql` : conserve `merchant_private` fermée, restaure **uniquement** téléphone et lien de paiement dans `merchants`, dépublie d'abord.
+- `merchants_private_REAPPLY_AFTER_REDUCED.sql` : retour au modèle fermé malgré `merchant_private` (aucune suppression ni écrasement) ; `merchants_private_REAPPLY_REPUBLISH.sql` : republication sans exposition.
+- Recette : `scripts/localdb/recette_reduced.sh` (7 profils, commandes, ancienne application dans un navigateur, 2 cycles).
+- Test Stripe RÉEL en mode test : `scripts/localdb/recette_stripe_cli.sh` (à lancer par le propriétaire ; non exécuté par l'assistant).

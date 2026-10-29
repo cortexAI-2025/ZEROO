@@ -1,0 +1,34 @@
+OK     anon : fiche « Chez Samir » invisible — 0 ligne(s)
+OK     anon : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     anon : merchant_private fermée — HTTP 401
+OK     client2 : fiche « Chez Samir » invisible — 0 ligne(s)
+OK     client2 : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     client2 : merchant_private fermée — HTTP 403
+OK     commercant2 : fiche « Chez Samir » invisible — 0 ligne(s)
+OK     commercant2 : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     commercant2 : merchant_private fermée — HTTP 403
+OK     client : fiche « Chez Samir » visible — 1 ligne(s)
+OK     client : AUCUN champ administratif lisible (raison sociale, SIRET, TVA, e-mail)
+OK     client : téléphone et lien de paiement lisibles (nécessaires à l'ancienne application)
+OK     client : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     client : merchant_private fermée — HTTP 403
+OK     client : colonnes calculées administratives masquées
+OK     livreur : fiche « Chez Samir » visible — 1 ligne(s)
+OK     livreur : AUCUN champ administratif lisible (raison sociale, SIRET, TVA, e-mail)
+OK     livreur : téléphone et lien de paiement lisibles (nécessaires à l'ancienne application)
+OK     livreur : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     livreur : merchant_private fermée — HTTP 403
+OK     livreur : colonnes calculées administratives masquées
+OK     commercant : fiche « Chez Samir » visible — 1 ligne(s)
+OK     commercant : AUCUN champ administratif lisible (raison sociale, SIRET, TVA, e-mail)
+OK     commercant : téléphone et lien de paiement lisibles (nécessaires à l'ancienne application)
+OK     commercant : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     commercant : merchant_private fermée — HTTP 403
+OK     commercant : colonnes calculées administratives lisibles (propriétaire / administrateur)
+OK     admin : fiche « Chez Samir » visible — 1 ligne(s)
+OK     admin : AUCUN champ administratif lisible (raison sociale, SIRET, TVA, e-mail)
+OK     admin : téléphone et lien de paiement lisibles (nécessaires à l'ancienne application)
+OK     admin : colonnes administratives brutes vides sur toutes les lignes visibles
+OK     admin : merchant_private fermée — HTTP 403
+OK     admin : colonnes calculées administratives lisibles (propriétaire / administrateur)
+# Bilan matrice réduite (dépublié) : 33 OK, 0 échec(s)

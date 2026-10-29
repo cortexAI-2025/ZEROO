@@ -1,0 +1,12 @@
+# Contrôles HTTP — mode apres — 2026-10-29T12:36:16Z — http://127.0.0.1:54321
+OK                anon directory_businesses (HTTP 401)
+OK                anon directory_claims (HTTP 401)
+OK                anon rpc search_pro_directory (HTTP 404)
+OK                anon rpc pro_directory_cities (HTTP 404)
+OK                anon rpc request_directory_claim (HTTP 404)
+OK                anon merchant_private (HTTP 401)
+OK                anon merchants (colonnes brutes) (1 ligne(s) examinée(s), aucun motif sensible)
+OK                anon merchants (colonnes calculées) (1 ligne(s) examinée(s), aucun motif sensible)
+OK                anon public_merchants (1 ligne(s) examinée(s), aucun motif sensible)
+(USER_JWT absent : contrôles « compte connecté » non exécutés)
+# Bilan : 9 conforme(s), 0 attendu(s) avant migration, 0 échec(s), 0 erreur(s) technique(s), 0 non probant(s)

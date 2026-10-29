@@ -1,0 +1,15 @@
+# Recette HTTP + fonctions — phase apres — 2026-10-29T12:36:31.902Z — pile locale http://127.0.0.1:54321
+OK               [RÉEL] create-order sans jeton client — HTTP 401
+OK               [RÉEL] create-order carte (lien de paiement du restaurant) — commande créée 17b46f66
+INFO             [RÉEL] create-order espèces : HTTP 500 internal_error (le restaurant de recette n'accepte pas les espèces : comportement identique avant/après)
+OK               [RÉEL] page commande, NOUVELLE application (alias merchant_*) — téléphone et lien de paiement lus
+OK               [RÉEL] page commande, ANCIENNE application après migration — valeurs absentes (dégradation attendue tant que l'application n'est pas remplacée)
+OK               [RÉEL] un autre client ne voit pas la commande — 0 ligne
+OK               [RÉEL] order-decision : le restaurateur accepte la commande — HTTP 200
+OK               [RÉEL] publication refusée sans abonnement actif — HTTP 403
+OK               [SIMULATION] publication acceptée : abonnement actif (écrit en SQL) + encaissement configuré (lien de paiement) — HTTP 200
+OK               [SIMULATION] résiliation : la fiche est dépubliée automatiquement (déclencheur) — is_published=false
+OK               [STRIPE-MOCK] billing checkout : session créée par stripe-mock — URL de paiement renvoyée
+OK               [SIMULATION] webhook : signature invalide refusée — HTTP 400
+OK               [SIMULATION] webhook : événement signé avec le secret LOCAL accepté (ne prouve pas la réception d'un webhook Stripe réel) — HTTP 200
+# Bilan : 12 OK, 0 échec(s), 0 erreur(s) technique(s)
