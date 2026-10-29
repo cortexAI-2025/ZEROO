@@ -42,6 +42,8 @@ export type MerchantPatch = Pick<
   | 'legal_name'
   | 'photo_url'
   | 'payment_link'
+  | 'public_phone'
+  | 'public_phone_authorized'
   | 'siret'
   | 'vat_number'
   | 'contact_email'
