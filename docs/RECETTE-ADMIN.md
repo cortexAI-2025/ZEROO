@@ -132,12 +132,18 @@ Chaque rubrique doit s'afficher sans erreur de console, avec des données réell
 - [ ] Thème clair / sombre / système, mémorisé après rechargement.
 - [ ] Navigation au clavier : ordre logique, focus visible, fermeture du menu avec la touche Échap.
 
-## 8. Annuaire public et SIRET (après application de la migration `20261028220000` et fusion de la PR du site)
+## 8. Annuaire des affiliés et base de prospection privée (après la migration `20261029110000`)
 
-- [ ] Anonyme : `curl -s "$SUPABASE_URL/rest/v1/directory_businesses?select=siret&limit=1" -H "apikey: $ANON_KEY"` est **refusé** (aujourd'hui, avant la migration : 2 390 SIRET lisibles).
-- [ ] `…/rest/v1/rpc/search_pro_directory` (corps `{"p_query":"","p_city":"","p_offset":0}`) ne renvoie ni `siret` ni `source_url`, et aucune suite de 14 chiffres.
-- [ ] Sur zeeroo.fr : aucune ligne n'affiche « SIRET » ni de lien contenant le numéro ; la recherche par numéro ne retrouve rien.
-- [ ] Revendication de bout en bout avec le compte professionnel de test : la demande est créée ; l'administrateur voit le SIRET dans la file de revue.
+Variables : `SUPABASE_URL`, `ANON_KEY` ; `USER_JWT` = jeton d'un compte connecté (non administrateur).
+
+- [ ] Anonyme : `curl -s "$SUPABASE_URL/rest/v1/directory_businesses?select=siret&limit=1" -H "apikey: $ANON_KEY"` est **refusé** (`42501`) ; avant la migration : 2 390 SIRET lisibles.
+- [ ] Même appel avec `-H "Authorization: Bearer $USER_JWT"` : refusé.
+- [ ] `…/rest/v1/directory_claims?select=*` : refusé en anonyme et en connecté.
+- [ ] `…/rest/v1/rpc/search_pro_directory`, `…/rpc/pro_directory_cities`, `…/rpc/request_directory_claim` : **fonction introuvable** (404 / `PGRST202`).
+- [ ] `…/rest/v1/merchants?select=*&is_published=eq.true` (anonyme) : voir la sécurisation de `merchants` (étape suivante) ; ne pas considérer ce point comme validé tant que SIRET, TVA et contacts privés y apparaissent.
+- [ ] Sur zeeroo.fr : la section « Annuaire ZeeRoo » renvoie vers app.zeeroo.fr/decouvrir ; aucun SIRET ni recherche d'entreprises.
+- [ ] Base : `select count(*) from public.directory_businesses` = 2 390 (éditeur SQL).
+- [ ] Administrateur : l'onglet des demandes de revendication s'ouvre toujours (`admin_directory_claims`).
 - [ ] Le SIRET saisi à l'inscription du professionnel est toujours enregistré.
 
 ## 9. Décision
