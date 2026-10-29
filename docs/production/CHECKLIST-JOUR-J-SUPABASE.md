@@ -63,7 +63,7 @@ select
   (select count(*) from public.merchants where is_published)                as publies,
   (select count(*) from public.orders
      where status::text not in ('collected','delivered','cancelled'))      as commandes_en_cours,
-  (select count(*) from public.merchants where is_subscription_active)      as abonnements_actifs;
+  (select count(*) from public.merchants m where m.is_subscription_active) as abonnements_actifs;
 ```
 
 - [ ] 🔍 État du 29/10/2026 : 1 commerce, 0 publié, 0 commande en cours, 0 abonnement actif. **Relire le jour J.**
