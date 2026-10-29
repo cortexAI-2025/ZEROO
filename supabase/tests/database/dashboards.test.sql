@@ -1,5 +1,5 @@
 begin;
-select plan(36);
+select plan(37);
 
 -- Contexte (seed) : Samir (10…01) possède « Chez Samir » (30…01) ; Nadia (20…01) est cliente ;
 -- Karim (utilisateur 70…01, livreur 80…01) est rattaché.
@@ -49,9 +49,12 @@ select throws_ok($$ update public.merchants set vat_number = 'FR12'
   '23514', null, 'numéro de TVA invalide refusé');
 reset role;
 set local role anon;
-select is((select legal_name from public.merchants where id = '30000000-0000-0000-0000-000000000001'),
-  'Samir Food SAS', 'mentions légales visibles du public');
+select set_config('request.jwt.claims','{"role":"anon"}',true);
+select is((select merchant_legal_name(m) from public.merchants m where id = '30000000-0000-0000-0000-000000000001'),
+  null, 'mentions légales : non lisibles du public (merchant_private)');
 reset role;
+select is((select legal_name from public.merchant_private where merchant_id = '30000000-0000-0000-0000-000000000001'),
+  'Samir Food SAS', 'mentions légales : conservées dans merchant_private');
 
 set local role authenticated;
 select pg_temp.as_user('70000000-0000-0000-0000-000000000001');

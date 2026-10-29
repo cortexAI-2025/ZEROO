@@ -663,6 +663,17 @@ Décision du propriétaire : l'annuaire public ne contient **que les restaurants
 - Test : `private_prospects.test.sql` (anonyme et connecté refusés, fonctions absentes, RLS active, fiche conservée, SIRET visible de l'administrateur).
 - Hors périmètre : les fiches des professionnels inscrits (`merchants`) gardent leurs mentions légales publiques (SIRET, TVA, raison sociale), publiques par décision du propriétaire du commerce.
 
+### Données administratives des commerces : table fermée (29 octobre 2026)
+Décision du propriétaire : ni SIRET, ni TVA, ni raison sociale, ni e-mail ou téléphone de contact, ni lien de paiement ne sont lisibles par l'API publique. Un simple masquage dans l'application ne suffit pas.
+- **Pourquoi pas des privilèges de colonnes** : les colonnes calculées de `merchants` (`is_open_now`, `merchant_address_line`, ...) prennent la ligne entière en argument et exigent le droit de lecture sur toutes les colonnes (vérifié : `permission denied for table merchants`).
+- **Mécanisme** (même principe que `merchant_locations`) : `merchant_private` (legal_name, siret, vat_number, contact_email, phone, payment_link) est fermée (aucun droit `anon`/`authenticated`, RLS sans politique). Les colonnes de `merchants` restent écrivables, mais un déclencheur par colonne (`a00_merchants_private_*`, « UPDATE OF » pour distinguer effacé et non modifié) envoie la valeur vers `merchant_private` et laisse `null`. Les contraintes (SIRET de Luhn, TVA, e-mail, lien https) sont portées par `merchant_private`.
+- **Lecture** : colonnes calculées `security definer`, lues avec un alias (`siret:merchant_siret`, `phone:merchant_phone`, `payment_link:merchant_payment_link`, ...). Propriétaire et administrateurs : tout. Client ayant commandé et livreur rattaché : téléphone et lien de paiement. Les autres, anonymes compris : `null`. `has_payment_link` (booléen) indique seulement si le paiement par carte existe.
+- **Encaissement et publication** : `is_payments_ready` lit `merchant_private` ; la garde de publication continue d'exiger abonnement actif + encaissement configuré. L'Edge Function `create-order` lit le lien de paiement dans `merchant_private` (clé service).
+- **Projection publique** : vue `public_merchants` (commerces publiés et actifs ; nom, description, catégorie, code postal, ville, visuels, retrait/livraison, adresse selon la règle `merchant_address_line`, mini-site). Aucun champ administratif, de contact ni `owner_id`.
+- Tests : `merchants_private.test.sql` (anonyme, client sans commande, autre restaurateur, client ayant commandé, livreur rattaché, propriétaire, administrateur ; écriture, effacement, contraintes, encaissement). Retour arrière : `docs/production/merchants_private_ROLLBACK.sql`.
+- Restent lisibles de l'API : `owner_id` (nécessaire aux politiques RLS), `admin_status`, `marketing_consent` / `marketing_consent_at`. À arbitrer.
+- Conséquence produit : le téléphone du restaurant n'est plus affiché publiquement sur son mini-site (visible des clients qui ont commandé). Les mentions légales (raison sociale, SIRET) ne sont plus publiques : à valider juridiquement (LCEN, art. 6-III) avant d'exposer un mini-site marchand.
+
 ### Consultation et modification du profil client
 
 `/account` affiche prénom, nom, rue, code postal, ville et téléphone depuis le

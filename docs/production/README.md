@@ -11,3 +11,9 @@ Préconditions vérifiées en lecture seule sur la production (29/10/2026) :
 
 Avant : sauvegarde (Database > Backups) ; retour arrière : `private_prospects_ROLLBACK.sql` (réexpose le SIRET : décision explicite seulement).
 Après : contrôles anonymes réels (docs/RECETTE-ADMIN.md §8), puis fusion de la PR du site.
+
+## merchants_private_production.sql
+Migration `20261029120000_merchants_private_details` : SIRET, TVA, raison sociale, e-mail, téléphone et lien de paiement des commerces passent dans `merchant_private` (fermée à l'API). Données recopiées avant d'être vidées ; aucune suppression.
+- État de production relevé en lecture seule (29/10/2026) : 1 commerce, 0 publié ; `anon` et `authenticated` ont aujourd'hui SELECT sur les six colonnes.
+- **Ordre** : l'ancienne version de l'application lit les colonnes brutes (qui deviennent `null`) et la nouvelle lit les colonnes calculées (absentes avant la migration). Appliquer la migration, puis déployer l'application aussitôt (fusion de la PR). Avec 0 commerce publié, l'impact visible est nul ; il faut le refaire dans cet ordre dès qu'un commerce est publié.
+- Sauvegarde avant ; retour arrière : `merchants_private_ROLLBACK.sql` (réexpose les données).

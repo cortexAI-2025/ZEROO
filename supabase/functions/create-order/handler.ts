@@ -50,7 +50,11 @@ export const handler = handle(async (req) => {
   const mealPayment = body.mealPayment ?? 'card';
   if (mealPayment === 'card') {
     const merchant = unwrap(
-      await db.from('merchants').select('payment_link').eq('id', body.merchantId).maybeSingle(),
+      await db
+        .from('merchant_private')
+        .select('payment_link')
+        .eq('merchant_id', body.merchantId)
+        .maybeSingle(),
     ) as { payment_link: string | null } | null;
     if (!merchant?.payment_link) throw new HttpError(400, 'merchant_no_payment_link');
   }

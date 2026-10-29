@@ -43,7 +43,7 @@ select is(public.admin_directory_claims()->'rows'->0->>'siret','73282932000074',
 reset role;
 
 -- 5. L'annuaire des affiliés n'est pas touché et le SIRET du professionnel est conservé à l'inscription.
-select is((select siret from public.merchants where owner_id='e1000000-0000-0000-0000-000000000001'),'73282932000074','professionnel : SIRET d’inscription conservé');
+select is((select p.siret from public.merchant_private p join public.merchants m on m.id=p.merchant_id where m.owner_id='e1000000-0000-0000-0000-000000000001'),'73282932000074','professionnel : SIRET d’inscription conservé');
 
 select * from finish();
 rollback;

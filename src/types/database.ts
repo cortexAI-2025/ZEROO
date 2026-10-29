@@ -978,6 +978,13 @@ export type Database = {
           has_minisite: boolean | null;
           has_order_mode: boolean | null;
           offers_delivery: boolean | null;
+          merchant_legal_name: string | null;
+          merchant_siret: string | null;
+          merchant_vat_number: string | null;
+          merchant_contact_email: string | null;
+          merchant_phone: string | null;
+          merchant_payment_link: string | null;
+          has_payment_link: boolean | null;
         };
         ComputedFields:
           | 'delivery_available_now'
@@ -991,6 +998,13 @@ export type Database = {
           | 'merchant_address_line'
           | 'merchant_latitude'
           | 'merchant_longitude'
+          | 'merchant_legal_name'
+          | 'merchant_siret'
+          | 'merchant_vat_number'
+          | 'merchant_contact_email'
+          | 'merchant_phone'
+          | 'merchant_payment_link'
+          | 'has_payment_link'
           | 'is_paused_now'
           | 'is_payments_ready'
           | 'is_subscription_active';
