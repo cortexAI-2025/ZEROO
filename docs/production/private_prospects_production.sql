@@ -10,6 +10,21 @@ do $$ begin
   if exists (select 1 from supabase_migrations.schema_migrations where version = '20261029110000') then
     raise exception 'Migration 20261029110000 déjà enregistrée : rien à faire';
   end if;
+  -- Précondition explicite : 2 390 fiches attendues (état constaté le 29/10/2026).
+  if (select n from zeeroo_avant) <> 2390 then
+    raise exception 'directory_businesses contient % fiches au lieu de 2390 : inspecter avant d''appliquer', (select n from zeeroo_avant);
+  end if;
+  -- Accès indirects : aucune autre fonction, vue ou vue matérialisée ne doit dépendre des objets retirés.
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+             where n.nspname in ('public','admin_private') and p.prokind = 'f'
+               and p.proname not in ('search_pro_directory','pro_directory_cities','request_directory_claim')
+               and p.prosrc ~* '(search_pro_directory|pro_directory_cities|request_directory_claim)') then
+    raise exception 'Une autre fonction appelle l''ancien annuaire : inspecter avant d''appliquer';
+  end if;
+  if exists (select 1 from pg_class c where c.relkind in ('v','m') and c.relnamespace = 'public'::regnamespace
+             and pg_get_viewdef(c.oid) ~* 'directory_(businesses|claims)') then
+    raise exception 'Une vue lit directory_businesses / directory_claims : inspecter avant d''appliquer';
+  end if;
 end $$;
 
 -- Annuaire public = restaurants affiliés uniquement ; fiches Sirene = base privée de prospection.
