@@ -16,7 +16,7 @@ export STRIPE_SECRET_KEY=sk_test_123 STRIPE_API_BASE=http://127.0.0.1:12111 STRI
 export STRIPE_PRICE_START_MONTH=price_start_month STRIPE_PRICE_START_YEAR=price_start_year STRIPE_PRICE_PRO_MONTH=price_pro_month STRIPE_PRICE_PRO_YEAR=price_pro_year
 export STRIPE_PRICE_COURIER_START_MONTH=price_c_start_month STRIPE_PRICE_COURIER_START_YEAR=price_c_start_year STRIPE_PRICE_COURIER_PRO_MONTH=price_c_pro_month STRIPE_PRICE_COURIER_PRO_YEAR=price_c_pro_year
 fi
-export STRIPE_TAX_RATE_ID="${STRIPE_TAX_RATE_ID:-txr_local}" APP_WEB_URL=http://127.0.0.1:8081 CRON_SECRET=local-cron ORDER_ACCEPT_TIMEOUT_MINUTES=10
+export STRIPE_TAX_RATE_ID="${STRIPE_TAX_RATE_ID:-txr_local}" APP_WEB_URL=http://127.0.0.1:8081 CRON_SECRET=local-cron ORDER_ACCEPT_TIMEOUT_MINUTES=10 EXPO_PUSH_URL="${EXPO_PUSH_URL:-http://127.0.0.1:8199/push}"
 : > "$W/functions.pids"
 for spec in create-order:8101 billing:8102 stripe-webhook:8103 order-decision:8104 notify-order-update:8105 customer-cancel-order:8106 courier-decline:8107 customer-departure:8108; do
   name=${spec%%:*}; port=${spec##*:}
