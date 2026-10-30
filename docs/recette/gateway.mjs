@@ -2,7 +2,7 @@
 // /functions/v1/<nom> -> Edge Function servie par Deno (ports ci-dessous, voir functions_serve.sh).
 // Écoute sur 127.0.0.1:54321. Aucun accès réseau extérieur.
 import http from 'node:http';
-const FUNCTIONS = { 'create-order': 8101, billing: 8102, 'stripe-webhook': 8103, 'order-decision': 8104, 'notify-order-update': 8105 };
+const FUNCTIONS = { 'create-order': 8101, billing: 8102, 'stripe-webhook': 8103, 'order-decision': 8104, 'notify-order-update': 8105, 'customer-cancel-order': 8106, 'courier-decline': 8107, 'customer-departure': 8108 };
 const routes = [['/rest/v1', 3000], ['/auth/v1', 9999], ...Object.entries(FUNCTIONS).map(([n, p]) => [`/functions/v1/${n}`, p])];
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS', 'access-control-expose-headers': '*' };
 http.createServer((req, res) => {
