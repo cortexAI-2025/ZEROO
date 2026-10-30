@@ -2,6 +2,8 @@
 
 Analyse **en lecture seule** (git, workflows, production Supabase en `select`). Aucun SQL exécuté en production, aucune fusion, aucun push.
 
+> **État au 30/10/2026 (soir) : ce document décrit l'analyse du matin.** Depuis : #60 (qui contient #59) est fusionnée dans `main` (`5c25fea`, CI verte), #57 l'est aussi (`55671cc`) ainsi que #62 (`c2f8863`, qui apporte la migration d'index). Les migrations `20261029100000` et `20261030100000` ont été **appliquées à la main en production** le 30/10 et enregistrées dans l'historique : il ne reste plus rien à appliquer. Les règles du §4 (jamais de `db push`, intégration GitHub ↔ Supabase désactivée, à confirmer dans le tableau de bord Supabase) restent en vigueur.
+
 ## 1. État réel
 
 | Élément | Production Supabase | `main` (`5b6ad54`) | PR #59 | PR #60 (contient #59) |
@@ -10,8 +12,8 @@ Analyse **en lecture seule** (git, workflows, production Supabase en `select`). 
 | `20261029110000_private_prospects` | appliquée (29/10) | absente | ajoutée | ajoutée |
 | `20261029120000_merchants_private_details` | appliquée (29/10) | absente | absente | ajoutée |
 | `20261028210227_reconcile_missing_affiliation_migrations` | enregistrée, **sans fichier** | absente | absente | absente (archive : `docs/production/history/`) |
-| `20261029100000_admin_publish_guard` (PR #57) | **non appliquée** | absente | absente | absente |
-| `20261030100000_fk_covering_indexes` | **non appliquée** | absente | absente | absente (branche locale non poussée) |
+| `20261029100000_admin_publish_guard` (PR #57) | **non appliquée à l'analyse ; appliquée à la main le 30/10** | absente | absente | absente |
+| `20261030100000_fk_covering_indexes` | **non appliquée à l'analyse ; appliquée à la main le 30/10** | absente | absente | absente (alors sur une branche locale ; fusionnée avec #62) |
 
 Fusion à blanc (`git merge-tree`) de #59 et de #60 dans `main` : **propre**, sans conflit. #60 contient #59 (la fusion de #60 seule suffit à tout apporter). Les fichiers applicatifs de #61, déjà dans `main`, sont **identiques** dans #60.
 
@@ -58,9 +60,9 @@ Chaque script remet la variable à zéro à la fin. Les scripts de **réapplicat
 
 1. **Fusionner #60 dans `main`** (elle contient #59) : plus aucun SQL à exécuter, `20261029110000` et `20261029120000` sont déjà en production ; la fusion supprime en plus le fichier dangereux `20261028220000`. Retarget préalable de la base de #60 sur `main` (sa base actuelle est la branche de #59).
 2. **Ne jamais lancer** `supabase db push` / `migration up` / `db reset --linked` sur le projet de production ; en cas d'outil CLI, d'abord `supabase migration list` (lecture seule) et comparer à `docs/production/RECONCILIATION-HISTORIQUE-SUPABASE.md`.
-3. Les écarts d'historique restants sont **documentés, sans effet** : `20261028210227` (en production, sans fichier ; archive exacte dans `docs/production/history/`) et, à la fusion de #57 et de la migration d'index, deux fichiers supplémentaires **à appliquer à la main sur autorisation** (`20261029100000`, `20261030100000`).
+3. Les écarts d'historique restants sont **documentés, sans effet** : `20261028210227` (en production, sans fichier ; archive exacte dans `docs/production/history/`) et, à la fusion de #57 et de la migration d'index, deux fichiers supplémentaires **appliqués à la main le 30/10 sur autorisation** (fichiers désormais dans `main` via #57 et #62) (`20261029100000`, `20261030100000`).
 4. Garder l'intégration GitHub ↔ Supabase (déploiement automatique des migrations) **désactivée** ; ne pas ajouter de workflow qui applique des migrations sans approbation manuelle.
-5. Avant la fusion, ces corrections de garde doivent être **poussées sur la branche de #60** (commit local, non poussé : accord requis), puis la CI relancée.
+5. Avant la fusion, ces corrections de garde doivent être **poussées sur la branche de #60** (fait le 30/10 : commit `e4b263a`, CI verte), puis la CI relancée.
 
 ## 5. Points que je n'ai pas pu vérifier
 

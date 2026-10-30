@@ -1,6 +1,6 @@
 # Plan de bascule production — données administratives des commerces (PR #60)
 
-**Statut : plan préparé, AUCUNE exécution autorisée.** Chaque étape de production exige le « GO » explicite du propriétaire. Ce document n'est pas un avis juridique ni une autorisation.
+**Statut au 30/10/2026 : plan exécuté** (migration `20261029120000` appliquée et enregistrée en production le 29/10 ; `create-order` tolérante déployée ; PR #61 puis chaîne #59 / #60 fusionnées dans `main` le 30/10). Ce document est conservé tel que rédigé avant l'exécution : ne pas le rejouer. *Statut à la rédaction : plan préparé, AUCUNE exécution autorisée.* Chaque étape de production exige le « GO » explicite du propriétaire. Ce document n'est pas un avis juridique ni une autorisation.
 
 ## 0. Ce qui est déployé, et par quel véhicule
 | Élément | Contenu | Véhicule |
