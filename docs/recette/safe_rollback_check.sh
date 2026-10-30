@@ -28,12 +28,12 @@ administrateur~91000000-0000-0000-0000-000000000001
 P
 }
 psql -X -q -c "insert into supabase_migrations.schema_migrations(version,name) values ('20261029120000','x') on conflict do nothing" >/dev/null 2>&1
-psql -X -q -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK.sql >/dev/null 2>&1 && ok "état d'origine reconstitué (retour arrière brut) pour la comparaison" || ko "retour arrière brut en échec"
+PGOPTIONS="-c zeeroo.confirm_rollback=merchants_private_raw" psql -X -q -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK.sql >/dev/null 2>&1 && ok "état d'origine reconstitué (retour arrière brut) pour la comparaison" || ko "retour arrière brut en échec"
 M0=$(matrix); echo "$M0" | sed 's/^/  origine  : /'
 psql -X -q -v ON_ERROR_STOP=1 -f docs/production/merchants_private_production.sql >/dev/null 2>&1 && ok "migration réappliquée" || ko "réapplication en échec"
 BEFORE=$(psql -X -At -c "$FP"); PUB_BEFORE=$(psql -X -At -c "select count(*) from public.merchants where is_published")
 [ "$PUB_BEFORE" -ge 1 ] && ok "départ : $PUB_BEFORE commerce(s) publié(s)" || ko "aucun commerce publié au départ"
-psql -X -q -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK_SAFE.sql >/tmp/safe-rb.log 2>&1 && ok "retour arrière sûr appliqué" || { ko "retour arrière sûr en échec"; tail -3 /tmp/safe-rb.log; }
+PGOPTIONS="-c zeeroo.confirm_rollback=merchants_private_safe" psql -X -q -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK_SAFE.sql >/tmp/safe-rb.log 2>&1 && ok "retour arrière sûr appliqué" || { ko "retour arrière sûr en échec"; tail -3 /tmp/safe-rb.log; }
 RAW=$(psql -X -At -c "select md5(string_agg(id::text||coalesce(legal_name,'')||coalesce(siret,'')||coalesce(vat_number,'')||coalesce(contact_email,'')||coalesce(phone,'')||coalesce(payment_link,''),';' order by id)) from public.merchants")
 [ "$BEFORE" = "$RAW" ] && ok "valeurs restaurées dans merchants à l'identique" || ko "valeurs différentes après retour arrière"
 Q() { psql -X -At -q -c "begin; set local role $1; select set_config('request.jwt.claims','$2',true); $3; rollback;" | tail -1; }

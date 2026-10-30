@@ -56,7 +56,7 @@ run 43-apres-navigateur node docs/recette/ui_publicphone.mjs "$OUT/captures"
 
 step "5. Retour arrière complet (SQL + restauration de l'ancienne fonction) puis contrôle"
 psql -X -q -c "insert into supabase_migrations.schema_migrations(version,name) values ('20261029120000','x') on conflict do nothing" >/dev/null
-psql -X -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK.sql > "$OUT/50-rollback.txt" 2>&1 && echo "retour arrière appliqué" || { echo "ÉCHEC retour arrière"; fail=1; }
+PGOPTIONS="-c zeeroo.confirm_rollback=merchants_private_raw" psql -X -v ON_ERROR_STOP=1 -f docs/production/merchants_private_ROLLBACK.sql > "$OUT/50-rollback.txt" 2>&1 && echo "retour arrière appliqué" || { echo "ÉCHEC retour arrière"; fail=1; }
 psql -X -At -F, -f docs/recette/checks.sql > "$OUT/checks-3-rollback.csv"; F_RB=$(fp_raw)
 [ "$F_BEFORE" = "$F_RB" ] && echo "OK colonnes brutes restaurées à l'identique ($F_RB)" || { echo "ÉCHEC colonnes brutes différentes"; fail=1; }
 run 51-rollback-http docs/production/http_checks.sh avant

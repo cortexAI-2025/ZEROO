@@ -10,7 +10,7 @@ export RECETTE_PASSWORD="$(grep -o 'mot de passe : [A-Za-z0-9]*' supabase/seed.s
 export CHROMIUM_PATH="${CHROMIUM_PATH:-$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome 2>/dev/null | head -1)}"
 fail=0; ok() { echo "OK    $1"; }; ko() { echo "ÉCHEC $1"; fail=1; }; step() { echo; echo "######## $*"; }
 run() { local n="$1"; shift; "$@" > "$OUT/$n.txt" 2>&1; local rc=$?; tail -1 "$OUT/$n.txt"; [ $rc -ne 0 ] && { echo "  -> code de sortie $rc"; fail=1; }; return 0; }
-psqlf() { psql -X -q -v ON_ERROR_STOP=1 -f "$1" > "$OUT/$2.log" 2>&1; }
+psqlf() { PGOPTIONS="-c zeeroo.confirm_rollback=${CONFIRM:-}" psql -X -q -v ON_ERROR_STOP=1 -f "$1" > "$OUT/$2.log" 2>&1; }
 sqlv() { psql -X -At -c "$1"; }
 checks() { psql -X -At -F, -f docs/recette/checks.sql; }
 ADMIN_FP="select md5(coalesce(string_agg(merchant_id::text||'|'||coalesce(legal_name,'')||'|'||coalesce(siret,'')||'|'||coalesce(vat_number,'')||'|'||coalesce(contact_email,''),';' order by merchant_id),'')) from public.merchant_private"
@@ -34,7 +34,7 @@ MP_CLIENT_JWT=$(curl -s -X POST "$SUPABASE_URL/auth/v1/token?grant_type=password
 
 for cycle in 1 2; do
   step "CYCLE $cycle — A. Retour arrière RÉDUIT"
-  psqlf docs/production/merchants_private_ROLLBACK_REDUCED.sql c$cycle-a-reduit && ok "retour arrière réduit appliqué (contrôles internes passés)" || { ko "retour arrière réduit : $(tail -2 "$OUT/c$cycle-a-reduit.log" | tr '\n' ' ')"; break; }
+  CONFIRM=merchants_private_reduced psqlf docs/production/merchants_private_ROLLBACK_REDUCED.sql c$cycle-a-reduit && ok "retour arrière réduit appliqué (contrôles internes passés)" || { ko "retour arrière réduit : $(tail -2 "$OUT/c$cycle-a-reduit.log" | tr '\n' ' ')"; break; }
   checks > "$OUT/c$cycle-checks-reduit.csv"; echo "checks : $(cat "$OUT/c$cycle-checks-reduit.csv")"
   [ "$(sqlv "$ADMIN_FP")" = "$A0" ] && ok "champs administratifs privés INCHANGÉS (empreinte identique)" || ko "champs administratifs modifiés"
   [ "$(sqlv "select count(*) from public.merchants where coalesce(legal_name,siret,vat_number,contact_email) is not null")" = 0 ] && ok "aucun champ administratif dans merchants" || ko "champ administratif dans merchants"

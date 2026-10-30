@@ -26,7 +26,7 @@ Constats :
 - Aucune de ces fusions n'est autorisée à ce stade.
 
 ## 1. Conditions du GO production (toutes requises)
-- [ ] Relecture du SQL final : empreintes SHA-256 vérifiées sur le fichier téléchargé de GitHub (`merchants_private_production.sql` `ba8c9300…4502`, `merchants_private_ROLLBACK.sql` `401ae67d…b0db` ; migration `73c7aec1…4c3` ; **à recalculer si le fichier change**).
+- [ ] Relecture du SQL final : empreintes SHA-256 vérifiées sur le fichier téléchargé de GitHub (`merchants_private_production.sql` `ba8c9300…4502`, `merchants_private_ROLLBACK.sql` `50225d7a…86c1` ; migration `73c7aec1…4c3` ; **à recalculer si le fichier change**).
 - [ ] Webhook Stripe : test réel en **mode test** réussi (voir §6), ou acceptation écrite de cette limite.
 - [ ] Sauvegarde Supabase de moins de 24 h confirmée **et** procédure de restauration relue.
 - [ ] `http_checks.sh avant` exécuté sur la production et archivé.

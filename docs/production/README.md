@@ -38,3 +38,8 @@ Les colonnes vidées de `merchants` (legal_name, siret, vat_number, contact_emai
 - `merchants_private_REAPPLY_AFTER_REDUCED.sql` : retour au modèle fermé malgré `merchant_private` (aucune suppression ni écrasement) ; `merchants_private_REAPPLY_REPUBLISH.sql` : republication sans exposition.
 - Recette : `scripts/localdb/recette_reduced.sh` (7 profils, commandes, ancienne application dans un navigateur, 2 cycles).
 - Test Stripe RÉEL en mode test : `scripts/localdb/recette_stripe_cli.sh` (à lancer par le propriétaire ; non exécuté par l'assistant).
+
+## Garde anti-rejeu des retours arrière
+Les scripts `merchants_private_ROLLBACK*.sql` (brut, sûr, réduit) et `private_prospects_ROLLBACK.sql` **refusent de s'exécuter** sans confirmation typée
+dans la même exécution (`set zeeroo.confirm_rollback = '<nom>';`, valeur indiquée dans l'en-tête de chaque garde). Voir `SYNC-GITHUB-59-60.md`
+(analyse des PR #59 et #60, risques de rejeu, marche à suivre) et `docs/recette/rollback_guard_check.sh` (preuve).

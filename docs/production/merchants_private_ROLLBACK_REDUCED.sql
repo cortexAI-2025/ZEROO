@@ -18,6 +18,13 @@
 -- téléphone et lien de paiement vides tant que le mode réduit est actif ; la nouvelle application NE doit PAS être
 -- redéployée avant la réapplication.
 begin;
+-- GARDE ANTI-REJEU : ce script modifie la production (dépublie tous les commerces et restaure téléphone et lien de paiement dans merchants). Il refuse de s'exécuter sans confirmation explicite, typée
+-- dans la même exécution, AVANT le script : set zeeroo.confirm_rollback = 'merchants_private_reduced';
+do $$ begin
+  if coalesce(current_setting('zeeroo.confirm_rollback', true), '') <> 'merchants_private_reduced' then
+    raise exception 'Retour arrière non confirmé. Il dépublie tous les commerces et restaure téléphone et lien de paiement dans merchants. Si c''est voulu, taper d''abord : set zeeroo.confirm_rollback = ''merchants_private_reduced'';';
+  end if;
+end $$;
 set local lock_timeout = '5s';
 do $$ begin
   if to_regclass('public.merchant_private') is null then raise exception 'merchant_private absente : rien à réduire'; end if;
@@ -82,3 +89,4 @@ select (select count(phone) from public.merchants) as telephones_restaures,
        (select count(*) from admin_private.rollback_published_snapshot) as commerces_a_republier,
        (select count(*) from public.merchants where is_published) as publies_maintenant;
 commit;
+reset zeeroo.confirm_rollback;

@@ -4,6 +4,13 @@
 -- par l'API publique pour les commerces publiés. À n'utiliser que si la migration casse l'application.
 -- Aucune ligne de merchants n'est supprimée.
 begin;
+-- GARDE ANTI-REJEU : ce script modifie la production (réexpose à l’API publique les données administratives des commerces). Il refuse de s'exécuter sans confirmation explicite, typée
+-- dans la même exécution, AVANT le script : set zeeroo.confirm_rollback = 'merchants_private_raw';
+do $$ begin
+  if coalesce(current_setting('zeeroo.confirm_rollback', true), '') <> 'merchants_private_raw' then
+    raise exception 'Retour arrière non confirmé. Il réexpose à l’API publique les données administratives des commerces. Si c''est voulu, taper d''abord : set zeeroo.confirm_rollback = ''merchants_private_raw'';';
+  end if;
+end $$;
 set local lock_timeout = '5s';
 drop trigger if exists a00_merchants_private_legal_name on public.merchants;
 drop trigger if exists a00_merchants_private_siret on public.merchants;
@@ -92,3 +99,4 @@ delete from supabase_migrations.schema_migrations where version = '2026102912000
 commit;
 -- Côté code : revenir au commit précédent de l'application (alias merchant_* → colonnes) et de la
 -- fonction create-order (lecture de merchants.payment_link).
+reset zeeroo.confirm_rollback;

@@ -15,16 +15,16 @@ Projet de production : `rgxesocsvhgsqoehxhgt`. Les projets de recette ne sont ja
 
 ## Empreintes des fichiers (à recalculer si un fichier change)
 
-Sur le fichier **téléchargé depuis GitHub** (`sha256sum`), commit `49efd12` :
+Sur le fichier **téléchargé depuis GitHub** (`sha256sum`). Les scripts de production et la migration sont ceux du commit `49efd12` ; les scripts de **retour arrière** portent depuis le 30/10/2026 une **garde anti-rejeu** (confirmation typée, voir `SYNC-GITHUB-59-60.md`) et leurs empreintes ont changé en conséquence :
 
 | Fichier | SHA-256 |
 | --- | --- |
 | `supabase/migrations/20261029120000_merchants_private_details.sql` | `73c7aec13199997daeef08361939be1c6b144836caae12830f686a7ec8cf431c` |
 | `docs/production/merchants_private_production.sql` | `ba8c9300381958f386fc9b9fc983673f24ed82f693f2a695827f56e1c5644502` |
-| `docs/production/merchants_private_ROLLBACK.sql` | `401ae67dc00e1332d2d04140ba3b06d3fca5d69fc1a7f99fbc41473f2603b0db` |
-| `docs/production/merchants_private_ROLLBACK_SAFE.sql` | `5f31b7bcfcdf49f0824282a94fd29a77ca45f5f3b34d87064290f933d6654fb5` |
+| `docs/production/merchants_private_ROLLBACK.sql` | `50225d7adb14211f3924bc58a242684d68985347ad2fc838241c1204b4a486c1` |
+| `docs/production/merchants_private_ROLLBACK_SAFE.sql` | `d8371d4958c052e52a9d058f6b3a090d14aa0e8306b6c2044d699875d1866971` |
 | `docs/production/merchants_private_ROLLBACK_REPUBLISH.sql` | `3da7ad52ae8b7bb9f4c0817f4dd88a82414b38c01428d7cb018eb181bc0a44d1` |
-| `docs/production/merchants_private_ROLLBACK_REDUCED.sql` | `791a34d8215bd783758a7ad6496c39e648dd359c86e83b5e4dbeac0ca1213d4d` |
+| `docs/production/merchants_private_ROLLBACK_REDUCED.sql` | `0dc570a06d7240e97a72e7efa34eb444eac3f194185f1e1f0ff06a6972076fa0` |
 | `docs/production/merchants_private_REAPPLY_AFTER_REDUCED.sql` | `19cbbc8a92b87cb0198b7ab33817b40c15252d1aef5c73418e446da281cb11f7` |
 | `docs/production/merchants_private_REAPPLY_REPUBLISH.sql` | `5cf70a0ade9f4e5fbaff577b387e128748fcf1258a479fda014e75e0d5592f4c` |
 

@@ -7,6 +7,13 @@
 -- Conséquence : les commerces sont hors annuaire et n'acceptent plus de commandes tant qu'ils ne sont pas republiés.
 -- Préférer « corriger en avançant » (redéployer la nouvelle application) : ce retour arrière est un dernier recours.
 begin;
+-- GARDE ANTI-REJEU : ce script modifie la production (dépublie tous les commerces puis réexpose leurs données administratives aux clients et livreurs). Il refuse de s'exécuter sans confirmation explicite, typée
+-- dans la même exécution, AVANT le script : set zeeroo.confirm_rollback = 'merchants_private_safe';
+do $$ begin
+  if coalesce(current_setting('zeeroo.confirm_rollback', true), '') <> 'merchants_private_safe' then
+    raise exception 'Retour arrière non confirmé. Il dépublie tous les commerces puis réexpose leurs données administratives aux clients et livreurs. Si c''est voulu, taper d''abord : set zeeroo.confirm_rollback = ''merchants_private_safe'';';
+  end if;
+end $$;
 set local lock_timeout = '5s';
 create table if not exists admin_private.rollback_published_snapshot (
   merchant_id uuid primary key,
@@ -113,3 +120,4 @@ end $$;
 select (select count(*) from admin_private.rollback_published_snapshot) as commerces_a_republier,
        (select count(*) from public.merchants where is_published) as commerces_publies_maintenant;
 commit;
+reset zeeroo.confirm_rollback;

@@ -14,7 +14,7 @@ say() { echo "$*" | tee -a "$OUT/resume.txt"; }
 ok()  { say "OK    $1"; }
 ko()  { say "ÉCHEC $1"; fail=1; }
 sql() { psql -X -At -F'|' -v ON_ERROR_STOP=1 -q "$@"; }
-runfile() { psql -X -q -v ON_ERROR_STOP=1 -f "$1" > "$OUT/$2.log" 2>&1; }
+runfile() { PGOPTIONS="-c zeeroo.confirm_rollback=${CONFIRM:-}" psql -X -q -v ON_ERROR_STOP=1 -f "$1" > "$OUT/$2.log" 2>&1; }
 checks() { psql -X -At -F, -f docs/recette/checks.sql; }
 
 scripts/localdb/install_fake_pg_net.sh >/dev/null
@@ -97,7 +97,7 @@ done
 cycle() { # n
   say "== $1. Retour arrière puis réapplication (cycle $2)"
   psql -X -q -c "insert into supabase_migrations.schema_migrations(version,name) values ('$LAST','x') on conflict do nothing" >/dev/null 2>&1
-  runfile docs/production/merchants_private_ROLLBACK.sql rollback-$2 && ok "retour arrière appliqué" || { ko "retour arrière en échec"; return; }
+  CONFIRM=merchants_private_raw runfile docs/production/merchants_private_ROLLBACK.sql rollback-$2 && ok "retour arrière appliqué" || { ko "retour arrière en échec"; return; }
   checks > "$OUT/checks-rollback-$2.csv"; say "checks: $(cat "$OUT/checks-rollback-$2.csv")"
   sql -c "$FP_B" > "$OUT/valeurs-rollback-$2.txt"
   diff -q "$OUT/valeurs-avant.txt" "$OUT/valeurs-rollback-$2.txt" >/dev/null && ok "après retour arrière : colonnes brutes IDENTIQUES à l'état d'origine" || ko "retour arrière : valeurs différentes"
