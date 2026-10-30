@@ -24,13 +24,13 @@ Preuves : `docs/recette/preuves-e2e-web-2026-10-30/`.
 
 1. **Erreurs métier de `create-order` en « internal_error » (HTTP 500)** — 13 codes que l'application sait afficher (`price_changed`, `item_out_of_slot`,
    `pickup_unavailable`, `merchant_closed_at_slot`, `invalid_schedule`, `cash_*`, `courier_not_assigned`, `invalid_delivery_code`, `group_*`) arrivaient en
-   erreur générique. Corrigé dans `supabase/functions/_shared/http.ts` (HTTP 400 avec le code) + 24 tests. *Pas encore déployé en production.*
+   erreur générique. Corrigé dans `supabase/functions/_shared/http.ts` (HTTP 400 avec le code) + 24 tests. *Déployé le 30/10 pour `create-order` uniquement (version 31) ; les autres fonctions qui importent `_shared/http.ts` n'ont pas été redéployées.*
 2. **Hors connexion : chargement sans fin et erreur générique** — React Query met les lectures en pause hors ligne (ni succès ni erreur) ; les erreurs
    réseau s'affichaient « Une erreur est survenue ». Ajoutés : bandeau « hors connexion », message « Connexion impossible… » (`QueryState`,
    `errorKey`), délai maximal de 20 s sur les appels de fonctions avec erreur réseau dédiée, et actions utilisateur (commander, accepter, livrer)
    jamais mises en attente pour s'exécuter à retardement au retour du réseau (`networkMode: 'always'` pour les mutations).
 3. **Index sur 12 clés étrangères** (`supabase/migrations/20261030100000_fk_covering_indexes.sql`) : avertissement « unindexed_foreign_keys » des
-   Advisors. Validée par toute la chaîne pgTAP. *Non appliquée en production.*
+   Advisors. Validée par toute la chaîne pgTAP. *Appliquée à la main en production le 30/10 et enregistrée dans l'historique.*
 
 ## Ce qui a été vérifié sans anomalie
 
@@ -63,7 +63,7 @@ Preuves : `docs/recette/preuves-e2e-web-2026-10-30/`.
 | Protection mots de passe compromis désactivée (Supabase Auth) | faible | Réglage du tableau de bord Supabase. |
 | PostgREST renvoie HTTP 500 pour les exceptions SQL `P0002` | info | Message intact, l'application lit le message : pas d'impact utilisateur ; attendre ces 500 en supervision. |
 
-## Fichiers modifiés (branche locale `ccr-cbee9612-jsmce8-web-finalisation`, non poussée)
+## Fichiers modifiés (branche `ccr-cbee9612-jsmce8-web-finalisation`, fusionnée dans `main` par la PR #62)
 
 Application : `src/lib/network.ts` (+test), `src/lib/errors.ts`, `src/lib/functions.ts` (+test), `src/lib/query-client.ts` (+test), `src/components/OfflineBanner.tsx`,
 `src/components/ui/QueryState.tsx`, `src/app/_layout.tsx`, `src/i18n/locales/fr/translation.json`.
@@ -78,7 +78,7 @@ Documentation : `docs/PR-AUDIT-2026-10-30.md`.
 - `bcff7b1` Recette des notifications, index sur clés étrangères, audit des PR
 - (ce rapport : commit suivant)
 
-## Opérations nécessitant votre autorisation
+## Opérations nécessitant votre autorisation (liste d'origine ; statut au 30/10 soir en fin de section)
 
 1. **Pousser la branche et ouvrir la PR** (3 builds Vercel par push : à faire de préférence après le déploiement de #61).
 2. **Fusionner #61** (déploie l'application sur `app.zeeroo.fr`) — après levée de la limite Vercel et contrôle de la branche de production.
@@ -86,3 +86,5 @@ Documentation : `docs/PR-AUDIT-2026-10-30.md`.
 4. **Appliquer en production** la migration `20261030100000` (index) et, séparément, `20261029100000_admin_publish_guard` (PR #57).
 5. **Fermer** les PR #44, #45, #49 (voir `docs/PR-AUDIT-2026-10-30.md`) et trancher #48 (thème sombre) et #41 (QR/flyers).
 5. **Web Push** pour les nouvelles commandes (nouvelle fonctionnalité, clés VAPID à créer) — à décider.
+
+**Statut au 30/10/2026 (soir)** : 1 fait (PR #62 ouverte puis fusionnée) ; 2 fait (#61 fusionnée et déployée) ; 3 fait pour `create-order` seulement (version 31), les autres fonctions ne sont pas redéployées ; 4 fait (migrations `20261030100000` et `20261029100000` appliquées à la main) ; 5 fait (#44, #45, #49, #41 et #48 fermées, voir `docs/ROADMAP.md`) ; Web Push : non traité.

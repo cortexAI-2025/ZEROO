@@ -2,6 +2,8 @@
 
 Relevé en **lecture seule** le 29/10/2026 sur la production (`supabase_migrations.schema_migrations` + catalogue). **Rien n'a été exécuté, aucun `supabase db push`, aucun `migration repair`.**
 
+> **Mise à jour 30/10/2026 (soir)** : depuis ce relevé, `20261029120000`, `20261029100000` et `20261030100000` sont appliquées et enregistrées en production ; #59 / #60 sont fusionnées dans `main` et `20261028220000` n'y figure plus. Le tableau ci-dessous reste l'état du 29/10.
+
 ## Constat
 
 | Version | Production | Dépôt | Effet réel en production |
@@ -9,7 +11,7 @@ Relevé en **lecture seule** le 29/10/2026 sur la production (`supabase_migratio
 | 15 migrations `20261028090600` … `20261028184115` (PR #51) | enregistrées | présentes dans #51 | appliquées |
 | `20261025130000` affiliated_directory, `20261025140000` publication_guard | enregistrées **par le script ci-dessous** | présentes dans `main` | appliquées : 2 déclencheurs (`merchants_publication_guard`, `subscriptions_unpublish_on_lapse`) et 2 fonctions `nearby_merchants` / `search_merchants` avec `p_affiliated_only` |
 | **`20261028210227` reconcile_missing_affiliation_migrations** | enregistrée | **aucun fichier** | voir ci-dessous |
-| **`20261028220000` hide_directory_siret** | **absente** | présente dans #51 (et #59, #60) | **non appliquée** : pas de colonne `public_id`, aucune lecture directe de l'annuaire par `anon` |
+| **`20261028220000` hide_directory_siret** | **absente** | était dans #51 ; supprimée de `main` par la fusion de #60 (30/10) | **non appliquée** : pas de colonne `public_id`, aucune lecture directe de l'annuaire par `anon` |
 | `20261029110000` private_prospects | enregistrée (instructions non conservées) | présente dans #59 / #60 | appliquée : fonctions d'annuaire supprimées (0 restante), `anon` et `authenticated` sans lecture de `directory_businesses` / `directory_claims` |
 
 ## 20261028210227 — reconstitution fidèle
