@@ -1,0 +1,10 @@
+OK     [NAVIGATEUR] écran boutique : carte « Numéro professionnel public » affichée
+OK     [NAVIGATEUR] le restaurateur relit son numéro public (colonne calculée) — valeur lue
+OK     [NAVIGATEUR] écran boutique chargé
+OK     [NAVIGATEUR] mini-site AVANT autorisation : ni numéro public, ni téléphone privé, ni SIRET, pas de bouton « Appeler »
+OK     [NAVIGATEUR] mini-site APRÈS autorisation : bouton « Appeler » affiché
+OK     [NAVIGATEUR] mini-site après autorisation : téléphone privé et SIRET toujours absents
+OK     [NAVIGATEUR] autorisation retirée : le bouton « Appeler » disparaît du mini-site
+OK     [NAVIGATEUR] nouveau numéro enregistré (API) et relu après rechargement
+OK     [NAVIGATEUR] aucune erreur JavaScript dans la page
+# Bilan navigateur : 9 OK, 0 échec(s)

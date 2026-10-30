@@ -1,0 +1,11 @@
+# Recette HTTP + fonctions — phase apres — 2026-10-29T12:05:19.408Z — pile locale http://127.0.0.1:54321
+OK               [RÉEL] create-order sans jeton client — HTTP 401
+OK               [RÉEL] ANCIENNE fonction create-order après migration : refus « merchant_no_payment_link » (attendu : fonction à redéployer AVEC la migration) — HTTP 400
+INFO             [RÉEL] create-order espèces : HTTP 500 internal_error (le restaurant de recette n'accepte pas les espèces : comportement identique avant/après)
+OK               [RÉEL] publication refusée sans abonnement actif — HTTP 403
+OK               [SIMULATION] publication acceptée : abonnement actif (écrit en SQL) + encaissement configuré (lien de paiement) — HTTP 200
+OK               [SIMULATION] résiliation : la fiche est dépubliée automatiquement (déclencheur) — is_published=false
+OK               [STRIPE-MOCK] billing checkout : session créée par stripe-mock — URL de paiement renvoyée
+OK               [SIMULATION] webhook : signature invalide refusée — HTTP 400
+OK               [SIMULATION] webhook : événement signé avec le secret LOCAL accepté (ne prouve pas la réception d'un webhook Stripe réel) — HTTP 200
+# Bilan : 8 OK, 0 échec(s), 0 erreur(s) technique(s)

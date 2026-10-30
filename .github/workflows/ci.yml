@@ -79,6 +79,11 @@ jobs:
           PGUSER: postgres
           PGHOST: localhost
         run: scripts/localdb/run.sh
+      - name: Migration sur base peuplée (recopie des données administratives des commerces)
+        env:
+          PGUSER: postgres
+          PGHOST: localhost
+        run: scripts/localdb/backfill_check.sh
 
   # Parcours du site web dans Chromium avec une API simulée (annuaire public, mini-site, précommandes).
   web-smoke:

@@ -1,0 +1,40 @@
+BEGIN
+SET
+SET
+SELECT 1
+DO
+ALTER TABLE
+GRANT
+CREATE TABLE
+ALTER TABLE
+REVOKE
+INSERT 0 2
+CREATE FUNCTION
+UPDATE 2
+CREATE FUNCTION
+REVOKE
+DO
+CREATE FUNCTION
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE VIEW
+REVOKE
+GRANT
+DO
+INSERT 0 1
+ commerces_avant | commerces_apres | avec_donnees_avant | lignes_privees 
+-----------------+-----------------+--------------------+----------------
+               2 |               2 |                  2 |              2
+(1 row)
+
+COMMIT

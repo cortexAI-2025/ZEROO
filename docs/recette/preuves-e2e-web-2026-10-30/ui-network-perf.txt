@@ -1,0 +1,11 @@
+INFO   4G lente + CPU x4 : contenu affiché en 6143 ms, FCP 5540 ms, DCL 5014 ms, 825 Ko transférés (compressés)
+OK     P1 Page d’accueil lisible en moins de 15 s sur 4G lente avec processeur ralenti (6.1 s)
+OK     P2 Transfert initial inférieur à 2,5 Mo (0.81 Mo)
+OK     N1 En ligne : aucun bandeau hors connexion
+OK     N2 Hors connexion : le bandeau apparaît aussitôt
+OK     N3 Écran jamais chargé, hors ligne : message « Connexion impossible… » (au lieu d’un chargement sans fin)
+OK     N3 Aucun message d’erreur générique trompeur
+OK     N4 Retour de la connexion : le bandeau disparaît
+OK     N5 Retour du réseau : la requête reprend seule et l’écran se charge
+
+# Bilan : 8 OK, 0 ÉCHEC

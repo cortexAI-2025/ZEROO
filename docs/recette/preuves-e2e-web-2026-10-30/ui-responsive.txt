@@ -1,0 +1,101 @@
+OK     client / mobile : connexion par l’interface
+OK     client / mobile : /explore
+OK     client / mobile : /orders
+OK     client / mobile : /cart
+OK     client / mobile : /loyalty
+OK     client / mobile : /account
+OK     client / mobile : /favorites
+OK     client / mobile : /addresses
+OK     client / mobile : /m/chez-samir
+OK     client / mobile : aucune erreur JavaScript
+OK     client / tablette : connexion par l’interface
+OK     client / tablette : /explore
+OK     client / tablette : /orders
+OK     client / tablette : /cart
+OK     client / tablette : /loyalty
+OK     client / tablette : /account
+OK     client / tablette : /favorites
+OK     client / tablette : /addresses
+OK     client / tablette : /m/chez-samir
+OK     client / tablette : aucune erreur JavaScript
+OK     client / ordinateur : connexion par l’interface
+OK     client / ordinateur : /explore
+OK     client / ordinateur : /orders
+OK     client / ordinateur : /cart
+OK     client / ordinateur : /loyalty
+OK     client / ordinateur : /account
+OK     client / ordinateur : /favorites
+OK     client / ordinateur : /addresses
+OK     client / ordinateur : /m/chez-samir
+OK     client / ordinateur : aucune erreur JavaScript
+OK     restaurant / mobile : connexion par l’interface
+OK     restaurant / mobile : /pro
+OK     restaurant / mobile : /pro/menu
+OK     restaurant / mobile : /pro/shop
+OK     restaurant / mobile : /pro/stats
+OK     restaurant / mobile : /pro/account
+OK     restaurant / mobile : /pro/hours
+OK     restaurant / mobile : /pro/info
+OK     restaurant / mobile : /pro/delivery
+OK     restaurant / mobile : /pro/happy-hours
+OK     restaurant / mobile : /pro/baskets
+OK     restaurant / mobile : /pro/group-orders
+OK     restaurant / mobile : /pro/minisite
+OK     restaurant / mobile : /pro/qr
+OK     restaurant / mobile : /pro/history
+OK     restaurant / mobile : aucune erreur JavaScript
+OK     restaurant / tablette : connexion par l’interface
+OK     restaurant / tablette : /pro
+OK     restaurant / tablette : /pro/menu
+OK     restaurant / tablette : /pro/shop
+OK     restaurant / tablette : /pro/stats
+OK     restaurant / tablette : /pro/account
+OK     restaurant / tablette : /pro/hours
+OK     restaurant / tablette : /pro/info
+OK     restaurant / tablette : /pro/delivery
+OK     restaurant / tablette : /pro/happy-hours
+OK     restaurant / tablette : /pro/baskets
+OK     restaurant / tablette : /pro/group-orders
+OK     restaurant / tablette : /pro/minisite
+OK     restaurant / tablette : /pro/qr
+OK     restaurant / tablette : /pro/history
+OK     restaurant / tablette : aucune erreur JavaScript
+OK     restaurant / ordinateur : connexion par l’interface
+OK     restaurant / ordinateur : /pro
+OK     restaurant / ordinateur : /pro/menu
+OK     restaurant / ordinateur : /pro/shop
+OK     restaurant / ordinateur : /pro/stats
+OK     restaurant / ordinateur : /pro/account
+OK     restaurant / ordinateur : /pro/hours
+OK     restaurant / ordinateur : /pro/info
+OK     restaurant / ordinateur : /pro/delivery
+OK     restaurant / ordinateur : /pro/happy-hours
+OK     restaurant / ordinateur : /pro/baskets
+OK     restaurant / ordinateur : /pro/group-orders
+OK     restaurant / ordinateur : /pro/minisite
+OK     restaurant / ordinateur : /pro/qr
+OK     restaurant / ordinateur : /pro/history
+OK     restaurant / ordinateur : aucune erreur JavaScript
+OK     livreur / mobile : connexion par l’interface
+OK     livreur / mobile : /livreur
+OK     livreur / mobile : /livreur/restaurants
+OK     livreur / mobile : /livreur/revenus
+OK     livreur / mobile : /livreur/compte
+OK     livreur / mobile : /livreur/profil
+OK     livreur / mobile : aucune erreur JavaScript
+OK     livreur / tablette : connexion par l’interface
+OK     livreur / tablette : /livreur
+OK     livreur / tablette : /livreur/restaurants
+OK     livreur / tablette : /livreur/revenus
+OK     livreur / tablette : /livreur/compte
+OK     livreur / tablette : /livreur/profil
+OK     livreur / tablette : aucune erreur JavaScript
+OK     livreur / ordinateur : connexion par l’interface
+OK     livreur / ordinateur : /livreur
+OK     livreur / ordinateur : /livreur/restaurants
+OK     livreur / ordinateur : /livreur/revenus
+OK     livreur / ordinateur : /livreur/compte
+OK     livreur / ordinateur : /livreur/profil
+OK     livreur / ordinateur : aucune erreur JavaScript
+
+# Bilan : 99 OK, 0 ÉCHEC

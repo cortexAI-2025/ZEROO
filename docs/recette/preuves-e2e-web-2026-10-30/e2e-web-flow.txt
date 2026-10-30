@@ -1,0 +1,65 @@
+# Recette de bout en bout — 2026-10-30T13:22:43.439Z — pile locale http://127.0.0.1:54321
+OK      Client : le menu du restaurant est lisible et contient un article commandable
+OK      Livreur : se déclare disponible — HTTP 200
+
+## A. Livraison : client → restaurant → livreur → remise → livraison → historique
+OK      A1 Client : crée une commande en livraison — HTTP 200 
+OK      A1 Statut « placed » (envoyée au restaurant), mode livraison — placed/delivery
+OK      A1 Total recalculé côté base (2 × prix de l’article) — 1900 / 1900
+OK      A1 Isolation : un autre client ne voit pas cette commande
+OK      A2 Restaurant : reçoit la commande
+OK      A2 Isolation : un autre restaurant ne la voit pas
+OK      A2 Restaurant : accepte (15 min) — HTTP 200 
+OK      A3 Livreur : la mission apparaît dans les missions disponibles — 1 mission(s)
+OK      A3 Livreur : accepte la mission — HTTP 200 
+OK      A3 Double acceptation : refusée avec le code métier « mission_unavailable » (PostgREST renvoie HTTP 500 pour P0002 ; l’application lit le message) — HTTP 500 mission_unavailable
+OK      A4 Restaurant : passe en préparation — HTTP 200
+OK      A4 Restaurant : commande prête — HTTP 200
+OK      A4 Remise au livreur avec un mauvais code : refusée — HTTP 400
+OK      A4 Restaurant : remet la commande au livreur (code de retrait) — HTTP 200 
+OK      A5 Livraison avec un mauvais code client : refusée — HTTP 400
+OK      A5 Client : voit son code de livraison
+OK      A5 Isolation : le code de livraison n’est pas lisible par un autre client
+OK      A5 Livreur : confirme la livraison avec le code du client — HTTP 200 
+OK      A6 Client : voit la commande terminée — delivered
+OK      A6 Client : la commande figure dans son historique
+OK      A6 Livreur : revenus / historique accessibles — HTTP 200
+OK      A6 Restaurant : synthèse du jour accessible — HTTP 200
+
+## B. Click & collect sans livreur
+OK      B1 Client : crée une commande à emporter — HTTP 200 
+OK      B1 Aucun livreur affecté (retrait sur place)
+OK      B2 Restaurant : accepte
+OK      B2 Le livreur ne voit pas une commande à emporter
+OK      B3 Restaurant : commande prête
+OK      B3 Retrait avec un mauvais code : refusé — HTTP 400
+OK      B3 Retrait avec le bon code — HTTP 200
+OK      B4 Client : commande terminée (collectée)
+
+## C. Annulation par le client
+OK      C1 Client : crée une commande — HTTP 200
+OK      C2 Un autre client ne peut pas l’annuler — HTTP 404
+OK      C2 Client : annule avant acceptation — HTTP 200
+OK      C3 Seconde annulation : refusée proprement (409) — HTTP 409
+OK      C3 Le restaurant ne peut plus accepter une commande annulée — HTTP 409
+OK      C4 Annulation après acceptation : refusée (409) — HTTP 409
+
+## D. Refus par le restaurant
+OK      D1 Un autre restaurant ne peut pas décider — HTTP 404
+OK      D2 Restaurant : refuse avec motif — HTTP 200 
+OK      D2 Client : voit le refus et son motif — refused
+
+## E. Cas d’erreur
+OK      E1 create-order sans jeton : 401
+OK      E2 Panier vide : refusé
+OK      E3 Quantité nulle : refusée
+OK      E4 Article inexistant : refusé
+OK      E5 Prix annoncé falsifié : refusé avec « price_changed » (prix recalculés en base) — HTTP 400 price_changed
+OK      E6 Un compte restaurant ne peut pas commander (espace verrouillé)
+OK      E7 Un compte livreur ne peut pas commander
+OK      E8 Livraison hors zone : refusée — HTTP 400 delivery_out_of_range
+OK      E9 Livraison sans livreur disponible : refusée — HTTP 400 no_courier_available
+OK      E10 Un client ne peut pas accepter une mission
+OK      E11 Un client ne peut pas modifier le statut d’une commande
+
+# Bilan : 52 OK, 0 ÉCHEC

@@ -1,0 +1,8 @@
+OK     [ANCIENNE APP, MODE RÉDUIT] boutique : « Lien actif » affiché (le lien de paiement est à nouveau lisible)
+OK     [ANCIENNE APP, MODE RÉDUIT] formulaire : SIRET vide (donnée administrative non restaurée dans merchants)
+OK     [ANCIENNE APP, MODE RÉDUIT] enregistrer sans changement : champs administratifs privés INCHANGÉS
+OK     [ANCIENNE APP, MODE RÉDUIT] enregistrer sans changement : téléphone conservé dans merchants
+OK     [ANCIENNE APP, MODE RÉDUIT] SIRET saisi dans l'ancienne application : enregistré dans merchant_private
+OK     [ANCIENNE APP, MODE RÉDUIT] SIRET saisi : JAMAIS écrit dans merchants (donc invisible des clients et livreurs)
+OK     [ANCIENNE APP, MODE RÉDUIT] aucune erreur JavaScript
+# Bilan ancienne application, mode réduit : 7 OK, 0 échec(s)

@@ -1,0 +1,6 @@
+# Nouvelle application + nouvelles fonctions contre une base en MODE RÉDUIT (combinaison à ÉVITER) — 2026-10-29T12:48:10Z
+# Les « ÉCHEC » ci-dessous sont les attentes du scénario « modèle fermé » : en mode réduit, téléphone et lien sont dans merchants, pas dans merchant_private.
+OK               [RÉEL] create-order carte (lien de paiement du restaurant) — commande créée 681c74ff
+ÉCHEC            [RÉEL] page commande, nouvelle application — HTTP 200 {"name":"Chez Samir","slug":"chez-samir","phone":null,"payment_link":null}
+ÉCHEC            [RÉEL] ancienne application après migration — {"name":"Chez Samir","slug":"chez-samir","phone":"0102030405","payment_link":"https://pay.example.test/recette-samir"}
+# Bilan : 10 OK, 2 échec(s), 0 erreur(s) technique(s)

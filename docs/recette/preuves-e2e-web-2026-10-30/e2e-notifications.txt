@@ -1,0 +1,33 @@
+# Recette des notifications — 2026-10-30T13:22:51.556Z — pile locale http://127.0.0.1:54321
+
+## Sécurité de l’appel
+OK      N0 Sans secret : 401 (la fonction n’est pas appelable publiquement)
+OK      N0 Mauvais secret : 401
+OK      N0 Commande inconnue : 200, aucun envoi
+
+## Retrait : commerçant et client
+OK      N1 Nouvelle commande : seul le commerçant est notifié — Nouvelle commande 🔔
+OK      N1 …titre « Nouvelle commande » et ouverture du tableau de bord
+OK      N2 Commande acceptée : seul le client est notifié — Commande acceptée ✅
+OK      N2 …un appui ouvre la commande
+OK      N3 Commande prête : le client est prévenu — C’est prêt ! 🎉
+
+## Refus et annulation
+OK      N4 Refus : le client reçoit le motif — Chez Samir n’a pas pu accepter votre commande (Rupture de stock). Vous n’avez pas été débité.
+OK      N5 Annulation par le client : le commerçant est prévenu — Commande annulée
+
+## Livraison : livreur et client
+OK      N6 Mission disponible : le livreur en ligne est notifié — Nouvelle mission 🛵
+OK      N6 L’adresse de livraison n’est jamais envoyée au service de notification (ville seulement)
+OK      N6 Livreur indisponible : aucune notification
+OK      N7 Livreur affecté : le client est prévenu — Karim prend votre livraison 🛵
+OK      N8 En route : le client est prévenu — En route 🛵
+OK      N9 Livrée : le client est prévenu — Commande livrée 🎉
+
+## Robustesse
+OK      R1 Destinataire sans appareil enregistré : 200, aucun envoi, aucune erreur
+OK      R2 Service Expo en panne : la fonction répond 200 (une notification manquée ne casse jamais une commande) — HTTP 200
+OK      R3 Appareil désinstallé (DeviceNotRegistered) : son jeton est supprimé
+OK      R4 230 appareils : tous reçoivent le message (lots de 100) — 230 reçus
+
+# Bilan : 20 OK, 0 ÉCHEC

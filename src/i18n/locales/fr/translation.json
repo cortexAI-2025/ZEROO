@@ -6,6 +6,8 @@
     "loading": "Chargement…",
     "or": "ou",
     "genericError": "Une erreur est survenue. Réessayez dans un instant.",
+    "networkError": "Connexion impossible. Vérifiez votre connexion Internet, puis réessayez.",
+    "offlineBanner": "Vous êtes hors connexion : les informations affichées peuvent ne pas être à jour.",
     "comingSoon": "Bientôt disponible",
     "save": "Enregistrer",
     "saved": "Enregistré",
@@ -1031,6 +1033,18 @@
         "rejected": "Refusée",
         "cancelled": "Annulée"
       }
+    },
+    "publicPhone": {
+      "title": "Numéro professionnel public",
+      "intro": "Un numéro de restaurant que vos clients peuvent appeler depuis votre mini-site. Il est distinct du téléphone de contact de votre compte, qui reste privé.",
+      "label": "Numéro professionnel",
+      "authorize": "Afficher ce numéro sur mon mini-site",
+      "authorizeHint": "Vous pouvez retirer cette autorisation à tout moment : le numéro disparaît aussitôt du mini-site.",
+      "needsNumber": "Enregistrez d'abord un numéro pour pouvoir le publier.",
+      "saved": "Numéro enregistré.",
+      "published": "Publié sur votre mini-site",
+      "private": "Non publié",
+      "invalid": "Numéro de téléphone invalide."
     }
   },
   "account": {

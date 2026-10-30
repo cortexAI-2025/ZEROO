@@ -1,0 +1,104 @@
+# Scénarios PR #60 — 2026-10-29T12:36:31.188Z — http://127.0.0.1:54321 — avec écritures de recette
+OK               matrice anon : legal_name — null
+OK               matrice anon : siret — null
+OK               matrice anon : vat_number — null
+OK               matrice anon : contact_email — null
+OK               matrice anon : phone — null
+OK               matrice anon : payment_link — null
+OK               matrice anon : public_phone — null
+OK               matrice client2 : legal_name — null
+OK               matrice client2 : siret — null
+OK               matrice client2 : vat_number — null
+OK               matrice client2 : contact_email — null
+OK               matrice client2 : phone — null
+OK               matrice client2 : payment_link — null
+OK               matrice client2 : public_phone — null
+OK               matrice commercant2 : legal_name — null
+OK               matrice commercant2 : siret — null
+OK               matrice commercant2 : vat_number — null
+OK               matrice commercant2 : contact_email — null
+OK               matrice commercant2 : phone — null
+OK               matrice commercant2 : payment_link — null
+OK               matrice commercant2 : public_phone — null
+OK               matrice client : legal_name — null
+OK               matrice client : siret — null
+OK               matrice client : vat_number — null
+OK               matrice client : contact_email — null
+OK               matrice client : phone — visible
+OK               matrice client : payment_link — visible
+OK               matrice client : public_phone — null
+OK               matrice livreur : legal_name — null
+OK               matrice livreur : siret — null
+OK               matrice livreur : vat_number — null
+OK               matrice livreur : contact_email — null
+OK               matrice livreur : phone — visible
+OK               matrice livreur : payment_link — visible
+OK               matrice livreur : public_phone — null
+OK               matrice commercant : legal_name — visible
+OK               matrice commercant : siret — visible
+OK               matrice commercant : vat_number — visible
+OK               matrice commercant : contact_email — visible
+OK               matrice commercant : phone — visible
+OK               matrice commercant : payment_link — visible
+OK               matrice commercant : public_phone — visible
+OK               matrice admin : legal_name — visible
+OK               matrice admin : siret — visible
+OK               matrice admin : vat_number — visible
+OK               matrice admin : contact_email — visible
+OK               matrice admin : phone — visible
+OK               matrice admin : payment_link — visible
+OK               matrice admin : public_phone — visible
+OK               colonnes brutes anon — 1 ligne(s), aucune valeur
+OK               colonnes brutes client2 — 1 ligne(s), aucune valeur
+OK               colonnes brutes commercant2 — 2 ligne(s), aucune valeur
+OK               colonnes brutes client — 1 ligne(s), aucune valeur
+OK               colonnes brutes livreur — 1 ligne(s), aucune valeur
+OK               colonnes brutes commercant — 1 ligne(s), aucune valeur
+OK               colonnes brutes admin — 2 ligne(s), aucune valeur
+OK               non publié / merchants anon — invisible
+OK               non publié / public_merchants anon — absent
+OK               non publié / merchants client2 — invisible
+OK               non publié / public_merchants client2 — absent
+OK               non publié / merchants commercant2 — visible (propriétaire/admin)
+OK               non publié / public_merchants commercant2 — absent
+OK               non publié / merchants client — invisible
+OK               non publié / public_merchants client — absent
+OK               non publié / merchants livreur — invisible
+OK               non publié / public_merchants livreur — absent
+OK               non publié / merchants commercant — invisible
+OK               non publié / public_merchants commercant — absent
+OK               non publié / merchants admin — visible (propriétaire/admin)
+OK               non publié / public_merchants admin — absent
+OK               public_merchants anon — ligne lisible, colonnes exactes
+OK               public_merchants client2 — ligne lisible, colonnes exactes
+OK               public_merchants client — ligne lisible, colonnes exactes
+OK               public_merchants commercant — ligne lisible, colonnes exactes
+OK               public_merchants admin — ligne lisible, colonnes exactes
+OK               merchant_private fermée pour anon — HTTP 401
+OK               directory_businesses fermée pour anon — HTTP 401
+OK               directory_claims fermée pour anon — HTTP 401
+OK               merchant_private fermée pour client2 — HTTP 403
+OK               directory_businesses fermée pour client2 — HTTP 403
+OK               directory_claims fermée pour client2 — HTTP 403
+OK               merchant_private fermée pour commercant2 — HTTP 403
+OK               directory_businesses fermée pour commercant2 — HTTP 403
+OK               directory_claims fermée pour commercant2 — HTTP 403
+OK               merchant_private fermée pour client — HTTP 403
+OK               directory_businesses fermée pour client — HTTP 403
+OK               directory_claims fermée pour client — HTTP 403
+OK               merchant_private fermée pour livreur — HTTP 403
+OK               directory_businesses fermée pour livreur — HTTP 403
+OK               directory_claims fermée pour livreur — HTTP 403
+OK               merchant_private fermée pour commercant — HTTP 403
+OK               directory_businesses fermée pour commercant — HTTP 403
+OK               directory_claims fermée pour commercant — HTTP 403
+OK               merchant_private fermée pour admin — HTTP 403
+OK               directory_businesses fermée pour admin — HTTP 403
+OK               directory_claims fermée pour admin — HTTP 403
+OK               admin_directory_claims — admin OK, client refusé
+OK               numéro public autorisé : visible de l'anonyme
+OK               numéro public autorisé : téléphone privé toujours masqué
+OK               autorisation retirée : numéro disparu pour l'anonyme
+OK               écriture croisée refusée (0 ligne)
+OK               SIRET de Chez Samir inchangé
+# Bilan : 102 OK, 0 échec(s), 0 erreur(s) technique(s)

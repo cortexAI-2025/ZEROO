@@ -1,0 +1,2 @@
+30000000-0000-0000-0000-000000000001|Samir Food Recette SAS|73282932000074|FR32732829320|contact-recette@example.test|0102030405|https://pay.example.test/recette-samir
+31000000-0000-0000-0000-000000000001|Recette Brouillon SARL|12345678200010|FR12123456782|brouillon-recette@example.test|0199887766|https://pay.example.test/recette-brouillon
