@@ -53,6 +53,20 @@ describe('callFunction', () => {
     });
   });
 
+  it('délai dépassé pendant la lecture du corps : erreur réseau, jamais une réponse vide en succès', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new DOMException('timeout', 'TimeoutError');
+      },
+    } as unknown as Response);
+    await expect(callFunction('create-order', {})).rejects.toMatchObject({
+      message: 'network_error',
+      status: 0,
+    });
+  });
+
   it('hors ligne ou délai dépassé : erreur réseau dédiée, jamais une erreur générique', async () => {
     jest.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
     const error = await callFunction('create-order', {}).catch((e) => e);

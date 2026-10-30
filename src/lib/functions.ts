@@ -18,6 +18,7 @@ const TIMEOUT_MS = 20_000;
 export async function callFunction<T>(name: string, body: unknown): Promise<T> {
   const { data } = await supabase.auth.getSession();
   let response: Response;
+  let json: { error?: string };
   try {
     response = await fetch(`${env.functionsUrl}/${name}`, {
       method: 'POST',
@@ -29,11 +30,17 @@ export async function callFunction<T>(name: string, body: unknown): Promise<T> {
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
+    // Le délai court aussi pendant la lecture du corps : une coupure à ce stade est une erreur réseau,
+    // pas une réponse vide ; seul un corps illisible (HTML d'un proxy, par exemple) devient `{}`.
+    json = (await response.json().catch((e: unknown) => {
+      if (e instanceof Error && ['AbortError', 'TimeoutError', 'TypeError'].includes(e.name))
+        throw e;
+      return {};
+    })) as { error?: string };
   } catch {
     // Hors ligne, serveur injoignable ou délai dépassé : message dédié (voir isNetworkError).
     throw new FunctionError('network_error', 0);
   }
-  const json = (await response.json().catch(() => ({}))) as { error?: string };
   if (!response.ok) throw new FunctionError(json.error ?? 'internal_error', response.status);
   return json as T;
 }
