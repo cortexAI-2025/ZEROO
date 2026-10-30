@@ -7,6 +7,11 @@
     return e;
   };
   const date = (v) => (v ? new Date(v).toLocaleString('fr-FR') : '—');
+  // Codes d'erreur métier renvoyés par le serveur, expliqués en français.
+  const SERVER_ERRORS = {
+    merchant_not_affiliated:
+      'le commerce n’a pas d’abonnement actif ou de moyen d’encaissement configuré (lien de paiement ou espèces) : il ne peut pas être publié.',
+  };
   const statuses = {
     active: 'Actif',
     suspended: 'Suspendu',
@@ -91,7 +96,8 @@
         await save(Object.fromEntries(new FormData(f)), request, state);
         completed = true;
       } catch (error) {
-        state.textContent = 'Action impossible : ' + (error.message || error);
+        state.textContent =
+          'Action impossible : ' + (SERVER_ERRORS[error.message] || error.message || error);
       } finally {
         submit.disabled = completed;
       }

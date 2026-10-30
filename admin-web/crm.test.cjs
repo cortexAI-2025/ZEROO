@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { JSDOM } = require('jsdom');
-function setup(actionData = {}, errorAction = null) {
+function setup(actionData = {}, errorAction = null, errorMessage = 'Refus serveur') {
   const dom = new JSDOM('<main id="root"></main>', {
     url: 'https://admin.example.test',
     runScripts: 'outside-only',
@@ -17,7 +17,7 @@ function setup(actionData = {}, errorAction = null) {
       assert.equal(name, 'admin_console');
       calls.push(args);
       return args.p_action === errorAction
-        ? { error: { message: 'Refus serveur' } }
+        ? { error: { message: errorMessage } }
         : { data: actionData[args.p_action] || { ok: true, id: 'record' } };
     },
   };
@@ -277,6 +277,22 @@ test('claims review cannot offer acceptance without a matching registered restau
     assert.equal(review.args.p_claim_id, 'claim1');
     assert.equal(review.args.p_merchant_id, null);
     assert.match(s.root.textContent, /Décision enregistrée/);
+  } finally {
+    s.close();
+  }
+});
+test('a publication refused for lack of affiliation is explained in French', async () => {
+  const s = setup({}, 'contact_create', 'merchant_not_affiliated');
+  try {
+    s.crm.contactForm(s.root, s.client);
+    await submit(s, {
+      email: 'client@example.test',
+      subject: 'Objet',
+      body: 'Message',
+      reason: 'Support',
+    });
+    assert.match(s.root.textContent, /Action impossible : le commerce n’a pas d’abonnement actif/);
+    assert.doesNotMatch(s.root.textContent, /merchant_not_affiliated/);
   } finally {
     s.close();
   }
