@@ -6,6 +6,8 @@
     "loading": "Chargement…",
     "or": "ou",
     "genericError": "Une erreur est survenue. Réessayez dans un instant.",
+    "networkError": "Connexion impossible. Vérifiez votre connexion Internet, puis réessayez.",
+    "offlineBanner": "Vous êtes hors connexion : les informations affichées peuvent ne pas être à jour.",
     "comingSoon": "Bientôt disponible",
     "save": "Enregistrer",
     "saved": "Enregistré",

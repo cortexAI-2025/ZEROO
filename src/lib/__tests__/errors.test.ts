@@ -10,6 +10,11 @@ describe('errorKey', () => {
     );
   });
 
+  it('affiche un message dédié quand le réseau est indisponible', () => {
+    expect(errorKey(new TypeError('Failed to fetch'))).toBe('common.networkError');
+    expect(errorKey({ message: 'network_error' })).toBe('common.networkError');
+  });
+
   it('retombe sur le message générique', () => {
     expect(errorKey({ message: 'boom' })).toBe('common.genericError');
     expect(errorKey(null)).toBe('common.genericError');

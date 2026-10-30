@@ -1,0 +1,76 @@
+# Recette abonnements Start/Pro — 2026-10-30T13:09:25.939Z — pile locale http://127.0.0.1:54321
+OK      Préparation : le restaurant de recette accepte les espèces — HTTP 200
+
+## Restaurant — droits par formule et cycle de vie
+OK      M1 Sans abonnement : publication refusée — merchant_not_affiliated
+OK      M2 Essai gratuit, formule Start : publication acceptée
+OK      M3 Start : mini-site (slogan) refusé « minisite_requires_pro » — minisite_requires_pro
+OK      M3 Start : commandes groupées refusées « feature_requires_pro » — feature_requires_pro
+OK      M3 Start : statistiques avancées refusées — feature_requires_pro
+OK      M3 Start : Happy Hours refusées « feature_requires_pro » — feature_requires_pro
+OK      M3 Start : synthèse du jour accessible (fonctions de base)
+OK      M3 Start : la fiche publique n’a pas de mini-site — f
+OK      M4 Pro actif : mini-site autorisé
+OK      M4 Pro actif : commandes groupées autorisées
+OK      M4 Pro actif : statistiques avancées autorisées
+OK      M4 Pro actif : Happy Hours : plus de refus de formule (autre validation éventuelle) — invalid_happy_hour
+OK      M4 Pro : la fiche publique expose le mini-site — t
+OK      M5 Rétrogradation Pro → Start : modification du mini-site refusée — minisite_requires_pro
+OK      M5 Rétrogradation : le mini-site n’est plus exposé publiquement
+OK      M5 Rétrogradation : la fiche reste publiée (abonnement toujours actif)
+OK      M6 impayé : la fiche est dépubliée automatiquement
+OK      M6 impayé : republication refusée — merchant_not_affiliated
+OK      M6 impayé : absente de l’annuaire public
+OK      M6 impayé (unpaid) : la fiche est dépubliée automatiquement
+OK      M6 impayé (unpaid) : republication refusée — merchant_not_affiliated
+OK      M6 impayé (unpaid) : absente de l’annuaire public
+OK      M6 résilié : la fiche est dépubliée automatiquement
+OK      M6 résilié : republication refusée — merchant_not_affiliated
+OK      M6 résilié : absente de l’annuaire public
+OK      M6 paiement initial expiré : la fiche est dépubliée automatiquement
+OK      M6 paiement initial expiré : republication refusée — merchant_not_affiliated
+OK      M6 paiement initial expiré : absente de l’annuaire public
+OK      M6 en pause : la fiche est dépubliée automatiquement
+OK      M6 en pause : republication refusée — merchant_not_affiliated
+OK      M6 en pause : absente de l’annuaire public
+OK      M7 Renouvellement / régularisation (retour à « active ») : republication possible par le restaurateur
+OK      M7 Essai terminé sans paiement (past_due) : dépublié
+OK      M8 Les abonnements ne sont pas lisibles par un anonyme
+OK      M8 Un autre restaurant ne voit pas cet abonnement
+OK      M8 Un restaurateur ne peut pas modifier lui-même son abonnement — HTTP 403
+OK      M8 …ni en créer un faux — HTTP 403
+
+## Livreur — Start / Pro
+OK      C0 Deux livraisons à pourvoir — ok / ok
+OK      C1 Livreur Start (essai) : accepte une première course
+OK      C2 Livreur Start : une seconde course simultanée est refusée « courier_at_capacity » — courier_at_capacity
+OK      C3 Livreur Pro : plusieurs courses simultanées autorisées (ou refus de groupage « mission_not_compatible ») — HTTP 200
+OK      C4 Abonnement livreur résilié : aucune mission proposée
+OK      C4 Abonnement livreur résilié : acceptation refusée — courier_unavailable
+OK      C5 Un client ne lit aucun abonnement de livreur
+OK      C5 Un livreur ne peut pas modifier son propre abonnement — HTTP 403
+
+## Action billing (Stripe simulé)
+OK      B1 Sans jeton : 401
+OK      B2 Restaurant : session de paiement Start mensuel créée — HTTP 200 
+OK      B2 Second paiement alors qu’un abonnement existe déjà chez Stripe : refusé « already_subscribed » (anti-doublon)
+OK      B3 Restaurant : start annuel accepté — HTTP 200 
+OK      B3 Restaurant : pro mensuel accepté — HTTP 200 
+OK      B3 Restaurant : pro annuel accepté — HTTP 200 
+OK      B4 Formule inconnue : refusée — 400 invalid_plan
+OK      B4 Périodicité inconnue : refusée — 400 invalid_plan
+OK      B5 Portail client sans abonnement : refusé proprement — 404 no_subscription
+OK      B6 Un compte client ne peut pas souscrire d’abonnement professionnel — 403 account_space_locked
+OK      B7 Livreur : session de paiement ou « déjà abonné » — 409 already_subscribed
+
+## Webhook Stripe (signature locale)
+OK      W1 Sans signature : 400
+OK      W2 Signature invalide : 400
+OK      W3 Signature d’un autre secret : 400
+OK      W4 Signature trop ancienne (rejeu) : 400
+OK      W5 Événement signé : accepté — HTTP 200
+OK      W6 Même événement rejoué : « duplicate », sans second traitement
+OK      W7 Corps modifié après signature : 400
+OK      W8 Abonnement d’un client Stripe inconnu : accusé de réception, aucune erreur — HTTP 200
+
+# Bilan : 65 OK, 0 ÉCHEC

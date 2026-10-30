@@ -1,4 +1,5 @@
 import { authErrorKey } from '@/features/auth/errors';
+import { isNetworkError } from '@/lib/network';
 
 /** Erreurs métier levées par nos fonctions SQL (raise exception '<code>'). */
 const businessErrors = {
@@ -103,10 +104,13 @@ const businessErrors = {
 } as const;
 
 export type ErrorKey =
-  (typeof businessErrors)[keyof typeof businessErrors] | ReturnType<typeof authErrorKey>;
+  | (typeof businessErrors)[keyof typeof businessErrors]
+  | ReturnType<typeof authErrorKey>
+  | 'common.networkError';
 
 /** Clé i18n à afficher pour une erreur Supabase (auth, PostgREST ou métier). */
 export function errorKey(error: unknown): ErrorKey {
+  if (isNetworkError(error)) return 'common.networkError';
   const message = (error as { message?: string } | null)?.message ?? '';
   for (const [code, key] of Object.entries(businessErrors)) {
     if (message.startsWith(code)) return key as ErrorKey;

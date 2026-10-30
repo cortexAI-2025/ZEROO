@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { QueryState } from '@/components/ui';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { addNotificationTapListener } from '@/features/notifications/push';
@@ -92,6 +93,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <SpaceProvider>
+              <OfflineBanner />
               <RootNavigator />
             </SpaceProvider>
           </AuthProvider>
