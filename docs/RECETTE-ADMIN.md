@@ -1,6 +1,9 @@
 # Recette du dashboard administrateur (admin.zeeroo.fr)
 
-À exécuter **avant** toute mise en production du dashboard et avant la fusion de la PR #51 dans `main`.
+> **Procédure de recette à exécuter. Ce document ne valide pas le dashboard administrateur.**
+> Aucune case n'est cochée à la rédaction. Le dashboard est déjà déployé depuis `main` (PR #51, puis #57) ; cette recette sert à le contrôler avec deux comptes réels.
+
+À exécuter sur `admin.zeeroo.fr` avec deux comptes réellement distincts.
 Chaque ligne se coche à la main ; en cas d'écart, noter l'écran, l'heure, le compte utilisé et une capture.
 
 > **Règles de sécurité de la recette**
@@ -176,7 +179,7 @@ ORDER BY n.nspname, p.proname;
 | Section 6 sans écart bloquant | ☐ |
 | Section 8 validée | ☐ |
 | Branche de production du projet Vercel `zeeroo-admin` et dossier racine (`admin-web`) vérifiés | ☐ |
-| **Go / no-go pour la fusion de #51 dans `main`** | ☐ Go ☐ No-go |
+| **Go / no-go pour la poursuite de l'exploitation du dashboard** (décision du propriétaire, après exécution complète) | ☐ Go ☐ No-go |
 
 Écarts constatés :
 
