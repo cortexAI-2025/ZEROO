@@ -1,4 +1,4 @@
-# Recette des notifications — 2026-10-30T13:20:23.866Z — pile locale http://127.0.0.1:54321
+# Recette des notifications — 2026-10-30T13:22:51.556Z — pile locale http://127.0.0.1:54321
 
 ## Sécurité de l’appel
 OK      N0 Sans secret : 401 (la fonction n’est pas appelable publiquement)

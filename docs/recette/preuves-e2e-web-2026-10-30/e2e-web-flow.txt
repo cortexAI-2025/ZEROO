@@ -1,4 +1,4 @@
-# Recette de bout en bout — 2026-10-30T11:47:46.972Z — pile locale http://127.0.0.1:54321
+# Recette de bout en bout — 2026-10-30T13:22:43.439Z — pile locale http://127.0.0.1:54321
 OK      Client : le menu du restaurant est lisible et contient un article commandable
 OK      Livreur : se déclare disponible — HTTP 200
 

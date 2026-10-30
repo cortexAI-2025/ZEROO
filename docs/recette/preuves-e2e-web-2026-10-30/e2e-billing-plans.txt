@@ -1,4 +1,4 @@
-# Recette abonnements Start/Pro — 2026-10-30T13:09:25.939Z — pile locale http://127.0.0.1:54321
+# Recette abonnements Start/Pro — 2026-10-30T13:22:46.267Z — pile locale http://127.0.0.1:54321
 OK      Préparation : le restaurant de recette accepte les espèces — HTTP 200
 
 ## Restaurant — droits par formule et cycle de vie
