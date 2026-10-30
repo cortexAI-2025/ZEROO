@@ -1,6 +1,6 @@
 # Contrôle préproduction — redéploiement de `create-order` (30/10/2026)
 
-**Statut : prêt à être exécuté sur confirmation explicite. Rien n'a été déployé.**
+**Statut : déployé le 30/10/2026 en version 31 (voir §7), sur confirmation explicite de l'utilisateur.**
 
 ## 1. Ce qui change exactement
 
@@ -49,7 +49,7 @@ Non vérifiable depuis cette session : un appel authentifié réel sur la produc
 
 1. **Avant** : relire `list_edge_functions` (v29 active, `verify_jwt: true`) et `select count(*) from public.orders` (la production est calme).
 2. **Déployer uniquement `create-order`**, `verify_jwt: true`, avec exactement les 4 fichiers du paquet : `create-order/index.ts`, `create-order/handler.ts`, `_shared/http.ts`, `_shared/supabase.ts`, pris sur `main` à `c2f8863`. Pas d'`import_map`.
-3. **Après** (lecture seule) : `get_edge_function` → version 30, `status: ACTIVE`, `verify_jwt: true` ; contenu de `_shared/http.ts` = celui du dépôt (13 codes présents) ; `handler.ts` identique à la v29.
+3. **Après** (lecture seule) : `get_edge_function` → version 31 (la 30 est une tentative remplacée, voir §7), `status: ACTIVE`, `verify_jwt: true` ; contenu de `_shared/http.ts` = celui du dépôt (13 codes présents) ; `handler.ts` identique à la v29.
 4. **Test de fumée sans compte** : `POST` sans jeton → HTTP 401 `not_authenticated` ; `OPTIONS` → 200. Aucune commande créée.
 5. **Avertissements Supabase** (`get_advisors`) : aucun nouvel avertissement.
 6. Rapport : version, empreinte, résultats 3 à 5.
@@ -58,6 +58,20 @@ Non vérifiable depuis cette session : un appel authentifié réel sur la produc
 
 Redéployer le paquet de `main` à `5b6ad54` (mêmes 4 fichiers, `http.ts` sans les 13 codes) : retour à l'état de la v29. Aucun effet sur les données.
 
-## 7. À faire côté utilisateur après le déploiement (hors de ma portée)
+## 7. Exécution (30/10/2026)
+
+| Étape | Résultat |
+| --- | --- |
+| Avant | v29 active, `verify_jwt: true`, 0 commande en base |
+| Version 30 | déployée à 16:03 UTC puis remplacée : une ligne de `_shared/supabase.ts` avait été mal recopiée (`'subscriptions' === 'subscriptions' ? 'courier_subscriptions' : 'courier_subscriptions'` au lieu de `'courier_subscriptions'`, valeur identique mais fichier différent du dépôt). Aucun appel de `create-order` pendant les environ 45 secondes en ligne |
+| **Version 31** | déployée avec les 4 fichiers exacts du dépôt (`main` à `c2f8863`) ; `verify_jwt: true` ; `ezbr_sha256` `a0a9d16b525659169b4fcca5f5ef2501f4d8bee1911376cb3dbb619c2aefe554` |
+| Contenu relu | `http.ts` : 13 codes présents ; `supabase.ts` : ligne conforme ; `handler.ts` et `index.ts` : identiques à la v29 |
+| Test de fumée sans compte (§5.4) | **non exécuté** : le proxy de la session bloque l'accès à Supabase en ligne de commande. À faire par l'utilisateur : `POST` sans jeton → 401 |
+| Avertissements Supabase (§5.5) | pas de comparaison avant/après faite ; avertissements existants inchangés à ma connaissance (tables protégées sans politique, etc.) |
+| Commandes créées | aucune |
+
+Retour arrière : redéployer le paquet de `main` à `5b6ad54`.
+
+## 8. À faire côté utilisateur après le déploiement (hors de ma portée)
 
 Une commande de test réelle avec un compte client réel : refus attendu `price_changed` si le prix annoncé est falsifié (outil de développement du navigateur) — la page doit afficher le message dédié et non l'erreur générique.
