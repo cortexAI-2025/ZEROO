@@ -1,0 +1,13 @@
+# Contrôles HTTP — mode avant — 2026-10-29T12:05:38Z — http://127.0.0.1:54321
+OK                anon directory_businesses (HTTP 401)
+OK                anon directory_claims (HTTP 401)
+OK                anon rpc search_pro_directory (HTTP 404)
+OK                anon rpc pro_directory_cities (HTTP 404)
+OK                anon rpc request_directory_claim (HTTP 404)
+OK                anon merchant_private (HTTP 404)
+ATTENDU-AVANT     anon merchants (colonnes brutes) (motif sensible présent : exposition actuelle, 1 ligne(s))
+OK                client directory_businesses (HTTP 403)
+OK                client merchant_private (HTTP 404)
+ATTENDU-AVANT     client merchants (colonnes brutes) (motif sensible présent : exposition actuelle, 1 ligne(s))
+OK                client admin_directory_claims (HTTP 403)
+# Bilan : 9 conforme(s), 2 attendu(s) avant migration, 0 échec(s), 0 erreur(s) technique(s), 0 non probant(s)
