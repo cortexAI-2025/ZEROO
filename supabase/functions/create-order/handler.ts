@@ -2,6 +2,30 @@ import { HttpError, handle, json, readJson } from '../_shared/http.ts';
 import type { OrderRow } from '../_shared/orders.ts';
 import { adminClient, requireAccountSpace, requireUser, unwrap } from '../_shared/supabase.ts';
 
+/**
+ * Lien de paiement du restaurant, lu à DEUX endroits selon l'état de la base :
+ *  - colonne historique de `merchants` : avant la migration 20261029120000, et en retour arrière réduit
+ *    (le lien y est la source de vérité) ;
+ *  - table fermée `merchant_private` : après la migration (la colonne est alors vide).
+ * La colonne est lue en premier : si elle est renseignée, elle fait foi. Cette fonction est donc valable avant, après
+ * la migration et après un retour arrière (complet ou réduit), et peut être déployée AVANT la migration.
+ */
+async function paymentLink(db: ReturnType<typeof adminClient>, merchantId: string) {
+  const legacy = await db
+    .from('merchants')
+    .select('payment_link')
+    .eq('id', merchantId)
+    .maybeSingle();
+  const fromColumn = (legacy.data as { payment_link: string | null } | null)?.payment_link;
+  if (fromColumn) return fromColumn;
+  const priv = await db
+    .from('merchant_private')
+    .select('payment_link')
+    .eq('merchant_id', merchantId)
+    .maybeSingle(); // table absente avant la migration : erreur ignorée
+  return (priv.data as { payment_link: string | null } | null)?.payment_link ?? null;
+}
+
 type Body = {
   merchantId: string;
   /** useReward : une unité de cette ligne (menu formule) est le menu offert par la fidélité. */
@@ -49,10 +73,8 @@ export const handler = handle(async (req) => {
   await requireAccountSpace(db, user.id, 'client');
   const mealPayment = body.mealPayment ?? 'card';
   if (mealPayment === 'card') {
-    const merchant = unwrap(
-      await db.from('merchants').select('payment_link').eq('id', body.merchantId).maybeSingle(),
-    ) as { payment_link: string | null } | null;
-    if (!merchant?.payment_link) throw new HttpError(400, 'merchant_no_payment_link');
+    if (!(await paymentLink(db, body.merchantId)))
+      throw new HttpError(400, 'merchant_no_payment_link');
   }
 
   const delivery = body.delivery;

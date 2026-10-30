@@ -137,7 +137,7 @@ export default function CartScreen() {
   const grandTotal = total + deliveryFee;
   const canPayCashAtCounter = mode === 'pickup' && !!deliverySettings?.accepts_cash_pickup;
   // Sans lien de paiement, le restaurant n'encaisse qu'en espèces au comptoir.
-  const canPayByCard = !!deliverySettings?.payment_link;
+  const canPayByCard = !!deliverySettings?.has_payment_link;
   const cashMeal = canPayCashAtCounter && (mealCash || !canPayByCard);
   // Commande groupée : entreprise, effectif et montant minimal ; le serveur revérifie tout.
   const groupReady =
