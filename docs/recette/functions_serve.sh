@@ -16,17 +16,17 @@ export STRIPE_SECRET_KEY=sk_test_123 STRIPE_API_BASE=http://127.0.0.1:12111 STRI
 export STRIPE_PRICE_START_MONTH=price_start_month STRIPE_PRICE_START_YEAR=price_start_year STRIPE_PRICE_PRO_MONTH=price_pro_month STRIPE_PRICE_PRO_YEAR=price_pro_year
 export STRIPE_PRICE_COURIER_START_MONTH=price_c_start_month STRIPE_PRICE_COURIER_START_YEAR=price_c_start_year STRIPE_PRICE_COURIER_PRO_MONTH=price_c_pro_month STRIPE_PRICE_COURIER_PRO_YEAR=price_c_pro_year
 fi
-export STRIPE_TAX_RATE_ID="${STRIPE_TAX_RATE_ID:-txr_local}" APP_WEB_URL=http://127.0.0.1:8081 CRON_SECRET=local-cron ORDER_ACCEPT_TIMEOUT_MINUTES=10
+export STRIPE_TAX_RATE_ID="${STRIPE_TAX_RATE_ID:-txr_local}" APP_WEB_URL=http://127.0.0.1:8081 CRON_SECRET=local-cron ORDER_ACCEPT_TIMEOUT_MINUTES=10 EXPO_PUSH_URL="${EXPO_PUSH_URL:-http://127.0.0.1:8199/push}"
 : > "$W/functions.pids"
-for spec in create-order:8101 billing:8102 stripe-webhook:8103 order-decision:8104 notify-order-update:8105; do
+for spec in create-order:8101 billing:8102 stripe-webhook:8103 order-decision:8104 notify-order-update:8105 customer-cancel-order:8106 courier-decline:8107 customer-departure:8108; do
   name=${spec%%:*}; port=${spec##*:}
   DENO_SERVE_ADDRESS="tcp:127.0.0.1:$port" nohup "$DENO" run -A --no-lock --node-modules-dir=none "supabase/functions/$name/index.ts" > "$W/fn-$name.log" 2>&1 &
   echo $! >> "$W/functions.pids"
 done
-for i in $(seq 1 60); do ok=0; for p in 8101 8102 8103 8104 8105; do curl -s -m 2 -o /dev/null -X OPTIONS "http://127.0.0.1:$p/" && ok=$((ok+1)); done; [ $ok = 5 ] && break; sleep 2; done
+for i in $(seq 1 60); do ok=0; for p in 8101 8102 8103 8104 8105 8106 8107 8108; do curl -s -m 2 -o /dev/null -X OPTIONS "http://127.0.0.1:$p/" && ok=$((ok+1)); done; [ $ok = 8 ] && break; sleep 2; done
 # Ancienne version de create-order (branche précédente) sur le port 8111, pour tester la bascule : OLD_FUNCTIONS_DIR=<dossier contenant supabase/functions>
 if [ -n "${OLD_FUNCTIONS_DIR:-}" ]; then
   DENO_SERVE_ADDRESS="tcp:127.0.0.1:8111" nohup "$DENO" run -A --no-lock --node-modules-dir=none "$OLD_FUNCTIONS_DIR/supabase/functions/create-order/index.ts" > "$W/fn-create-order-old.log" 2>&1 &
   echo $! >> "$W/functions.pids"; sleep 4
 fi
-echo "fonctions prêtes ($ok/5)"
+echo "fonctions prêtes ($ok/8)"

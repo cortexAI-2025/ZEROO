@@ -44,6 +44,21 @@ const SQL_BUSINESS_ERRORS = [
   'invalid_delivery_address',
   'invalid_delivery_phone',
   'courier_not_confirmed',
+  // Erreurs levées par create_order / apply_order_transition que l'application sait traduire (src/lib/errors.ts) :
+  // sans cette liste elles remontaient en « internal_error » (HTTP 500) et le client voyait un message générique.
+  'price_changed',
+  'item_out_of_slot',
+  'pickup_unavailable',
+  'merchant_closed_at_slot',
+  'invalid_schedule',
+  'cash_not_accepted',
+  'cash_not_allowed_for_delivery',
+  'courier_not_assigned',
+  'invalid_delivery_code',
+  'group_orders_unavailable',
+  'invalid_group_order',
+  'group_lead_time',
+  'group_minimum_not_reached',
 ];
 
 /** Enveloppe un handler : CORS, POST uniquement, corps JSON, erreurs normalisées. */
